@@ -81,8 +81,8 @@ paginate_path:         /:num/
 # Theme
 # ---------------------------------------------------------------------------------------
 
-theme: jekyll-theme-hydejack
-# remote_theme: hydecorp/hydejack@v9
+# theme: jekyll-theme-hydejack
+remote_theme: hydecorp/hydejack@v9
 
 
 # Customizaton
@@ -324,6 +324,7 @@ include:
 
 plugins:
   - jekyll-default-layout
+  - jekyll-include-cache
   - jekyll-feed
   - jekyll-optional-front-matter
   - jekyll-paginate

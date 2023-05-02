@@ -28,7 +28,7 @@ description:           >
   This this Jason Liu's homepage
 
 # A shorter description for the sidebar.
-tagline:               Developer, Dntrepreneur, Student at NYU
+tagline:               Developer, Entrepreneur, Rising Sophmore at NYU
 
 # A list of keywords for your blog
 keywords:              [Jason Liu, 刘锦森, Jinsen Liu, Jason Liu NYU, Jason Liu CDFLS]
@@ -48,12 +48,12 @@ author:
 
 # Add links to the sidebar.
 menu:
-  - title:             Example
-    url:               /example/
-  - title:             Documentation
-    url:               /docs/
-  - title:             About
-    url:               /about/
+  # - title:             Example
+  #   url:               /example/
+  # - title:             Documentation
+  #   url:               /docs/
+  # - title:             About
+  #   url:               /about/
   - title:             Cv
     url:               /cv/ 
 

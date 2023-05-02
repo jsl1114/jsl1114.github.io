@@ -31,7 +31,7 @@ description:           >
 tagline:               Developer, Entrepreneur, Rising Sophmore at NYU
 
 # A list of keywords for your blog
-keywords:              [Jason Liu, 刘锦森, Jinsen Liu, Jason Liu NYU, Jason Liu CDFLS]
+keywords:              ['Jason Liu', '刘锦森', 'Jinsen Liu', 'Jason Liu NYU', 'Jason Liu CDFLS']
 
 # A (square) logo for your site.
 # If provided, it will be shown at the top of the sidebar.

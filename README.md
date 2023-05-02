@@ -1,1 +1,6 @@
-I'm Jason, welcome to my homepage.
+---
+layout: page
+title: Hi, I'm Jason
+---
+
+Welcome to my page

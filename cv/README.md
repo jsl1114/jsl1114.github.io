@@ -5,4 +5,4 @@ permalink: /cv/
 sitemap: false
 ---
 
-[Click here for a copy of my CV](../assets/files/cv_chinese.pdf)
+[Click here for a copy of my CV](/assets/files/cv_chinese.pdf)

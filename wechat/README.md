@@ -5,4 +5,4 @@ permalink: /wechat/
 sitemap: false
 ---
 
-![WeChat failed to load][/assets/img/wechatcode.JPG]
+![WeChat failed to load](/assets/img/wechatcode.JPG)

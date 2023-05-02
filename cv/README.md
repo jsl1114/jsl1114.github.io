@@ -5,6 +5,6 @@ permalink: /cv/
 sitemap: false
 ---
 
-<object data="/assets/files/cv_chinese.pdf" type="application/pdf" width="100%">
+<object data="/assets/files/cv_chinese.pdf" type="application/pdf" width="100%" height="1000px">
 
-[Click here for a copy of my CV](/assets/files/cv_chinese.pdf)
+<a href="/assets/files/cv_chinese.pdf">Click here for a copy of my CV</a>

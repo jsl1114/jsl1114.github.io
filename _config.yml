@@ -144,26 +144,26 @@ defaults:
 
   # `jekyll-seo-tag` will mark collection outputs as `BlogPosting`,
   # but we want them to be `WebPage`s:
-  - scope:
-      type:            projects
-    values:
-      seo:
-        type:          WebPage
-  - scope:
-      type:            featured_categories
-    values:
-      seo:
-        type:          WebPage
-  - scope:
-      type:            featured_tags
-    values:
-      seo:
-        type:          WebPage
+  # - scope:
+  #     type:            projects
+  #   values:
+  #     seo:
+  #       type:          WebPage
+  # - scope:
+  #     type:            featured_categories
+  #   values:
+  #     seo:
+  #       type:          WebPage
+  # - scope:
+  #     type:            featured_tags
+  #   values:
+  #     seo:
+  #       type:          WebPage
 
-kramdown:
-  math_engine:         mathjax
-  math_engine_opts:    {}
-  footnote_backlink:   '&#x21a9;&#xfe0e;'
+# kramdown:
+#   math_engine:         mathjax
+#   math_engine_opts:    {}
+#   footnote_backlink:   '&#x21a9;&#xfe0e;'
 
 
 # 3rd Party Integrations

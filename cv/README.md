@@ -5,6 +5,9 @@ permalink: /cv/
 sitemap: false
 ---
 
-<object data="/assets/files/cv_chinese.pdf" type="application/pdf" width="100%" height="1000px">
+![CV failed to load][cv-png-path]
 
-<a href="/assets/files/cv_chinese.pdf">Click here for a copy of my CV</a>
+[Click here to download a copy of my CV][cv-pdf-path]
+
+[cv-png-path]: /assets/files/cv_chinese.png
+[cv-pdf-path]: /assets/files/cv_chinese.pdf

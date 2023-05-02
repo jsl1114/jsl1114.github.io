@@ -1,6 +1,1 @@
----
-layout: page
-title: Hi, I'm Jason
----
-
-Welcome to my page
+This is the project file for my personal website

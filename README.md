@@ -1,1 +1,1 @@
-This is the project file for my personal website
+### Alternative link: jinsenliu.me

@@ -19,7 +19,7 @@ baseurl:               ''
 # You may also provide a location, e.g.: en-us, de_AT.
 lang:                  en
 
-favicon: ./favicon.ico
+
 
 # The title of your blog. Used in the sidebar and the browser tab.
 title:                 Jason Liu
@@ -38,7 +38,9 @@ keywords:              ['Jason Liu', '刘锦森', 'Jinsen Liu', 'Jason Liu NYU',
 # A (square) logo for your site.
 # If provided, it will be shown at the top of the sidebar.
 # It also used by the `jekyll-seo-tag` plugin.
-# logo:                  /assets/img/logo.png
+logo:                  /assets/img/logo.svg
+
+favicon: ./favicon.ico
 
 # This should be the same author as first entry in `_data/authors.yml`.
 author:

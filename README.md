@@ -1,1 +1,1 @@
-### Alternative link: jinsenliu.me
+### Alternative link: [jinsenliu.me](jinsenliu.me)

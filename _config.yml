@@ -171,7 +171,7 @@ defaults:
 
 # Set your Google Analytics id to receive `pageview` events.
 # To remove Google Anaylics from your page, remove the line below.
-# google_analytics:      UA-XXXXXXXX-X
+google_analytics:      G-PD5J1ZGN3E
 
 # Setting a disqus shortname will enable the comment section on
 # pages with `comments: true` in the front matter.
@@ -344,7 +344,8 @@ plugins:
 # Where you proof that you own this site (used by jekyll-seo-tag)
 google_site_verification: bX77NFnGV9WMmQ6zWcgRuhTJiGmYGUPvRn0trgOkCOs
 
-google_analytics: G-PD5J1ZGN3E
+webmaster_verifications:
+  google: bX77NFnGV9WMmQ6zWcgRuhTJiGmYGUPvRn0trgOkCOs
 # -- or --
 # webmaster_verifications:
 #   google:              <verification-id>

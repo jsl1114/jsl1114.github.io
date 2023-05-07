@@ -1,4 +1,9 @@
 # This file contains meta data for various social media sites
+wechat:
+  name: WecChat
+  icon: icon-wechat
+  prepend: 'mailto:ljs11141118@gmail.com?subject='
+  append: '&body=Please send this email as is to get a automated response containing my WeChat QR code.'
 email:
   name: Email
   icon: icon-mail

@@ -2,7 +2,6 @@
 layout: page
 title: Hi, I'm Jason
 permalink: /
-description: I can see that you have walked thousands of miles just to reach this website, but it's just my homepage. Have fun... I guess.
 cover: true
 image: /assets/img/sidebar-bg.jpg
 ---

@@ -7,5 +7,6 @@ sitemap: false
 
 <script src="./cs.js"></script>
 <script>
-  displayAllFiles()
+  const files = getAllfiles()
+  files.map(f => {console.log(f)})
 </script>

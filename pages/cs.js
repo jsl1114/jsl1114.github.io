@@ -24,3 +24,5 @@ function displayAllFiles() {
     )
   })
 }
+
+displayAllFiles()

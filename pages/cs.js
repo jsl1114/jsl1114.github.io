@@ -17,12 +17,12 @@ function getAllFiles(dir, allFilesList = []) {
 
 // getAllFiles('../assets/cheat-sheet-bundle').map(f => console.log(f))
 
-function displayAllFiles() {
-  getAllFiles('../assets').map(f => {
-    return (
-      <a href={`https://jinsenliu.me/${f}`}>{f}</a>
-    )
-  })
-}
+// function displayAllFiles() {
+//   getAllFiles('../assets').map(f => 
+//     return (
+//     <a href={`https://jinsenliu.me/${f}`}>{f}</a>
+//   )
+//   )
+// }
 
-displayAllFiles()
+// displayAllFiles()

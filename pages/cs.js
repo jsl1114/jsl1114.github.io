@@ -17,12 +17,19 @@ function getAllFiles(dir, allFilesList = []) {
 
 // getAllFiles('../assets/cheat-sheet-bundle').map(f => console.log(f))
 
-// function displayAllFiles() {
-//   getAllFiles('../assets').map(f => 
-//     return (
-//     <a href={`https://jinsenliu.me/${f}`}>{f}</a>
-//   )
-//   )
-// }
+function displayAllFiles() {
+  const newul = document.createElement('ul')
+  getAllFiles('../assets').map(f => {
+    const newli = document.createElement('li')
+    const newA = document.createElement('a')
+    newA.href = `https://jinsenliu.me/${f}`
+    newA.id = f
 
-// displayAllFiles()
+    newli.appendChild(newA)
+    newul.appendChild(newli)
+  }
+  )
+  document.getElementById('csin').appendChild(newul)
+}
+
+displayAllFiles()

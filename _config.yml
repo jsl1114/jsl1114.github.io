@@ -18,6 +18,7 @@ baseurl: ''
 # You may also provide a location, e.g.: en-us, de_AT.
 lang: en
 
+# local dev settings
 port: 4888
 
 # The title of your blog. Used in the sidebar and the browser tab.

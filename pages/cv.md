@@ -7,7 +7,8 @@ sitemap: false
 
 ![CV failed to load][eng-cv-png-path]
 
-[Click here to download a copy of my CV in English][eng-cv-pdf-path]  
+[Click here to download a copy of my CV in English][eng-cv-pdf-path]
+ 
 [Click here to download a copy of my CV in Chinese][chinese-cv-pdf-path]
 
 

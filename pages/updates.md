@@ -15,4 +15,6 @@ Notably, Jason is driven by a sense of social responsibility, utilizing his tech
 
 As Jason progresses in his academic journey, he remains focused on leveraging computer science and data science to create innovative solutions for complex problems. With a foundation built on academic rigor, practical experience, and a genuine passion for technology, Jason Liu is poised to make significant contributions to the ever-evolving landscape of computer science and data science at NYU and beyond.
 
-Additionally, Jason is actively seeking positions in both front-end and back-end development. For more information, please reach out by email. [![the mail button](./assets/img/mail.svg)](mailto:ljs11141118@gmail.com)
+Additionally, Jason is actively seeking positions in both front-end and back-end development. For more information, please reach out by email.
+
+[![Click here to send me an email!](./assets/img/mail.svg)](mailto:ljs11141118@gmail.com)

@@ -6,11 +6,10 @@ sitemap: false
 ---
 
 ![CV failed to load][eng-cv-png-path]
-
-[Click here to download a copy of my CV in English][eng-cv-pdf-path]
  
-<!-- [Click here to download a copy of my CV in Chinese][chinese-cv-pdf-path] -->
-<a href=[chinese-cv-pdf-path] download='刘锦森_中文简历'>Click here to download a copy of my CV in Chinese</a>
+<a href='/assets/files/cv_english.pdf' download='Jinsen_Liu_CV'>Click here to download a copy of my CV in English</a>
+
+<a href='/assets/files/cv_chinese.pdf' download='刘锦森_中文简历'>Click here to download a copy of my CV in Chinese</a>
 
 
 

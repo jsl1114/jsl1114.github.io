@@ -9,7 +9,8 @@ sitemap: false
 
 [Click here to download a copy of my CV in English][eng-cv-pdf-path]
  
-[Click here to download a copy of my CV in Chinese][chinese-cv-pdf-path]
+<!-- [Click here to download a copy of my CV in Chinese][chinese-cv-pdf-path] -->
+<a href=[chinese-cv-pdf-path] download='刘锦森_中文简历'>Click here to download a copy of my CV in Chinese</a>
 
 
 

@@ -11,10 +11,10 @@ Throughout his time at NYU, Jason has exhibited a keen intellect and a passion f
 
 Beyond the classroom, Jason is an active member of the NYU tech community. He eagerly participates in coding competitions, hackathons, and various tech-related events, showcasing his desire to stay at the forefront of industry trends and emerging technologies. Jason's curiosity extends beyond his coursework, as he continuously seeks opportunities to apply his skills in real-world scenarios.
 
-Notably, Jason is driven by a sense of social responsibility, utilizing his technical expertise to contribute meaningfully to the community. Engaging in initiatives such as [mention any specific projects or activities], he exemplifies a commitment to making a positive impact and addressing societal challenges through technology.
+Notably, Jason is driven by a sense of social responsibility, utilizing his technical expertise to contribute meaningfully to the community. Engaging in initiatives connecting customers to businesses, he exemplifies a commitment to making a positive impact and addressing societal challenges through technology.
 
 As Jason progresses in his academic journey, he remains focused on leveraging computer science and data science to create innovative solutions for complex problems. With a foundation built on academic rigor, practical experience, and a genuine passion for technology, Jason Liu is poised to make significant contributions to the ever-evolving landscape of computer science and data science at NYU and beyond.
 
 Additionally, Jason is actively seeking positions in both front-end and back-end development. For more information, please reach out by email.
 
-[![Click here to send me an email!](./assets/img/mail.svg)](mailto:ljs11141118@gmail.com)
+[![Click here to send Jason an email!](./assets/img/mail.svg)](mailto:ljs11141118@gmail.com)

@@ -10,4 +10,4 @@ My name is Jason Liu (刘锦森), I am currently a rising sophmore at [NYU Coura
 
 I was born and raised in [Chengdu](https://en.wikipedia.org/wiki/Chengdu). I lived there until I recieved my middle school degree at [CDFLS](https://en.wikipedia.org/wiki/Chengdu_Foreign_Languages_School). Subsequenly, I went to [Rutgers Preparatory School](https://www.rutgersprep.org/) in New Brunswick, New Jersey for high school and graduated with *Honors With Distinction* in 2022.
 
-You can reach me through email by clicking [![the mail button](./assets/img/mail.svg)](mailto:ljs11141118@gmail.com)
+<a target='_blank' href='mailto:ljs11141118@gmail.com'><span class="icon-mail"></span> Send me an email</a>

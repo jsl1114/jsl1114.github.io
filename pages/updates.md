@@ -5,7 +5,7 @@ permalink: /updates/
 sitemap: false
 ---
 
-Introducing Jason Liu, a dynamic and dedicated sophomore at New York University (NYU), majoring in Computer Science and Data Science. Originally from Chengdu, Jason has been captivated by the fusion of technology and data, propelling him on a journey of academic exploration and innovation.
+Jason Liu is a dedicated sophomore at New York University (NYU), majoring in Computer Science and Data Science and minoring in Business Studies. Originally from Chengdu, Jason has been captivated by the fusion of technology and data, propelling him on a journey of academic exploration and innovation.
 
 Throughout his time at NYU, Jason has exhibited a keen intellect and a passion for problem-solving, excelling in a challenging curriculum that delves into the intricacies of computer science and the strategic insights of data science. His academic pursuits reflect a commitment to excellence, demonstrated through his engagement in advanced coursework and collaborative projects.
 
@@ -17,4 +17,4 @@ As Jason progresses in his academic journey, he remains focused on leveraging co
 
 Additionally, Jason is actively seeking positions in both front-end and back-end development. For more information, please reach out by email.
 
-[![Click here to send Jason an email!](./assets/img/mail.svg)](mailto:ljs11141118@gmail.com)
+<a target='_blank' href='mailto:ljs11141118@gmail.com'><span class="icon-mail"></span> Send Jason an email</a>

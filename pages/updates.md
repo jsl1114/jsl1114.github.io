@@ -5,16 +5,17 @@ permalink: /updates/
 sitemap: false
 ---
 
-Jason Liu is a dedicated sophomore at New York University (NYU), majoring in Computer Science and Data Science and minoring in Business Studies. Originally from Chengdu, Jason has been captivated by the fusion of technology and data, propelling him on a journey of academic exploration and innovation.
+**<ins>I am actively seeking positions related to software engineering, teaching, research and grading. Please reach me by email!</ins>**
 
-Throughout his time at NYU, Jason has exhibited a keen intellect and a passion for problem-solving, excelling in a challenging curriculum that delves into the intricacies of computer science and the strategic insights of data science. His academic pursuits reflect a commitment to excellence, demonstrated through his engagement in advanced coursework and collaborative projects.
+<a target='_blank' href='mailto:ljs11141118@gmail.com'><span class="icon-mail"></span> Send me an email</a>
 
-Beyond the classroom, Jason is an active member of the NYU tech community. He eagerly participates in coding competitions, hackathons, and various tech-related events, showcasing his desire to stay at the forefront of industry trends and emerging technologies. Jason's curiosity extends beyond his coursework, as he continuously seeks opportunities to apply his skills in real-world scenarios.
-
-Notably, Jason is driven by a sense of social responsibility, utilizing his technical expertise to contribute meaningfully to the community. Engaging in initiatives connecting customers to businesses, he exemplifies a commitment to making a positive impact and addressing societal challenges through technology.
-
-As Jason progresses in his academic journey, he remains focused on leveraging computer science and data science to create innovative solutions for complex problems. With a foundation built on academic rigor, practical experience, and a genuine passion for technology, Jason Liu is poised to make significant contributions to the ever-evolving landscape of computer science and data science at NYU and beyond.
-
-Additionally, Jason is actively seeking positions in both front-end and back-end development. For more information, please reach out by email.
-
-<a target='_blank' href='mailto:ljs11141118@gmail.com'><span class="icon-mail"></span> Send Jason an email</a>
+- **05/2024** Software Engineer for AI position at [Scale AI](https://scale.com/)
+- **05/2024** [LobsterAI](https://lobster-ai.vercel.app/) entered production stage
+- **02/2024** [LobsterAI](https://lobster-ai.vercel.app/) construction started
+- **09/2023** Completed [FullStack Open](https://fullstackopen.com/en/)
+- **08/2023** Grading fellow for [CSCI-UA 101 Intro To Computer Science](https://cs.nyu.edu/dynamic/courses/catalog/#csci-ua0101)
+- **06/2023** Software engineer Summer Internship at [Huaxi Securities](https://www.bloomberg.com/profile/company/002926:CH)
+- **10/2022 THIS WEBSITE IS IN PRODUCTION!**
+- **09/2022** Started [college](https://www.nyu.edu/)
+- **06/2022** Graduated [high school](https://www.rutgersprep.org/)
+- **06/2018** Graduated [middle school](https://en.wikipedia.org/wiki/Chengdu_Foreign_Languages_School)

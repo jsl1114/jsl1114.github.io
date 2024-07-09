@@ -57,22 +57,22 @@ menu:
   #   url:               /example/
   # - title:             Documentation
   #   url:               /docs/
-  # - title:             About
-  #   url:               /about/
   - title: CV
     url: /cv/
-  - title: Updates
+  - title: Recent Updates
     url: /updates/
   - title: Terminal Website
     url: /assets/terminal_website/index.html
+  - title: About
+    url: /about/
 
 # Add links to the footer.
 # Typically you'll want to link to your cookie- or privacy policy (if appliable), etc..
 legal:
-  - title: LICENSE
-    url: /LICENSE/
-  - title: NOTICE
-    url: /NOTICE/
+  # - title: LICENSE
+  #   url: /LICENSE/
+  # - title: NOTICE
+  #   url: /NOTICE/
   # - title:             CHANGELOG
   #   url:               /CHANGELOG/
 

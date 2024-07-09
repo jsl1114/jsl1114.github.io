@@ -5,7 +5,7 @@ permalink: /updates/
 sitemap: false
 ---
 
-**<ins>I am actively seeking positions related to software engineering, teaching, research and grading. Please reach me by email!</ins>**
+**<ins>I am actively seeking positions related to software engineering, teaching, research and grading for Fall 2024, Spring 2025 and Summer 2025!</ins>**
 
 <a target='_blank' href='mailto:ljs11141118@gmail.com'><span class="icon-mail"></span> Send me an email</a>
 

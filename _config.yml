@@ -57,12 +57,16 @@ menu:
   #   url:               /example/
   # - title:             Documentation
   #   url:               /docs/
+  # - title: Terminal Website
+  #   url: /assets/terminal_website/index.html
+  # - title: BrownJack
+  #   url: /assets/brownjack/game.html
   - title: CV
     url: /cv/
   - title: Recent Updates
     url: /updates/
-  - title: Terminal Website
-    url: /assets/terminal_website/index.html
+  - title: Projects
+    url: /projects/
   - title: About
     url: /about/
 

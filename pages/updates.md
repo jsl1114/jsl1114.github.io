@@ -9,6 +9,8 @@ sitemap: false
 
 <a target='_blank' href='mailto:ljs11141118@gmail.com'><span class="icon-mail"></span> Send me an email</a>
 
+- **08/2024** Minor layout update on website (new Projects section encompassing selected projects)
+- **08/2024** [BrownJack](https://jsl1114.github.io/assets/brownjack/game.html) is now served through this site
 - **05/2024** Software Engineer for AI position at [Scale AI](https://scale.com/)
 - **05/2024** [LobsterAI](https://lobster-ai.vercel.app/) entered production stage
 - **02/2024** [LobsterAI](https://lobster-ai.vercel.app/) construction started

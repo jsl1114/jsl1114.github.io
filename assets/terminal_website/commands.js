@@ -1,15 +1,15 @@
+// personal
 var password = 'jasondev2024'
 var linkedin = 'https://www.linkedin.com/in/jinsen-liu/'
 var instagram = 'https://www.instagram.com/jsl1114/'
 var github = 'https://github.com/jsl1114/'
 var email = 'mailto:jl13869@nyu.edu'
-var wechat = 'iamjasonliuu'
+var wechat = 'email me'
 
 // projects
 var lobster = 'https://lobster-ai.vercel.app/'
-var brownjack =
-  'https://github.com/nyu-csci-ua-0467-001-002-spring-2024/homework06-jsl1114/tree/main/src/public'
-var personal_website = 'https://jinsenliu.me/'
+var brownjack = 'https://jsl1114.github.io/assets/brownjack/game.html'
+var personal_website = 'https://jsl1114.github.io'
 
 whois = [
   '<br>',
@@ -74,20 +74,17 @@ projects = [
 help = [
   '<br>',
   '<span class="command">whois</span>          Who is Jason?',
-  '<span class="command">whoami</span>         Who are you?',
-  '<span class="command">linkedin</span>       View on LinkedIn',
+  '<span class="command">whoam</span>          Who are you?',
+  '<span class="command">projects</span>       View selected projects',
   '<span class="command">github</span>         View on Github',
+  '<span class="command">linkedin</span>       View on LinkedIn',
+  '<span class="command">email</span>          Reach out',
   '<span class="command">social</span>         Display social networks',
-  '<span class="command">secret</span>         Find the password',
-  '<span class="command">projects</span>       View coding projects',
-  '<span class="command">ai | lobster</span>   Open LobsterAI',
-  '<span class="command">brownjack</span>      Open BrownJack',
-  '<span class="command">meweb</span>          Open jinsenliu.me',
+  '<span class="command">banner</span>         Display the banner',
+  '<span class="command">help | man</span>     You obviously already know what this does',
   '<span class="command">history</span>        View command history',
-  '<span class="command">email</span>          Do not email me (jk)',
+  '<span class="command">main</span>           Open Jason\'s homepage',
   '<span class="command">clear</span>          Clear terminal',
-  '<span class="command">banner</span>         Display the header',
-  '<span class="command">help</span>           You obviously already know what this does',
   '<br>',
 ]
 

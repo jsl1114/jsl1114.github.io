@@ -50,7 +50,7 @@ function enterKey(e) {
       commands.push(command.innerHTML)
       git = commands.length
       addLine(
-        'visitor@jinsenliu.com:~$ ' + command.innerHTML,
+        'visitor@https://jsl1114.github.io:~$ ' + command.innerHTML,
         'no-animation',
         0
       )
@@ -122,7 +122,7 @@ function commander(cmd) {
       break
     case 'email':
       addLine(
-        'Opening mailto:<a href="mailto:jl13869@nyu.edu">jl13869@nyu.edu</a>...',
+        'mailto:<a href="mailto:jl13869@nyu.edu">jl13869@nyu.edu</a>...',
         'color2',
         80
       )
@@ -166,7 +166,7 @@ function commander(cmd) {
       addLine('Opening BrownJack...')
       newTab(brownjack)
       break
-    case 'meweb':
+    case 'main':
       addLine('Opening jinsenliu.me...')
       newTab(personal_website)
       break

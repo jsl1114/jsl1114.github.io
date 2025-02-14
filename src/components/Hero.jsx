@@ -4,10 +4,10 @@ const Hero = () => {
       <div className='flex flex-wrap flex-col'>
         <div className='w-full text-center'>
           <h1 className='text-8xl mb-5'>Jason Liu</h1>
-          <span className='text-4xl font-light bg-gradient-to-r from-slate-300 via-slate-500 to-slate-400 bg-clip-text text-transparent'>
+          <span className='text-4xl font-light bg-gradient-to-r from-neutral-300 via-neutral-500 to-neutral-400 bg-clip-text text-transparent'>
             Full-Stack Developer
           </span>
-          <p className='text-left lg:mx-50 py-10 text-slate-500'>
+          <p className='text-left lg:mx-50 py-10 text-neutral-400'>
             Hi, I'm Jason. I am a cs undergrad at{' '}
             <a
               href='https://nyu.edu'

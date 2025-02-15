@@ -9,7 +9,7 @@ import { SOCIALS } from '../constants/const'
 
 const Navbar = () => {
   return (
-    <nav className='py-4 w-full mb-10 flex items-center justify-between backdrop-blur-lg sticky -top-1 lg:top-0 lg:backdrop-blur-none lg:px-8'>
+    <nav className='py-4 w-full mb-10 flex items-center justify-between backdrop-blur-lg sticky z-10 -top-1 lg:top-0 lg:backdrop-blur-none lg:px-8'>
       <div className='flex flex-shrink-0 item-center'>
         <img
           className='mx-2 w-10'

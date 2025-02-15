@@ -3,7 +3,7 @@ import ExperienceCard from './ExperienceCard'
 
 const Experience = () => {
   return (
-    <div className='flex flex-wrap flex-col'>
+    <div className='flex flex-wrap flex-col border-b border-neutral-800 pb-4'>
       <h1 className='text-4xl text-center my-20'>Experience</h1>
       <div>
         {EXPERIENCE.map((e, i) => (

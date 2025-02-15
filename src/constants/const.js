@@ -89,3 +89,71 @@ export const EXPERIENCE = [
     ],
   },
 ]
+
+export const TECHNOLOGIES = [
+  'react',
+  'next.js',
+  'vue.js',
+  'javascript',
+  'typescript',
+  'mongodb',
+  'nodedotjs',
+  'vite',
+  'vitepress',
+  'express',
+  'vim',
+  'git',
+  'github',
+  'gitee',
+  'gitlab',
+  'vercel',
+  'netlify',
+  'c',
+  'cplusplus',
+  'python',
+  'sqlite',
+  'mysql',
+  'jupyter',
+  'tensorflow',
+]
+
+export const PROJECTS = [
+  {
+    title: 'Lobster AI',
+    desc: 'A Software-as-a-Service (SaaS) platform that provides all-in-one solutions for AI chatbot, image generation, video generation, code editing and music generation.',
+    technologies: [
+      'Next.js',
+      'OpenAI',
+      'Replicate AI',
+      'Prisma',
+      'Vervel',
+      'MongoDB',
+      'Tailwind CSS',
+      'CI/CD',
+    ],
+    urls: {
+      github: 'https://github.com/jsl1114/Lobster-AI',
+      live: 'https://lobster-ai.vercel.app/',
+    },
+    image: 'lobster.png',
+  },
+  {
+    title: 'SHell',
+    desc: 'A simple Linux shell that supports piping, redirection, and background processes and many built-in commands.',
+    technologies: ['C', 'Unix', 'Linux'],
+    urls: {
+      github: 'https://github.com/jsl1114/SHell',
+    },
+    image: 'shell.png',
+  },
+  {
+    title: 'Portfolio Website (currently v2)',
+    desc: 'You are seeing it now! Crafted from scratch, built with love and passion. If you have made this far, thank you for visiting my website, I hope you enjoy it as much as I do! I am constantly updating it, so please check back often!',
+    technologies: ['React', 'Vite', 'Tailwind CSS', 'CI/CD'],
+    urls: {
+      github: 'https://github.com/jsl1114/jsl1114.github.io',
+      live: 'https://jsl1114.github.io/',
+    },
+    image: 'jl.png',
+  },
+]

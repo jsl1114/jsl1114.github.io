@@ -1,6 +1,6 @@
 const Hero = () => {
   return (
-    <div className='border-b border-neutral-900 pb-4 lg:mb-35'>
+    <div className='pb-4 lg:mb-5'>
       <div className='flex flex-wrap flex-col'>
         <div className='w-full text-center'>
           <h1 className='text-8xl mb-5'>Jason Liu</h1>
@@ -8,7 +8,7 @@ const Hero = () => {
             Full-Stack Developer
           </span>
           <p className='text-left lg:mx-50 py-10 text-neutral-400'>
-            Hi, I'm Jason. I am a cs undergrad at{' '}
+            Hi, I'm Jason! I am a cs undergrad at{' '}
             <a
               href='https://nyu.edu'
               target='_blank'

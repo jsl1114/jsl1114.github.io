@@ -12,7 +12,7 @@ const ExperienceCard = ({ time, company, desc, role, location, link }) => {
         <a
           href={link}
           target='_blank'
-          className='rounded card'
+          className='rounded'
         >
           <h6 className='mb-2 font-semibold flex flex-wrap items-center'>
             {role} -{' '}

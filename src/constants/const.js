@@ -126,7 +126,7 @@ export const PROJECTS = [
       'OpenAI',
       'Replicate AI',
       'Prisma',
-      'Vervel',
+      'Vercel',
       'MongoDB',
       'Tailwind CSS',
       'CI/CD',

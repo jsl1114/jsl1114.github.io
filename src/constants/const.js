@@ -152,8 +152,8 @@ export const PROJECTS = [
     technologies: ['HTML', 'CSS', 'JavaScript'],
     urls: {
       github:
-        'https://github.com/jsl1114/jsl1114.github.io/src/assets/projects/brownjack',
-      live: 'https://jsl1114.github.io/src/assets/projects/brownjack/game.html',
+        'https://github.com/jsl1114/jsl1114.github.io/tree/v2/public/projects/brownjack',
+      live: 'https://jsl1114.github.io/projects/brownjack/game.html',
     },
     image: 'brown.webp',
   },
@@ -163,8 +163,8 @@ export const PROJECTS = [
     technologies: ['HTML', 'CSS', 'JavaScript'],
     urls: {
       github:
-        'https://github.com/jsl1114/jsl1114.github.io/src/assets/projects/terminal_website',
-      live: 'https://jsl1114.github.io/src/assets/projects/terminal_website/index.html',
+        'https://github.com/jsl1114/jsl1114.github.io/tree/v2/public/projects/terminal_website',
+      live: 'https://jsl1114.github.io/projects/terminal_website/index.html',
     },
     image: 'term.webp',
   },

@@ -122,7 +122,7 @@ export const PROJECTS = [
     title: 'Lobster AI',
     desc: 'A Software-as-a-Service (SaaS) platform that provides all-in-one solutions for AI chatbot, image generation, video generation, code editing and music generation.',
     technologies: [
-      'Next.js',
+      'Next.JS',
       'OpenAI',
       'Replicate AI',
       'Prisma',
@@ -145,6 +145,28 @@ export const PROJECTS = [
       github: 'https://github.com/jsl1114/SHell',
     },
     image: 'shell.png',
+  },
+  {
+    title: 'BrownJack',
+    desc: 'A client-side Blackjack game that allows users to play against an computer that behaves like a dealer with customizable functions.',
+    technologies: ['HTML', 'CSS', 'JavaScript'],
+    urls: {
+      github:
+        'https://github.com/jsl1114/jsl1114.github.io/src/assets/projects/brownjack',
+      live: 'https://jsl1114.github.io/src/assets/projects/brownjack/game.html',
+    },
+    image: 'brown.webp',
+  },
+  {
+    title: 'Terminal Portfolio',
+    desc: 'A terminal-based portfolio website for those of you who love the command line interface. It is a fun and interactive way to learn more about me and my projects.',
+    technologies: ['HTML', 'CSS', 'JavaScript'],
+    urls: {
+      github:
+        'https://github.com/jsl1114/jsl1114.github.io/src/assets/projects/terminal_website',
+      live: 'https://jsl1114.github.io/src/assets/projects/terminal_website/index.html',
+    },
+    image: 'term.webp',
   },
   {
     title: 'Portfolio Website (currently v2)',

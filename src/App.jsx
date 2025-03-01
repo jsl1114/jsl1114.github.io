@@ -11,7 +11,7 @@ function App() {
     <>
       <div className='absolute min-h-full w-full overflow-x-hidden text-neutral-300 antialiased selection:bg-cyan-300 selection:text-cyan-900 top-0 z-[-2] bg-neutral-950 bg-[radial-gradient(ellipse_60%_60%_at_50%_-10%,rgba(87,6,140,0.5),rgba(0,0,0,0))]'>
         <Navbar />
-        <div className='container mx-auto px-8 mt-32'>
+        <div className='container mx-auto px-8 mt-35'>
           <Hero />
           <Technologies />
           <Education />

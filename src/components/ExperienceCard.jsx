@@ -8,7 +8,7 @@ const ExperienceCard = ({ time, company, desc, role, location, link }) => {
         viewport={{ once: true }}
         whileInView={{ opacity: 1, x: 0 }}
         initial={{ opacity: 0, x: -100 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.8 }}
         className='w-full lg:w-1/4 pt-4 px-2'
       >
         <p className='mb-2 text-sm text-neutral-400'>{time}</p>
@@ -19,7 +19,7 @@ const ExperienceCard = ({ time, company, desc, role, location, link }) => {
         viewport={{ once: true }}
         whileInView={{ opacity: 1, x: 0 }}
         initial={{ opacity: 0, x: 100 }}
-        transition={{ duration: 0.5 }}
+        transition={{ duration: 0.4 }}
         className='w-full max-w-xl lg:w-3/4 card py-4 px-2 rounded-xl group'
       >
         <a

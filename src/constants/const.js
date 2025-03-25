@@ -57,18 +57,18 @@ export const EDUCATION = [
 export const EXPERIENCE = [
   {
     link: 'https://scale.com',
-    company: 'Scale AI',
+    company: 'Outlier AI',
     role: 'Coding Exptertise for AI Training',
     time: 'May 2024 - Present',
     location: 'Remote',
     desc: [
-      '• Conducted comprehensive evaluations of AI-generated code quality with detailed and insightful rationales',
+      '• Conducted comprehensive evaluations of AI-generated code quality',
       '• Engineered and implemented efficient, high-performing code solutions to complex programming challenges',
     ],
   },
   {
     link: 'https://cs.nyu.edu/home/index.html',
-    company: 'NYU Courant Institute',
+    company: 'NYU Courant',
     role: 'Teaching Assistant',
     time: 'Sept 2023 - Dec 2023',
     location: 'New York, NY',

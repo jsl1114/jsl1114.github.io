@@ -1,22 +1,18 @@
 export const SOCIALS = [
   {
     name: "LinkedIn",
-    icon: "FaLinkedinIn",
     link: "https://www.linkedin.com/in/jinsen-liu/",
   },
   {
     name: "GitHub",
-    icon: "FiGithub",
     link: "https://github.com/jsl1114",
   },
   {
     name: "Email",
-    icon: "TbMail",
     link: "mailto:jl13869@nyu.edu",
   },
   {
     name: "CV",
-    icon: "FaRegFilePdf",
     link: "../assets/cv_english.pdf",
   },
 ];

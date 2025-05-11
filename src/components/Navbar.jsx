@@ -1,7 +1,6 @@
-import { FaLinkedinIn } from 'react-icons/fa6'
+import { FaLinkedinIn, FaRegFilePdf } from 'react-icons/fa6'
 import { FiGithub } from 'react-icons/fi'
 import { TbMail } from 'react-icons/tb'
-import { FaRegFilePdf } from 'react-icons/fa'
 
 import Logo from '../assets/logo.svg'
 import CV from '../assets/cv_english.pdf'
@@ -19,17 +18,17 @@ const Navbar = () => {
       </div>
       <div className='m-8 flex items-center justify-center gap-4 text-2xl'>
         {SOCIALS.map((s) => (
-          <a
+            <a
             key={s.name}
             href={s.name === 'CV' ? CV : s.link}
             target='_blank'
             rel='noopener noreferrer'
-            className='transition duration-300 hover:text-violet-300'
+            className='transition duration-200 hover:text-violet-300'
           >
-            {s.name === 'LinkedIn' && <FaLinkedinIn />}
-            {s.name === 'GitHub' && <FiGithub />}
-            {s.name === 'Email' && <TbMail />}
-            {s.name === 'CV' && <FaRegFilePdf />}
+              {s.name === 'LinkedIn' && <FaLinkedinIn />}
+              {s.name === 'GitHub' && <FiGithub />}
+              {s.name === 'Email' && <TbMail />}
+              {s.name === 'CV' && <FaRegFilePdf />}
           </a>
         ))}
       </div>

@@ -17,6 +17,14 @@ export const SOCIALS = [
   },
 ];
 
+export const SECTIONS = [
+  { name: 'Home', id: 'hero' },
+  { name: 'Education', id: 'education' },
+  { name: 'Experience', id: 'experience' },
+  { name: 'Projects', id: 'projects' },
+  { name: 'Contact', id: 'contact' },
+]
+
 export const EDUCATION = [
   {
     school: "New York University (Courant)",

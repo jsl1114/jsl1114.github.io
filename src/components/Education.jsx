@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 const Education = () => {
   return (
-    <div className='border-b border-neutral-800 pb-4'>
+    <div className='border-b border-neutral-800 pt-10'>
       <motion.h1
         animate={{ opacity: 1, y: 0 }}
         initial={{ opacity: 0, y: -10 }}

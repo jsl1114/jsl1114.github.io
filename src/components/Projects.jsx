@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 const Projects = () => {
   return (
-    <div className='flex flex-wrap flex-col border-b border-neutral-800 pb-4'>
+    <div className='flex flex-wrap flex-col border-b border-neutral-800 pt-10'>
       <motion.h1
         viewport={{ once: true }}
         whileInView={{ opacity: 1, y: 0 }}

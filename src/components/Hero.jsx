@@ -2,7 +2,7 @@ import { motion } from 'framer-motion'
 
 const Hero = () => {
   return (
-    <div className='pb-4 lg:mb-5'>
+    <div className='pb-4 lg:mb-5 pt-35'>
       <div className='flex flex-wrap flex-col'>
         <div className='w-full text-center'>
           <motion.h1

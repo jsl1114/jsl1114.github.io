@@ -1,10 +1,9 @@
 import { motion } from 'framer-motion'
-import { SOCIALS } from '../constants/const.js'
-import GlassIcons from './GlassIcons/GlassIcons.jsx'
 import { FaLinkedinIn } from 'react-icons/fa6'
 import { FiGithub } from 'react-icons/fi'
 import { TbMail } from 'react-icons/tb'
 import { FaRegFilePdf } from 'react-icons/fa6'
+import BottomNav from './ContactDock.jsx'
 
 const Contact = () => {
   const items = [
@@ -36,12 +35,12 @@ const Contact = () => {
       </motion.h2>
       <motion.div
         viewport={{ once: true }}
-        whileInView={{ opacity: 1, x: 0 }}
-        initial={{ opacity: 0, x: 100 }}
-        transition={{ duration: 0.4 }}
-        className='w-full px-2 rounded-xl flex flex-col items-center justify-center gap-4'
+        whileInView={{ opacity: 1, y: 0, scale: 1 }}
+        initial={{ opacity: 0, y: 50, scale: 0.5 }}
+        transition={{ duration: 0.8, delay: 0.5, ease: "easeInOut" }}
+        className='w-full px-2 rounded-xl flex flex-col items-center justify-center gap-4 mb-5'
       >
-          <GlassIcons items={items} />
+          <BottomNav />
       </motion.div>
     </div>
   )

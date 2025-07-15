@@ -4,7 +4,7 @@ import { Dock, DockIcon } from "@/components/magicui/dock";
 import { FaLinkedinIn, FaRegFilePdf } from 'react-icons/fa6'
 import { FiGithub } from 'react-icons/fi'
 import { TbMail } from 'react-icons/tb'
-import CV from '../assets/cv_english.pdf'
+import CV from '../assets/jason_liu_cv.pdf'
 
 export default function BottomNav() {
   return (

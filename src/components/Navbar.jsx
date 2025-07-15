@@ -11,7 +11,7 @@ import {
   LucideDot,
 } from "lucide-react";
 import Logo from "../assets/logo.svg";
-import CV from "../assets/cv_english.pdf";
+import CV from "../assets/jason_liu_cv.pdf";
 import { SOCIALS, SECTIONS } from "../constants/const.js";
 import { cn } from "@/lib/utils";
 
@@ -98,7 +98,12 @@ const Navbar = () => {
                   {s.name === "Contact" && <ContactRound />}
                   {/* {s.name} */}
                 </button>
-                <LucideDot className={cn("absolute -bottom-5", activeSection === s.id ? "text-white" : "hidden")} />
+                <LucideDot
+                  className={cn(
+                    "absolute -bottom-5",
+                    activeSection === s.id ? "text-white" : "hidden",
+                  )}
+                />
               </div>
             ))}
           </div>

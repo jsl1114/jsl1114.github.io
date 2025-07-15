@@ -13,17 +13,17 @@ export const SOCIALS = [
   },
   {
     name: "CV",
-    link: "../assets/cv_english.pdf",
+    link: "../assets/jason_liu_cv.pdf",
   },
 ];
 
 export const SECTIONS = [
-  { name: 'Home', id: 'hero' },
-  { name: 'Education', id: 'education' },
-  { name: 'Experience', id: 'experience' },
-  { name: 'Projects', id: 'projects' },
-  { name: 'Contact', id: 'contact' },
-]
+  { name: "Home", id: "hero" },
+  { name: "Education", id: "education" },
+  { name: "Experience", id: "experience" },
+  { name: "Projects", id: "projects" },
+  { name: "Contact", id: "contact" },
+];
 
 export const EDUCATION = [
   {
@@ -62,12 +62,12 @@ export const EXPERIENCE = [
   {
     link: "https://nyu.edu",
     company: "New York University",
-    role: "Full Stack Software Engineer",
+    role: "Lead Full Stack Software Engineer",
     time: "Apr 2025 - Present",
     location: "New York, NY",
     desc: [
-      "• Design, develop, test, deploy and improve internal systems",
-      "• Work in a highly agile development environment and practice Kanban methodology",
+      "• Build, maintain and improve websites for NYU CAS IT, including the Foreign Language Placement Exam Portal, ULC Scheduler, Advising Portal, GPA Calculator, etc",
+      "• Drive collaboration and innovation in a highly agile development environment, contributing to faster product iterations and improved team efficiency",
     ],
   },
   {

@@ -1,11 +1,15 @@
-@import '@fontsource-variable/inter';
+@import "@fontsource-variable/inter";
 @plugin 'tailwindcss-animate';
 
 @custom-variant dark (&:is(.dark *));
-@import 'tailwindcss';
+@import "tailwindcss";
 
 :root {
-  font-family: 'Inter Variable', sans-serif;
+  font-family: "Inter Variable", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 @theme inline {
@@ -35,4 +39,13 @@ a {
 
 .link-symbol {
   @apply transform transition-transform text-purple-100 group-hover:translate-x-[2px] group-hover:-translate-y-[2px];
+}
+
+/* Performance optimizations for animations */
+.animate-marquee {
+  will-change: transform;
+}
+
+.group:hover .link-symbol {
+  will-change: transform;
 }

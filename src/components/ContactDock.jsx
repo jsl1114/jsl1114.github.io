@@ -10,22 +10,22 @@ export default function BottomNav() {
   return (
     <div className="relative">
       <Dock direction="bottom" iconSize={40} iconMagnification={60} className="border border-[#7C7A7B] gap-4">
-        <DockIcon className='bg-white/10 text-[#D4D4D4]'>
-            <a href="https://github.com/jsl1114" target="_blank" rel="noopener noreferrer">
-              <Icons.gitHub className="size-6" />
-            </a>
-        </DockIcon>
-        <DockIcon className='bg-white/10'>
+        <DockIcon className='bg-white/10 hover:bg-white/20 transition-colors duration-200'>
           <a href="https://www.linkedin.com/in/jinsen-liu/" target="_blank" rel="noopener noreferrer">
             <Icons.linkedin className="size-6" />
           </a>
         </DockIcon>
-        <DockIcon className='bg-white/10'>
+        <DockIcon className='bg-white/10 hover:bg-white/20 transition-colors duration-200 text-[#D4D4D4]'>
+            <a href="https://github.com/jsl1114" target="_blank" rel="noopener noreferrer">
+              <Icons.gitHub className="size-6" />
+            </a>
+        </DockIcon>
+        <DockIcon className='bg-white/10 hover:bg-white/20 transition-colors duration-200'>
           <a href="mailto:jl13869@nyu.edu" target="_blank" rel="noopener noreferrer">
             <Icons.email className="size-6" />
           </a>
         </DockIcon>
-        <DockIcon className='bg-white/10'>
+        <DockIcon className='bg-white/10 hover:bg-white/20 transition-colors duration-200'>
           <a href={CV} target="_blank" rel="noopener noreferrer">
             <Icons.cv className="size-6" />
           </a>

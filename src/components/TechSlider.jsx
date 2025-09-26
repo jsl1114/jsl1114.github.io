@@ -10,7 +10,7 @@ const TechCard = ({ tech }) => {
   return (
     <figure
       className={cn(
-        'relative h-30 w-30 cursor-pointer rounded-xl p-4'
+        'relative h-30 w-30 cursor-pointer rounded-xl p-4 transition-transform duration-300 hover:scale-110 hover:-translate-y-2'
         // 'border-gray-50/[.1] bg-gray-50/[.10] hover:bg-gray-50/[.15]'
       )}
     >
@@ -36,7 +36,7 @@ const TechCard = ({ tech }) => {
 export default function TechSlider() {
   return (
     <div className='relative flex w-full lg:w-2/3 flex-col items-center justify-center overflow-x-hidden rounded-4xl pointer-events-none bg-white/[.2] border-3 border-white/[.2] shadow-neon-large'>
-      <Marquee>
+      <Marquee pauseOnHover>
         {firstRow.map((tech, i) => (
           <TechCard
             key={i}
@@ -44,7 +44,7 @@ export default function TechSlider() {
           />
         ))}
       </Marquee>
-      <Marquee reverse>
+      <Marquee reverse pauseOnHover>
         {secondRow.map((tech) => (
           <TechCard
             key={tech}

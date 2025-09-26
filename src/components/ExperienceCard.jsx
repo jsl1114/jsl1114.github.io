@@ -2,26 +2,29 @@ import { MdArrowOutward } from 'react-icons/md'
 import { motion } from 'framer-motion'
 
 const ExperienceCard = ({ time, company, desc, role, location, link }) => {
+  const cardVariants = {
+    hidden: { opacity: 0, x: -50 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        duration: 0.7,
+        ease: [0.25, 0.46, 0.45, 0.94],
+      },
+    },
+  }
+
   return (
-    <div className='flex flex-wrap lg:justify-center mb-8'>
-      <motion.div
-        viewport={{ once: true }}
-        whileInView={{ opacity: 1, x: 0 }}
-        initial={{ opacity: 0, x: -100 }}
-        transition={{ duration: 0.8 }}
-        className='w-full lg:w-1/4 pt-4 px-2'
-      >
+    <motion.div
+      variants={cardVariants}
+      className='flex flex-wrap lg:justify-center mb-8'
+    >
+      <div className='w-full lg:w-1/4 pt-4 px-2'>
         <p className='mb-2 text-sm text-neutral-400'>{time}</p>
         <p className='mb-2 text-sm text-neutral-400 italic'>{location}</p>
-      </motion.div>
+      </div>
 
-      <motion.div
-        viewport={{ once: true }}
-        whileInView={{ opacity: 1, x: 0 }}
-        initial={{ opacity: 0, x: 100 }}
-        transition={{ duration: 0.4 }}
-        className='w-full max-w-xl lg:w-3/4 card py-4 px-2 rounded-xl group'
-      >
+      <div className='w-full max-w-xl lg:w-3/4 card py-4 px-2 rounded-xl group'>
         <a
           href={link}
           target='_blank'
@@ -45,8 +48,8 @@ const ExperienceCard = ({ time, company, desc, role, location, link }) => {
             ))}
           </ul>
         </a>
-      </motion.div>
-    </div>
+      </div>
+    </motion.div>
   )
 }
 export default ExperienceCard

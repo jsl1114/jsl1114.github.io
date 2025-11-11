@@ -1,63 +1,12 @@
 import { motion } from 'framer-motion'
-import { FaLinkedinIn } from 'react-icons/fa6'
-import { FiGithub } from 'react-icons/fi'
-import { TbMail } from 'react-icons/tb'
-import { FaRegFilePdf } from 'react-icons/fa6'
 import BottomNav from './ContactDock.jsx'
+import { containerVariants, subtitleVariants, titleVariants,dockVariants } from '@/constants/variants.js'
 
 const Contact = () => {
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.2,
-        delayChildren: 0.2,
-      },
-    },
-  }
-
-  const titleVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: [0.25, 0.46, 0.45, 0.94],
-      },
-    },
-  }
-
-  const subtitleVariants = {
-    hidden: { opacity: 0, y: -10 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: 0.6,
-        ease: [0.25, 0.46, 0.45, 0.94],
-      },
-    },
-  }
-
-  const dockVariants = {
-    hidden: { opacity: 0, scale: 0.8, y: 20 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      y: 0,
-      transition: {
-        duration: 0.8,
-        ease: [0.25, 0.46, 0.45, 0.94],
-        delay: 0.5,
-      },
-    },
-  }
 
   return (
     <motion.div
-      className='flex flex-wrap flex-col border-b border-neutral-800 pt-10 justify-center items-center'
+      className='flex flex-wrap flex-col border-b border-neutral-300 dark:border-neutral-800 pt-10 justify-center items-center'
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
@@ -65,13 +14,13 @@ const Contact = () => {
     >
       <motion.h1
         variants={titleVariants}
-        className='text-4xl text-center'
+        className='text-4xl tracking-tight font-semibold text-center text-neutral-900 dark:text-white'
       >
         Contact
       </motion.h1>
       <motion.h2
         variants={subtitleVariants}
-        className='text-md text-center text-neutral-400'
+        className='text-md text-center text-neutral-600 dark:text-neutral-400'
       >
         Let's talk!
       </motion.h2>

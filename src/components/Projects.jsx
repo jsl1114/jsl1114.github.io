@@ -1,6 +1,7 @@
 import ProjectCard from './ProjectCard'
 import { PROJECTS } from '@/constants/const'
 import { motion } from 'framer-motion'
+import SectionHero from './SectionHero'
 
 const Projects = () => {
   const containerVariants = {
@@ -28,18 +29,13 @@ const Projects = () => {
 
   return (
     <motion.div
-      className='flex flex-wrap flex-col border-b border-neutral-800 pt-10'
+      className='flex flex-wrap flex-col border-b border-neutral-300 dark:border-neutral-800 pt-10'
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
     >
-      <motion.h1
-        variants={titleVariants}
-        className='text-4xl text-center my-20'
-      >
-        Projects
-      </motion.h1>
+      <SectionHero title={"Projects"} subTitle={"Having Fun"}/>
       {PROJECTS.map((p, i) => {
         return (
           <ProjectCard

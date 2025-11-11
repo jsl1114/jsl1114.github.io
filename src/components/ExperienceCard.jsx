@@ -20,8 +20,8 @@ const ExperienceCard = ({ time, company, desc, role, location, link }) => {
       className='flex flex-wrap lg:justify-center mb-8'
     >
       <div className='w-full lg:w-1/4 pt-4 px-2'>
-        <p className='mb-2 text-sm text-neutral-400'>{time}</p>
-        <p className='mb-2 text-sm text-neutral-400 italic'>{location}</p>
+        <p className='mb-2 text-sm text-neutral-500 dark:text-neutral-400'>{time}</p>
+        <p className='mb-2 text-sm text-neutral-500 dark:text-neutral-400 italic'>{location}</p>
       </div>
 
       <div className='w-full max-w-xl lg:w-3/4 card py-4 px-2 rounded-xl group'>
@@ -30,9 +30,9 @@ const ExperienceCard = ({ time, company, desc, role, location, link }) => {
           target='_blank'
           className='rounded'
         >
-          <h6 className='mb-2 font-semibold flex flex-wrap items-center'>
+          <h6 className='mb-2 font-semibold flex flex-wrap items-center text-neutral-900 dark:text-white'>
             {role} -{' '}
-            <span className='ml-1 italic text-sm text-purple-100'>
+            <span className='ml-1 italic text-sm text-nyu dark:text-purple-100'>
               {company}
             </span>
             <MdArrowOutward className='ml-1 link-symbol' />
@@ -40,7 +40,7 @@ const ExperienceCard = ({ time, company, desc, role, location, link }) => {
           <ul className='pl-2'>
             {desc.map((w, i) => (
               <li
-                className='mt-2 rounded text-neutral-300 text-sm font-medium'
+                className='mt-2 rounded text-neutral-700 dark:text-neutral-300 text-sm font-medium'
                 key={i}
               >
                 {w}

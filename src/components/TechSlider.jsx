@@ -21,7 +21,7 @@ const TechCard = ({ tech }) => {
           alt={tech}
           src={`https://cdn.simpleicons.org/${tech}/${tech}`}
         />
-        <figcaption className='text-sm font-medium dark:text-white h-2 [text-transform:capitalize]'>
+        <figcaption className='text-sm font-medium text-neutral-800 dark:text-white h-2 [text-transform:capitalize]'>
           {tech
             .replace('dot', '.')
             .replace('js', 'JS')
@@ -35,7 +35,7 @@ const TechCard = ({ tech }) => {
 
 export default function TechSlider() {
   return (
-    <div className='relative flex w-full lg:w-2/3 flex-col items-center justify-center overflow-x-hidden rounded-4xl pointer-events-none bg-white/[.2] border-3 border-white/[.2] shadow-neon-large'>
+    <div className='relative flex w-full lg:w-2/3 flex-col items-center justify-center overflow-x-hidden rounded-4xl pointer-events-none bg-[#FEFEFF] dark:bg-white/[.2] border-3 border-nyu/10 dark:border-white/[.2] shadow-nyu-large dark:shadow-neon-large'>
       <Marquee pauseOnHover>
         {firstRow.map((tech, i) => (
           <TechCard

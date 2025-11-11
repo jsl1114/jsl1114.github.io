@@ -11,7 +11,7 @@ const Technologies = () => {
         delay: 1.5,
         ease: [0.25, 0.46, 0.45, 0.94]
       }}
-      className='flex flex-wrap flex-col px-2 text-center border-b border-neutral-800 pb-20'
+      className='flex flex-wrap flex-col px-2 text-center border-b border-neutral-300 dark:border-neutral-800 pb-20'
     >
       {/* <h1 className='text-4xl text-center my-20'>Technologies</h1> */}
       <div className='flex flex-wrap justify-center items-center size-full'>

@@ -8,6 +8,11 @@
   font-family: "Inter Variable", sans-serif;
 }
 
+body,
+html {
+  font-family: "Inter Variable", sans-serif;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -16,8 +21,12 @@ html {
   --background: hsl(var(--background));
   --shadow-neon: 0 0 20px #280d3d;
   --shadow-neon-large: 0px 0px 30px #f2e6fe;
+  --shadow-nyu-large: 0px 0px 60px #8900e1;
   --shadow-neon-white: 0px 0px 15px white;
+  --shadow-neon-black: 0px 0px 15px black;
   --animate-marquee: marquee var(--duration) linear infinite;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --color-nyu: #57078c;
 
   @keyframes marquee {
     from {
@@ -30,15 +39,15 @@ html {
 }
 
 a {
-  @apply transition font-bold duration-500 hover:text-neutral-400;
+  @apply transition font-bold duration-500 text-neutral-700 dark:text-neutral-300 hover:text-[#8900e1] dark:hover:text-neutral-400;
 }
 
 .card {
-  @apply hover:text-neutral-300 hover:bg-[rgba(255,255,255,0.1)] border border-transparent hover:border-[rgba(255,255,255,0.1)] shadow-sm hover:shadow-neon transition-all ease-in-out duration-300;
+  @apply text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-300 bg-white dark:bg-transparent hover:bg-purple-50/50 dark:hover:bg-[rgba(255,255,255,0.1)] border border-nyu/[.1]  hover:border-nyu/[.2] dark:hover:border-[rgba(255,255,255,0.1)] shadow-sm hover:shadow-lg dark:hover:shadow-neon transition-all ease-in-out duration-300;
 }
 
 .link-symbol {
-  @apply transform transition-transform text-purple-100 group-hover:translate-x-[2px] group-hover:-translate-y-[2px];
+  @apply transform transition-transform text-nyu dark:text-purple-100 group-hover:translate-x-[2px] group-hover:-translate-y-[2px];
 }
 
 /* Performance optimizations for animations */

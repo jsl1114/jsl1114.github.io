@@ -60,19 +60,19 @@ const Hero = () => {
           <motion.h1
             variants={nameVariants}
             animate='glow'
-            className='text-8xl mb-5'
+            className='text-8xl font-bold tracking-tighter mb-5 text-neutral-900 dark:text-white'
           >
             Jason Liu
           </motion.h1>
           <motion.span
             variants={itemVariants}
-            className='text-4xl font-light bg-gradient-to-r from-neutral-300 via-neutral-500 to-neutral-400 bg-clip-text text-transparent'
+            className='text-4xl font-light bg-gradient-to-r from-neutral-600 via-neutral-800 to-neutral-600 dark:from-neutral-300 dark:via-neutral-500 dark:to-neutral-400 bg-clip-text text-transparent'
           >
             Full-Stack Developer
           </motion.span>
           <motion.p
             variants={itemVariants}
-            className='text-left lg:mx-50 py-10 text-neutral-400'
+            className='text-left lg:mx-50 py-10 text-neutral-600 dark:text-neutral-400'
           >
             Hi, I'm Jason! I am a cs undergrad at{' '}
             <a

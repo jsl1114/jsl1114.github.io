@@ -8,7 +8,7 @@ const Education = () => {
 
   return (
     <motion.div
-      className='border-b border-neutral-300 dark:border-neutral-800 pt-10'
+      className='border-b border-neutral-300 dark:border-neutral-800 pt-25'
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"

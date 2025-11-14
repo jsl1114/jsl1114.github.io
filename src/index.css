@@ -1,16 +1,17 @@
-@import "@fontsource-variable/inter";
 @plugin 'tailwindcss-animate';
 
 @custom-variant dark (&:is(.dark *));
 @import "tailwindcss";
 
 :root {
-  font-family: "Inter Variable", sans-serif;
+  font-family: "Libre Baskerville", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 }
 
 body,
 html {
-  font-family: "Inter Variable", sans-serif;
+  font-family: "Libre Baskerville", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
 }
 
 html {
@@ -25,7 +26,7 @@ html {
   --shadow-neon-white: 0px 0px 15px white;
   --shadow-neon-black: 0px 0px 15px black;
   --animate-marquee: marquee var(--duration) linear infinite;
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
   --color-nyu: #57078c;
 
   @keyframes marquee {

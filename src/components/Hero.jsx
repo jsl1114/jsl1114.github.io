@@ -72,7 +72,7 @@ const Hero = () => {
           </motion.span>
           <motion.p
             variants={itemVariants}
-            className='text-left lg:mx-50 py-10 text-neutral-600 dark:text-neutral-400'
+            className='text-center lg:mx-50 py-10 text-neutral-600 dark:text-neutral-400'
           >
             Hi, I'm Jason! I am a cs undergrad at{' '}
             <a

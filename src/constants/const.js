@@ -31,7 +31,6 @@ export const EDUCATION = [
     degree: "B.A. in Computer Science",
     year: "2022-2026",
     location: "New York, NY",
-    gpa: "3.8/4.0",
     coursework: [
       "Web Development",
       "Software Engineering",

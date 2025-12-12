@@ -6,9 +6,38 @@ import Technologies from './components/Technologies'
 import Projects from './components/Projects'
 import Contact from './components/Contact'
 import Footer from './components/Footer'
+import AdminMessages from './components/AdminMessages'
 import { motion } from 'framer-motion'
+import { useState, useEffect } from 'react'
 
 function App() {
+  const [showAdmin, setShowAdmin] = useState(false)
+
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Toggle admin view with Ctrl + Shift + A
+      if (e.ctrlKey && e.shiftKey && e.key === 'A') {
+        setShowAdmin(prev => !prev)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  if (showAdmin) {
+    return (
+      <div className='min-h-screen w-full bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white p-8'>
+        <button 
+          onClick={() => setShowAdmin(false)}
+          className='mb-8 px-4 py-2 bg-neutral-200 dark:bg-neutral-800 rounded-lg hover:opacity-80'
+        >
+          ← Back to Site
+        </button>
+        <AdminMessages />
+      </div>
+    )
+  }
+
   return (
     <>
       <div className='absolute min-h-full w-full overflow-x-hidden text-neutral-800 dark:text-neutral-300 antialiased selection:bg-cyan-300 selection:text-cyan-900 top-0 z-[-2] bg-white dark:bg-neutral-950 dark:bg-[radial-gradient(ellipse_60%_60%_at_50%_-10%,rgba(87,6,140,0.5),rgba(0,0,0,0))] flex justify-center items-center transition-colors duration-300'>

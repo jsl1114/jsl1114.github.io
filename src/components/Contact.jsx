@@ -34,9 +34,9 @@ const Contact = () => {
 
       if (error) throw error
 
-      // Send email via local server
+      // Send email via prod server
       try {
-        await fetch('http://localhost:3000/send-email', {
+        await fetch('https://jsl1114-github-io.onrender.com:10000/send-email', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

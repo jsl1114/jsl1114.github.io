@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
+import axios from 'axios'
 import BottomNav from './ContactDock.jsx'
 import { containerVariants, subtitleVariants, titleVariants, dockVariants } from '@/constants/variants.js'
 import { supabase } from '@/lib/supabaseClient'
@@ -36,16 +37,10 @@ const Contact = () => {
 
       // Send email via prod server
       try {
-        await fetch('https://jsl1114-github-io.onrender.com:10000/send-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: formData.name,
-            email: formData.email,
-            message: formData.message,
-          }),
+        await axios.post('https://jsl1114-github-io.onrender.com/send-email', {
+          name: formData.name,
+          email: formData.email,
+          message: formData.message,
         })
       } catch (emailError) {
         console.error('Error sending email:', emailError)
@@ -146,7 +141,7 @@ const Contact = () => {
         <button
           type="submit"
           disabled={status === 'loading'}
-          className='mt-2 w-full px-6 py-3 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2'
+          className='mt-2 w-full px-6 py-3 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 hover:cursor-pointer'
         >
           {status === 'loading' ? (
             <>

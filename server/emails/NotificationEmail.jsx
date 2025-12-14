@@ -21,11 +21,11 @@ export const NotificationEmail = ({
   return (
     <Html>
       <Head />
-      <Preview>New message from {name}</Preview>
+      <Preview>{message}</Preview>
       <Tailwind>
-        <Body className="bg-white my-auto mx-auto font-sans">
-          <Container className="my-[40px] mx-auto p-[20px] max-w-[465px] w-full">
-            <Section className="mt-[32px]">
+        <Body className="bg-white mx-auto font-sans">
+          <Container className="mx-auto p-[20px] max-w-[465px] w-full">
+            <Section className="mt-[16px]">
               <Img
                 src="https://github.com/user-attachments/assets/9f45d956-8b9d-46ab-b245-0ac389a881f3"
                 width="50"

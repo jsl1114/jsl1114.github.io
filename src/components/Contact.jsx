@@ -14,6 +14,8 @@ const Contact = () => {
   })
   const [status, setStatus] = useState('') // 'loading', 'success', 'error', ''
 
+  const serverEndpoint = import.meta.env.VITE_SERVER_ENDPOINT
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
@@ -37,14 +39,17 @@ const Contact = () => {
 
       // Send email via prod server
       try {
-        await axios.post('https://jsl1114-github-io.onrender.com/send-email', {
+        if (!serverEndpoint) {
+          throw new Error('Missing VITE_SERVER_ENDPOINT')
+        }
+
+        await axios.post(`${serverEndpoint}/send-email`, {
           name: formData.name,
           email: formData.email,
           message: formData.message,
         })
       } catch (emailError) {
         console.error('Error sending email:', emailError)
-        // Don't block success state if email fails, but log it
       }
 
       setStatus('success')

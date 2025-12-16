@@ -164,6 +164,7 @@ const Contact = () => {
             </>
           )}
         </button>
+        <p className='text-xs text-neutral-600 dark:text-neutral-400'>A confirmation email will be sent when your message is delivered</p>
       </motion.form>
 
       {/* <motion.div

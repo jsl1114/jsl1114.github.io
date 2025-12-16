@@ -45,7 +45,7 @@ export const ContactEmail = ({
             <Text className="text-[#666666] text-[12px] leading-[24px]">
               Your message:
             </Text>
-            <Text className="text-black text-[14px] leading-[24px] text-center p-4 bg-gray-100">
+            <Text className="text-black text-[14px] leading-[24px] text-left p-4 bg-gray-100">
               {message}
             </Text>
             <Hr className="border border-solid border-[#eaeaea] my-[26px] mx-0 w-full" />

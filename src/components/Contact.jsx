@@ -93,7 +93,7 @@ const Contact = () => {
         variants={subtitleVariants}
         className='text-md text-center text-neutral-600 dark:text-neutral-400 mb-8'
       >
-        Let's talk!
+        Reach out!
       </motion.h2>
 
       <motion.form

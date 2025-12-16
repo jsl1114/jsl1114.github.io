@@ -1,16 +1,68 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { motion } from 'framer-motion'
-import { Trash2, RefreshCw, Lock } from 'lucide-react'
+import { Trash2, RefreshCw, Lock, Copy, Check } from 'lucide-react'
 
 const AdminMessages = () => {
   const [messages, setMessages] = useState([])
   const [loading, setLoading] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
+  const [copiedMessageId, setCopiedMessageId] = useState(null)
+  const copiedTimeoutRef = useRef(null)
 
   // Simple hardcoded password for basic protection
   const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123'
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimeoutRef.current) window.clearTimeout(copiedTimeoutRef.current)
+    }
+  }, [])
+
+  const copyToClipboard = async (text) => {
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(text)
+        return true
+      }
+    } catch {
+      // fall back below
+    }
+
+    try {
+      const textarea = document.createElement('textarea')
+      textarea.value = text
+      textarea.setAttribute('readonly', '')
+      textarea.style.position = 'fixed'
+      textarea.style.left = '-9999px'
+      textarea.style.top = '0'
+      document.body.appendChild(textarea)
+      textarea.focus()
+      textarea.select()
+      const success = document.execCommand('copy')
+      document.body.removeChild(textarea)
+      return success
+    } catch {
+      return false
+    }
+  }
+
+  const handleCopyEmail = async (messageId, email) => {
+    if (!email) return
+
+    const success = await copyToClipboard(email)
+    if (!success) {
+      alert('Unable to copy email to clipboard')
+      return
+    }
+
+    setCopiedMessageId(messageId)
+    if (copiedTimeoutRef.current) window.clearTimeout(copiedTimeoutRef.current)
+    copiedTimeoutRef.current = window.setTimeout(() => {
+      setCopiedMessageId(null)
+    }, 1200)
+  }
 
   const fetchMessages = async () => {
     setLoading(true)
@@ -114,6 +166,14 @@ const AdminMessages = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               className="bg-white dark:bg-neutral-900 p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-shadow"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.defaultPrevented) return
+                if (e.key === 'c' || e.key === 'C') {
+                  e.preventDefault()
+                  handleCopyEmail(msg.id, msg.email)
+                }
+              }}
             >
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1">
@@ -122,9 +182,30 @@ const AdminMessages = () => {
                     <span className="text-sm text-neutral-500 dark:text-neutral-400">•</span>
                     <span className="text-sm text-neutral-500 dark:text-neutral-400">{new Date(msg.created_at).toLocaleDateString()} {new Date(msg.created_at).toLocaleTimeString()}</span>
                   </div>
-                  <a href={`mailto:${msg.email}`} className="text-blue-600 dark:text-blue-400 text-sm hover:underline mb-3 block">
-                    {msg.email}
-                  </a>
+                  <div className="flex items-center gap-2 mb-3">
+                    <a href={`mailto:${msg.email}`} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">
+                      {msg.email}
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyEmail(msg.id, msg.email)}
+                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 dark:border-neutral-800 px-2 py-1 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
+                      title="Copy email (or press C while focused)"
+                      aria-label={`Copy ${msg.email} to clipboard`}
+                    >
+                      {copiedMessageId === msg.id ? (
+                        <>
+                          <Check className="w-3.5 h-3.5" />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5" />
+                          Copy
+                        </>
+                      )}
+                    </button>
+                  </div>
                   <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">
                     {msg.message}
                   </p>

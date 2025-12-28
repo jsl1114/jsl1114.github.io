@@ -7,11 +7,13 @@ import Projects from "./components/Projects";
 import Contact from "./components/Contact";
 import Footer from "./components/Footer";
 import AdminMessages from "./components/AdminMessages";
-import { motion } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 import { useState, useEffect } from "react";
 
 function App() {
   const [showAdmin, setShowAdmin] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const topPos = useTransform(scrollYProgress, [0, 0.1], ["-20%", "-70%"]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -82,10 +84,11 @@ function App() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 0.5, delay: 1.6 }}
+            transition={{ duration: 0.5, delay: 0.8 }}
             className="absolute inset-0"
           >
             <motion.div
+              style={{ top: topPos }}
               animate={{
                 scale: [1, 1.2, 1],
                 opacity: [0.5, 0.8, 0.5],
@@ -95,7 +98,7 @@ function App() {
                 repeat: Infinity,
                 ease: "easeInOut",
               }}
-              className="absolute top-[-120%] left-1/2 -translate-x-1/2 w-[1600px] h-[1600px] rounded-full bg-[radial-gradient(circle,rgba(87,7,140,0.8),transparent_70%)] "
+              className="absolute left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-[radial-gradient(circle,rgba(87,7,140,0.8),transparent_70%)] "
             />
           </motion.div>
         </div>

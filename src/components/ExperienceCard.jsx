@@ -1,6 +1,6 @@
 import { MdArrowOutward, MdOpenInFull } from 'react-icons/md'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import * as DialogPrimitive from "@radix-ui/react-dialog"
 
 import { Dialog, DialogClose, DialogTrigger } from '@/components/ui/dialog'
@@ -9,7 +9,6 @@ import { Expand } from 'lucide-react'
 
 const ExperienceCard = ({ time, company, desc, role, location, link, additionalInfo }) => {
   const [isOpen, setIsOpen] = useState(false)
-  const layoutId = useMemo(() => `experience-card-${company}-${role}`, [company, role])
 
   const cardVariants = {
     hidden: { opacity: 0, x: -50 },
@@ -36,7 +35,6 @@ const ExperienceCard = ({ time, company, desc, role, location, link, additionalI
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogTrigger asChild>
           <motion.div
-            layoutId={layoutId}
             role='button'
             tabIndex={0}
             aria-expanded={isOpen}
@@ -46,7 +44,7 @@ const ExperienceCard = ({ time, company, desc, role, location, link, additionalI
                 setIsOpen(true)
               }
             }}
-            className='w-full max-w-xl lg:w-3/4 card py-4 px-2 rounded-xl group cursor-pointer outline-none relative'
+            className='w-full max-w-xl lg:w-3/4 card py-4 px-2 rounded-xl group cursor-pointer outline-none relative hover:bg-neutral-100 dark:hover:bg-neutral-800/50 transition-colors duration-300 dark:border dark:border-neutral-800'
           >
             <div className='mb-2 font-semibold text-neutral-900 dark:text-white sm:justify-between sm:flex'>
               {role}
@@ -76,7 +74,7 @@ const ExperienceCard = ({ time, company, desc, role, location, link, additionalI
                 </li>
               ))}
             </ul>
-            <Expand className='absolute bottom-2 right-2 text-neutral-400 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100' size={16}/>
+            <Expand className='absolute bottom-2 right-2 text-neutral-400 opacity-40 group-hover:opacity-100 transition-all duration-300 transform scale-90 group-hover:scale-100' size={16}/>
           </motion.div>
         </DialogTrigger>
 
@@ -95,13 +93,10 @@ const ExperienceCard = ({ time, company, desc, role, location, link, additionalI
               <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
                 <DialogPrimitive.Content asChild forceMount>
                   <motion.div
-                    layoutId={layoutId}
-                    transition={{
-                      layout: {
-                        duration: 0.15,
-                        ease: "easeOut"
-                      }
-                    }}
+                    initial={{ x: -50, opacity: 0 }}
+                    animate={{ x: 0, opacity: 1 }}
+                    exit={{ x: -50, opacity: 0 }}
+                    transition={{ duration: 0.1, ease: "easeOut" }}
                     className="w-[min(700px,calc(100vw-2rem))] max-h-[85vh] pointer-events-auto outline-none rounded-xl border border-nyu/[.2] bg-white dark:bg-neutral-900 shadow-lg overflow-y-auto"
                   >
                     <div className="w-full h-full overflow-y-auto p-6 sm:p-10">

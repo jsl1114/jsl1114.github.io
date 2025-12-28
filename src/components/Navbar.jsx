@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import { FaLinkedinIn, FaRegFilePdf } from "react-icons/fa6";
 import { FiGithub } from "react-icons/fi";
 import { TbMail } from "react-icons/tb";
@@ -25,6 +25,24 @@ const Navbar = () => {
   const [activeSection, setActiveSection] = useState("hero");
   const [isScrollUp, setIsScrollUp] = useState(true);
   const { theme, toggleTheme } = useContext(ThemeContext);
+  const navContainerRef = useRef(null);
+
+  useEffect(() => {
+    const checkScrollLock = () => {
+      if (navContainerRef.current) {
+        const bodyStyle = window.getComputedStyle(document.body);
+        navContainerRef.current.style.paddingRight = bodyStyle.paddingRight;
+      }
+    };
+
+    // Initial check
+    checkScrollLock();
+
+    const observer = new MutationObserver(checkScrollLock);
+    observer.observe(document.body, { attributes: true, attributeFilter: ['style', 'class'] });
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     let lastScrollY = window.scrollY;
@@ -78,10 +96,11 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[90%] flex justify-center items-center z-10">
-        <nav
-          className={cn(
-            "mt-5 flex mb-10 items-center justify-between -top-1 lg:top-0 rounded-full px-4 py-0 relative overflow-hidden transition-all duration-300",
+      <div ref={navContainerRef} className="fixed top-0 left-0 w-full flex justify-center items-center z-10 transition-[padding] duration-200">
+        <div className="w-[90%] flex justify-center items-center">
+          <nav
+            className={cn(
+              "mt-5 flex mb-10 items-center justify-between -top-1 lg:top-0 rounded-full px-4 py-0 relative overflow-hidden transition-all duration-300",
             isScrolled &&
               "backdrop-blur-xl shadow-lg bg-white/90 dark:bg-neutral-900/80 border-2 border-neutral-300/60 dark:border-white/20",
           )}
@@ -165,6 +184,7 @@ const Navbar = () => {
           </>
         )}
         </nav>
+        </div>
       </div>
 
       {/* Mobile-only floating theme toggler (bottom-right) */}

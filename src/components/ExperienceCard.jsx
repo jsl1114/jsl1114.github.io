@@ -30,13 +30,17 @@ const ExperienceCard = ({ time, company, desc, role, location, link }) => {
           target='_blank'
           className='rounded'
         >
-          <h6 className='mb-2 font-semibold flex flex-wrap items-center text-neutral-900 dark:text-white'>
-            {role} -{' '}
-            <span className='ml-1 italic text-sm text-nyu dark:text-purple-100'>
-              {company}
+          <div className='mb-2 font-semibold text-neutral-900 dark:text-white sm:justify-between sm:flex'>
+            {role}
+            <br className='block sm:hidden' />
+            <span className='hidden sm:inline'> </span>
+            <span className='inline-flex items-center'>
+              <span className='italic text-sm text-nyu dark:text-purple-100'>
+                {company}
+              </span>
+              <MdArrowOutward className='ml-1 link-symbol' />
             </span>
-            <MdArrowOutward className='ml-1 link-symbol' />
-          </h6>
+          </div>
           <ul className='pl-2'>
             {desc.map((w, i) => (
               <li

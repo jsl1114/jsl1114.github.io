@@ -74,7 +74,7 @@ export const EXPERIENCE = [
         content: [
           "The unlimited diet coke and snack supply in the office (it fuels the code)",
           "Seeing students actually use the tools I built without crashing them",
-          "The view from the window – concrete jungle dreams",
+          "The view from the window - concrete jungle dreams",
         ],
       },
       {

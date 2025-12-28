@@ -65,8 +65,25 @@ export const EXPERIENCE = [
     time: "Apr 2025 - Present",
     location: "New York, NY",
     desc: [
-      "• Build, maintain and improve websites for NYU CAS IT, including the Foreign Language Placement Exam Portal, ULC Scheduler, Advising Portal, GPA Calculator, etc",
-      "• Drive collaboration and innovation in a highly agile development environment, contributing to faster product iterations and improved team efficiency",
+      "Build, maintain and improve websites for NYU CAS IT, including the Foreign Language Placement Exam Portal, ULC Scheduler, Advising Portal, GPA Calculator, etc",
+      "Drive collaboration and innovation in a highly agile development environment, contributing to faster product iterations and improved team efficiency",
+    ],
+    additionalInfo: [
+      {
+        title: "Things I Like The Most",
+        content: [
+          "The unlimited diet coke and snack supply in the office (it fuels the code)",
+          "Seeing students actually use the tools I built without crashing them",
+          "The view from the window – concrete jungle dreams",
+        ],
+      },
+      {
+        title: "Fun Fact",
+        content: [
+          "I once debugged a production issue while eating a cookie",
+          "There is no window in my office so I had to step out for the view",
+        ],
+      },
     ],
   },
   {
@@ -76,8 +93,24 @@ export const EXPERIENCE = [
     time: "May 2024 - Present",
     location: "Remote",
     desc: [
-      "• Conduct comprehensive evaluations of AI-generated code quality",
-      "• Engineer and implement high-performing code solutions to complex programming challenges",
+      "Conduct comprehensive evaluations of AI-generated code quality",
+      "Engineer and implement high-performing code solutions to complex programming challenges",
+    ],
+    additionalInfo: [
+      {
+        title: "Things I Like The Most",
+        content: [
+          "Teaching robots how to code better than humans (scary but cool)",
+          "Working in my pajamas",
+          "The feeling when the AI finally understands recursion",
+        ],
+      },
+      {
+        title: "Fun Fact",
+        content: [
+          "I'm pretty sure the AI is learning my bad coding habits too",
+        ],
+      },
     ],
   },
   {
@@ -87,8 +120,24 @@ export const EXPERIENCE = [
     time: "Sept 2023 - Dec 2023",
     location: "New York, NY",
     desc: [
-      "• Assisted in grading assignments and exams, providing constructive feedback to students",
-      "• Conducted weekly office hours to clarify concepts and provide additional support",
+      "Assisted in grading assignments and exams, providing constructive feedback to students",
+      "Conducted weekly office hours to clarify concepts and provide additional support",
+    ],
+    additionalInfo: [
+      {
+        title: "Things I Like The Most",
+        content: [
+          "The 'Aha!' moment on a student's face",
+          "Being called 'Professor' by mistake (I didn't correct them)",
+          "Grading papers with a red pen – it's oddly satisfying",
+        ],
+      },
+      {
+        title: "Fun Fact",
+        content: [
+          "I learned more from the students' questions than they did from me",
+        ],
+      },
     ],
   },
   {
@@ -98,8 +147,24 @@ export const EXPERIENCE = [
     time: "June 2023 - Aug 2023",
     location: "Chengdu, China",
     desc: [
-      "• Enhanced website stability through the implementation of End-to-End (E2E) testing using cypress for services",
-      "• Documented API for comprehensive reference and streamlined processes, increased efficiency by 20%",
+      "Enhanced website stability through the implementation of End-to-End (E2E) testing using cypress for services",
+      "Documented API for comprehensive reference and streamlined processes, increased efficiency by 20%",
+    ],
+    additionalInfo: [
+      {
+        title: "Things I Like The Most",
+        content: [
+          "The amazing hot pot lunches in Chengdu",
+          "Learning that 'stable' is a relative term",
+          "My first code merge that didn't break the build",
+        ],
+      },
+      {
+        title: "Fun Fact",
+        content: [
+          "I spent 20% of my time coding and 80% trying to understand the legacy codebase",
+        ],
+      },
     ],
   },
 ];

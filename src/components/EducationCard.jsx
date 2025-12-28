@@ -23,10 +23,10 @@ const EducationCard = ({ school, degree, year, location, gpa, coursework }) => {
         <p className='mb-2 text-sm text-neutral-500 dark:text-neutral-400 italic'>{location}</p>
       </div>
       <div className='w-full max-w-xl lg:w-3/4'>
-        <h6 className='mb-2 font-semibold text-neutral-900 dark:text-white'>
-          {school} -{' '}
-          <span className='italic text-sm text-nyu dark:text-purple-100'>{degree}</span>
+        <div className='flex justify-between'><h6 className='mb-2 font-semibold text-neutral-900 dark:text-white'>
+          {school}
         </h6>
+        <span className='text-sm text-nyu dark:text-purple-100'>{degree}</span></div>
         {gpa && <p className='text-neutral-700 dark:text-neutral-300'>GPA: {gpa}</p>}
         <div className='flex flex-wrap'>
           {coursework.map((w) => (

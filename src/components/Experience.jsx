@@ -34,6 +34,7 @@ const Experience = () => {
             desc={e.desc}
             location={e.location}
             link={e.link}
+            additionalInfo={e.additionalInfo}
           />
         ))}
       </div>

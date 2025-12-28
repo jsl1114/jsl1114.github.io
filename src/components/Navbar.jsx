@@ -78,7 +78,7 @@ const Navbar = () => {
 
   return (
     <>
-      <div className="fixed top-0 w-[90%] flex justify-center items-center z-10">
+      <div className="fixed top-0 left-1/2 -translate-x-1/2 w-[90%] flex justify-center items-center z-10">
         <nav
           className={cn(
             "mt-5 flex mb-10 items-center justify-between -top-1 lg:top-0 rounded-full px-4 py-0 relative overflow-hidden transition-all duration-300",

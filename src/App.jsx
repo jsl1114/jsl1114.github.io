@@ -26,7 +26,7 @@ function App() {
 
   if (showAdmin) {
     return (
-      <div className='min-h-screen w-full bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white p-8'>
+      <div className='w-full bg-white dark:bg-neutral-950 text-neutral-900 dark:text-white p-8 min-h-screen min-h-[100svh] min-h-[100dvh]'>
         <button 
           onClick={() => setShowAdmin(false)}
           className='mb-8 px-4 py-2 bg-neutral-200 dark:bg-neutral-800 rounded-lg hover:opacity-80'
@@ -40,7 +40,7 @@ function App() {
 
   return (
     <>
-      <div className='absolute min-h-full w-full overflow-x-hidden text-neutral-800 dark:text-neutral-300 antialiased selection:bg-cyan-300 selection:text-cyan-900 top-0 z-[-2] bg-white dark:bg-neutral-950 dark:bg-[radial-gradient(ellipse_60%_60%_at_50%_-10%,rgba(87,6,140,0.5),rgba(0,0,0,0))] flex justify-center items-center transition-colors duration-300'>
+      <div className='relative w-full overflow-x-hidden text-neutral-800 dark:text-neutral-300 antialiased selection:bg-cyan-300 selection:text-cyan-900 bg-white dark:bg-neutral-950 dark:bg-[radial-gradient(ellipse_60%_60%_at_50%_-10%,rgba(87,6,140,0.5),rgba(0,0,0,0))] transition-colors duration-300 min-h-screen min-h-[100svh] min-h-[100dvh]'>
         {/* Light mode background pattern */}
         <div className='absolute inset-0 z-[-1] dark:hidden bg-[radial-gradient(circle_at_1px_1px,rgb(209_213_219)_1px,transparent_0)] [background-size:40px_40px]' />
         <div className='absolute inset-0 z-[-1] dark:hidden bg-gradient-to-br from-purple-50/40 via-transparent to-violet-50/40' />

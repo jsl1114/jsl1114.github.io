@@ -146,7 +146,7 @@ const Contact = () => {
         <button
           type="submit"
           disabled={status === 'loading'}
-          className='mt-2 w-full px-6 py-3 rounded-lg bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 hover:cursor-pointer'
+          className='mt-2 w-full px-6 py-3 rounded-lg bg-neutral-800 dark:bg-neutral-300 text-white dark:text-neutral-900 font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 hover:cursor-pointer'
         >
           {status === 'loading' ? (
             <>

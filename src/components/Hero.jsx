@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import NewYearTypeWriter from "./HolidayTypeWriter";
 
 const Hero = () => {
   return (
@@ -10,6 +11,9 @@ const Hero = () => {
         transition={{ duration: 0.5, delay: 0.1 }}
       >
         <div className="w-full text-center">
+          <div className="mb-4">
+            <NewYearTypeWriter />
+          </div>
           <h1 className="text-8xl font-bold tracking-tighter mb-5 text-neutral-900 dark:text-white">
             Jason Liu
           </h1>

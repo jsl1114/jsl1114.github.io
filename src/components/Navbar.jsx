@@ -18,6 +18,7 @@ import CV from "../assets/jason_liu_cv.pdf";
 import { SOCIALS, SECTIONS } from "../constants/const.js";
 import { cn } from "@/lib/utils";
 import { ThemeContext } from "./ThemeProvider";
+import NewYearTypeWriter from "./HolidayTypeWriter";
 
 const Navbar = () => {
   const [navWidth, setNavWidth] = useState(100);

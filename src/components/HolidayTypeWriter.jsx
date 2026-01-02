@@ -8,7 +8,7 @@ const getHoliday = (date) => {
   const year = date.getFullYear();
 
   // US Holidays
-  if (month === 0 && day === 1) return `${year} Happy New Year!`;
+  if (month === 0 && day >= 1 && day <= 15) return `${year} Happy New Year!`;
   if (month === 0 && day === 20 && (year - 1) % 4 === 0)
     return "Happy Inauguration Day!";
   if (month === 5 && day === 19) return "Happy Juneteenth!";
@@ -38,7 +38,8 @@ const getHoliday = (date) => {
   // Chinese Holidays
   // Fixed Solar
   if (month === 4 && day === 1) return "Happy Chinese Labor Day!"; // CN Labor Day
-  if (month === 9 && day >= 1 && day <= 7) return "Happy Golden Week Holiday!"; // CN National Day
+  if (month === 9 && day >= 1 && day <= 7)
+    return "Happy Chinese Golden Week Holiday!"; // CN National Day
 
   // Lunar
   const lunar = Lunar.fromDate(date);

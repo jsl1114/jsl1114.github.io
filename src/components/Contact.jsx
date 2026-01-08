@@ -1,66 +1,54 @@
-import { useState } from 'react'
-import { motion } from 'framer-motion'
-import axios from 'axios'
-import BottomNav from './ContactDock.jsx'
-import { containerVariants, subtitleVariants, titleVariants, dockVariants } from '@/constants/variants.js'
-import { supabase } from '@/lib/supabaseClient'
-import { Loader2, Send } from 'lucide-react'
+import { useState } from "react";
+import { motion } from "framer-motion";
+import axios from "axios";
+import BottomNav from "./ContactDock.jsx";
+import {
+  containerVariants,
+  subtitleVariants,
+  titleVariants,
+  dockVariants,
+} from "@/constants/variants.js";
+import { Loader2, Send } from "lucide-react";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: ''
-  })
-  const [status, setStatus] = useState('') // 'loading', 'success', 'error', ''
+    name: "",
+    email: "",
+    message: "",
+  });
+  const [status, setStatus] = useState(""); // 'loading', 'success', 'error', ''
 
-  const serverEndpoint = import.meta.env.VITE_SERVER_ENDPOINT
+  const serverEndpoint = import.meta.env.VITE_SERVER_ENDPOINT;
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setStatus('loading')
+    e.preventDefault();
+    setStatus("loading");
 
     try {
-      const { error } = await supabase
-        .from('messages')
-        .insert([
-          {
-            name: formData.name,
-            email: formData.email,
-            message: formData.message,
-          }
-        ])
-
-      if (error) throw error
-
-      // Send email via prod server
-      try {
-        if (!serverEndpoint) {
-          throw new Error('Missing VITE_SERVER_ENDPOINT')
-        }
-
-        await axios.post(`${serverEndpoint}/send-email`, {
-          name: formData.name,
-          email: formData.email,
-          message: formData.message,
-        })
-      } catch (emailError) {
-        console.error('Error sending email:', emailError)
+      if (!serverEndpoint) {
+        throw new Error("Missing VITE_SERVER_ENDPOINT");
       }
 
-      setStatus('success')
-      setFormData({ name: '', email: '', message: '' })
-      setTimeout(() => setStatus(''), 3000)
+      // Send to server to save and email
+      await axios.post(`${serverEndpoint}/messages`, {
+        name: formData.name,
+        email: formData.email,
+        message: formData.message,
+      });
+
+      setStatus("success");
+      setFormData({ name: "", email: "", message: "" });
+      setTimeout(() => setStatus(""), 3000);
     } catch (error) {
-      console.error('Error submitting form:', error)
-      setStatus('error')
-      setTimeout(() => setStatus(''), 3000)
+      console.error("Error submitting form:", error);
+      setStatus("error");
+      setTimeout(() => setStatus(""), 3000);
     }
-  }
+  };
 
   const formVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -73,11 +61,11 @@ const Contact = () => {
         delay: 0.2,
       },
     },
-  }
+  };
 
   return (
     <motion.div
-      className='flex flex-wrap flex-col border-b border-neutral-300 dark:border-neutral-800 pt-10 justify-center items-center w-full'
+      className="flex flex-wrap flex-col border-b border-neutral-300 dark:border-neutral-800 pt-10 justify-center items-center w-full"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
@@ -85,13 +73,13 @@ const Contact = () => {
     >
       <motion.h1
         variants={titleVariants}
-        className='text-4xl tracking-tight font-semibold text-center text-neutral-900 dark:text-white mb-2'
+        className="text-4xl tracking-tight font-semibold text-center text-neutral-900 dark:text-white mb-2"
       >
         Contact
       </motion.h1>
       <motion.h2
         variants={subtitleVariants}
-        className='text-md text-center text-neutral-600 dark:text-neutral-400 mb-8'
+        className="text-md text-center text-neutral-600 dark:text-neutral-400 mb-8"
       >
         Reach out!
       </motion.h2>
@@ -99,10 +87,15 @@ const Contact = () => {
       <motion.form
         variants={formVariants}
         onSubmit={handleSubmit}
-        className='w-full max-w-md px-6 flex flex-col gap-4 mb-10'
+        className="w-full max-w-md px-6 flex flex-col gap-4 mb-10"
       >
-        <div className='flex flex-col gap-2'>
-          <label htmlFor="name" className='text-sm font-medium text-neutral-700 dark:text-neutral-300'>Name</label>
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="name"
+            className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+          >
+            Name
+          </label>
           <input
             type="text"
             id="name"
@@ -110,13 +103,18 @@ const Contact = () => {
             required
             value={formData.name}
             onChange={handleChange}
-            className='w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all'
+            className="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
             placeholder="Your name"
           />
         </div>
 
-        <div className='flex flex-col gap-2'>
-          <label htmlFor="email" className='text-sm font-medium text-neutral-700 dark:text-neutral-300'>Email</label>
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="email"
+            className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+          >
+            Email
+          </label>
           <input
             type="email"
             id="email"
@@ -124,13 +122,18 @@ const Contact = () => {
             required
             value={formData.email}
             onChange={handleChange}
-            className='w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all'
+            className="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
             placeholder="your@email.com"
           />
         </div>
 
-        <div className='flex flex-col gap-2'>
-          <label htmlFor="message" className='text-sm font-medium text-neutral-700 dark:text-neutral-300'>Message</label>
+        <div className="flex flex-col gap-2">
+          <label
+            htmlFor="message"
+            className="text-sm font-medium text-neutral-700 dark:text-neutral-300"
+          >
+            Message
+          </label>
           <textarea
             id="message"
             name="message"
@@ -138,25 +141,25 @@ const Contact = () => {
             rows={4}
             value={formData.message}
             onChange={handleChange}
-            className='w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none'
+            className="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
             placeholder="How can I help you?"
           />
         </div>
 
         <button
           type="submit"
-          disabled={status === 'loading'}
-          className='mt-2 w-full px-6 py-3 rounded-lg bg-neutral-800 dark:bg-neutral-300 text-white dark:text-neutral-900 font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 hover:cursor-pointer'
+          disabled={status === "loading"}
+          className="mt-2 w-full px-6 py-3 rounded-lg bg-neutral-800 dark:bg-neutral-300 text-white dark:text-neutral-900 font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 hover:cursor-pointer"
         >
-          {status === 'loading' ? (
+          {status === "loading" ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
               Sending...
             </>
-          ) : status === 'success' ? (
-            'Message Sent!'
-          ) : status === 'error' ? (
-            'Error - Try Again'
+          ) : status === "success" ? (
+            "Message Sent!"
+          ) : status === "error" ? (
+            "Error - Try Again"
           ) : (
             <>
               Send Message
@@ -164,7 +167,9 @@ const Contact = () => {
             </>
           )}
         </button>
-        <p className='text-xs text-neutral-600 dark:text-neutral-400'>A confirmation email will be sent when your message is delivered</p>
+        <p className="text-xs text-neutral-600 dark:text-neutral-400">
+          A confirmation email will be sent when your message is delivered
+        </p>
       </motion.form>
 
       {/* <motion.div
@@ -174,6 +179,6 @@ const Contact = () => {
           <BottomNav />
       </motion.div> */}
     </motion.div>
-  )
-}
-export default Contact
+  );
+};
+export default Contact;

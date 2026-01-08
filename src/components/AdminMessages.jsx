@@ -1,111 +1,105 @@
-import { useEffect, useRef, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
-import { motion } from 'framer-motion'
-import { Trash2, RefreshCw, Lock, Copy, Check } from 'lucide-react'
+import { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { motion } from "framer-motion";
+import { Trash2, RefreshCw, Lock, Copy, Check } from "lucide-react";
 
 const AdminMessages = () => {
-  const [messages, setMessages] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [password, setPassword] = useState('')
-  const [copiedMessageId, setCopiedMessageId] = useState(null)
-  const copiedTimeoutRef = useRef(null)
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [password, setPassword] = useState("");
+  const [copiedMessageId, setCopiedMessageId] = useState(null);
+  const copiedTimeoutRef = useRef(null);
+
+  const serverEndpoint = import.meta.env.VITE_SERVER_ENDPOINT;
 
   // Simple hardcoded password for basic protection
-  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || 'admin123'
+  const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
 
   useEffect(() => {
     return () => {
-      if (copiedTimeoutRef.current) window.clearTimeout(copiedTimeoutRef.current)
-    }
-  }, [])
+      if (copiedTimeoutRef.current)
+        window.clearTimeout(copiedTimeoutRef.current);
+    };
+  }, []);
 
   const copyToClipboard = async (text) => {
     try {
       if (navigator?.clipboard?.writeText) {
-        await navigator.clipboard.writeText(text)
-        return true
+        await navigator.clipboard.writeText(text);
+        return true;
       }
     } catch {
       // fall back below
     }
 
     try {
-      const textarea = document.createElement('textarea')
-      textarea.value = text
-      textarea.setAttribute('readonly', '')
-      textarea.style.position = 'fixed'
-      textarea.style.left = '-9999px'
-      textarea.style.top = '0'
-      document.body.appendChild(textarea)
-      textarea.focus()
-      textarea.select()
-      const success = document.execCommand('copy')
-      document.body.removeChild(textarea)
-      return success
+      const textarea = document.createElement("textarea");
+      textarea.value = text;
+      textarea.setAttribute("readonly", "");
+      textarea.style.position = "fixed";
+      textarea.style.left = "-9999px";
+      textarea.style.top = "0";
+      document.body.appendChild(textarea);
+      textarea.focus();
+      textarea.select();
+      const success = document.execCommand("copy");
+      document.body.removeChild(textarea);
+      return success;
     } catch {
-      return false
+      return false;
     }
-  }
+  };
 
   const handleCopyEmail = async (messageId, email) => {
-    if (!email) return
+    if (!email) return;
 
-    const success = await copyToClipboard(email)
+    const success = await copyToClipboard(email);
     if (!success) {
-      alert('Unable to copy email to clipboard')
-      return
+      alert("Unable to copy email to clipboard");
+      return;
     }
 
-    setCopiedMessageId(messageId)
-    if (copiedTimeoutRef.current) window.clearTimeout(copiedTimeoutRef.current)
+    setCopiedMessageId(messageId);
+    if (copiedTimeoutRef.current) window.clearTimeout(copiedTimeoutRef.current);
     copiedTimeoutRef.current = window.setTimeout(() => {
-      setCopiedMessageId(null)
-    }, 1200)
-  }
+      setCopiedMessageId(null);
+    }, 1200);
+  };
 
   const fetchMessages = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('messages')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setMessages(data)
+      const { data } = await axios.get(`${serverEndpoint}/messages`);
+      setMessages(data);
     } catch (error) {
-      console.error('Error fetching messages:', error)
+      console.error("Error fetching messages:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const deleteMessage = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this message?')) return
+    if (!window.confirm("Are you sure you want to delete this message?"))
+      return;
 
     try {
-      const { error } = await supabase
-        .from('messages')
-        .delete()
-        .eq('id', id)
-
-      if (error) throw error
-      setMessages(messages.filter(msg => msg.id !== id))
+      if (error) throw error;
+      setMessages(messages.filter((msg) => msg.id !== id));
     } catch (error) {
-      console.error('Error deleting message:', error)
+      console.error("Error deleting message:", error);
     }
-  }
+  };
 
   const handleLogin = (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (password === ADMIN_PASSWORD) {
-      setIsAuthenticated(true)
-      fetchMessages()
+      setIsAuthenticated(true);
+      fetchMessages();
     } else {
-      alert('Incorrect password')
+      alert("Incorrect password");
     }
-  }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -116,7 +110,9 @@ const AdminMessages = () => {
               <Lock className="w-6 h-6 text-neutral-600 dark:text-neutral-400" />
             </div>
           </div>
-          <h2 className="text-xl font-semibold text-center mb-6 text-neutral-900 dark:text-white">Admin Access</h2>
+          <h2 className="text-xl font-semibold text-center mb-6 text-neutral-900 dark:text-white">
+            Admin Access
+          </h2>
           <form onSubmit={handleLogin} className="flex flex-col gap-4">
             <input
               type="password"
@@ -134,19 +130,23 @@ const AdminMessages = () => {
           </form>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="w-full max-w-4xl mx-auto p-6">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">Messages ({messages.length})</h2>
+        <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+          Messages ({messages.length})
+        </h2>
         <button
           onClick={fetchMessages}
           className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           title="Refresh"
         >
-          <RefreshCw className={`w-5 h-5 text-neutral-600 dark:text-neutral-400 ${loading ? 'animate-spin' : ''}`} />
+          <RefreshCw
+            className={`w-5 h-5 text-neutral-600 dark:text-neutral-400 ${loading ? "animate-spin" : ""}`}
+          />
         </button>
       </div>
 
@@ -168,22 +168,32 @@ const AdminMessages = () => {
               className="bg-white dark:bg-neutral-900 p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-shadow"
               tabIndex={0}
               onKeyDown={(e) => {
-                if (e.defaultPrevented) return
-                if (e.key === 'c' || e.key === 'C') {
-                  e.preventDefault()
-                  handleCopyEmail(msg.id, msg.email)
+                if (e.defaultPrevented) return;
+                if (e.key === "c" || e.key === "C") {
+                  e.preventDefault();
+                  handleCopyEmail(msg.id, msg.email);
                 }
               }}
             >
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold text-lg text-neutral-900 dark:text-white">{msg.name}</h3>
-                    <span className="text-sm text-neutral-500 dark:text-neutral-400">•</span>
-                    <span className="text-sm text-neutral-500 dark:text-neutral-400">{new Date(msg.created_at).toLocaleDateString()} {new Date(msg.created_at).toLocaleTimeString()}</span>
+                    <h3 className="font-semibold text-lg text-neutral-900 dark:text-white">
+                      {msg.name}
+                    </h3>
+                    <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                      •
+                    </span>
+                    <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                      {new Date(msg.created_at).toLocaleDateString()}{" "}
+                      {new Date(msg.created_at).toLocaleTimeString()}
+                    </span>
                   </div>
                   <div className="flex items-center gap-2 mb-3">
-                    <a href={`mailto:${msg.email}`} className="text-blue-600 dark:text-blue-400 text-sm hover:underline">
+                    <a
+                      href={`mailto:${msg.email}`}
+                      className="text-blue-600 dark:text-blue-400 text-sm hover:underline"
+                    >
                       {msg.email}
                     </a>
                     <button
@@ -223,7 +233,7 @@ const AdminMessages = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default AdminMessages
+export default AdminMessages;

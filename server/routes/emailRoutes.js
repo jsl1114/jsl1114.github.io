@@ -1,5 +1,10 @@
 import express from "express";
-import { sendEmail } from "../controllers/emailController.js";
+import {
+  sendEmail,
+  getMessages,
+  deleteMessage,
+  createMessage,
+} from "../controllers/emailController.js";
 
 const router = express.Router();
 
@@ -8,5 +13,8 @@ router.get("/", (req, res) => {
 });
 
 router.post("/send-email", sendEmail);
+router.post("/messages", createMessage);
+router.get("/messages", getMessages);
+router.delete("/messages/:id", deleteMessage);
 
 export default router;

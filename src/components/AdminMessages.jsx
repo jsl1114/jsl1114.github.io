@@ -67,13 +67,27 @@ const AdminMessages = () => {
     }, 1200);
   };
 
+  const getAuthHeader = () => {
+    const session = JSON.parse(localStorage.getItem("admin_session") || "{}");
+    // If we have text in the password input (just logged in), use it.
+    // Otherwise fallback to session storage.
+    const authPassword = password || session.password;
+    return { "x-admin-password": authPassword };
+  };
+
   const fetchMessages = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get(`${serverEndpoint}/messages`);
+      const { data } = await axios.get(`${serverEndpoint}/messages`, {
+        headers: getAuthHeader(),
+      });
       setMessages(data);
     } catch (error) {
       console.error("Error fetching messages:", error);
+      if (error.response && error.response.status === 401) {
+        setIsAuthenticated(false);
+        localStorage.removeItem("admin_session");
+      }
     } finally {
       setLoading(false);
     }
@@ -86,7 +100,10 @@ const AdminMessages = () => {
         const { timestamp } = JSON.parse(session);
         if (Date.now() - timestamp < 5 * 60 * 1000) {
           setIsAuthenticated(true);
-          fetchMessages();
+          // fetchMessages will be called but we need to ensure it uses the session password
+          // We can't call fetchMessages() here directly if it depends on state that isn't set yet,
+          // but since we read from localStorage in getAuthHeader, it's fine.
+          setTimeout(fetchMessages, 0);
         } else {
           localStorage.removeItem("admin_session");
         }
@@ -94,6 +111,7 @@ const AdminMessages = () => {
         localStorage.removeItem("admin_session");
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const deleteMessage = async (id) => {
@@ -101,10 +119,16 @@ const AdminMessages = () => {
       return;
 
     try {
-      if (error) throw error;
+      await axios.delete(`${serverEndpoint}/messages/${id}`, {
+        headers: getAuthHeader(),
+      });
       setMessages(messages.filter((msg) => msg.id !== id));
     } catch (error) {
       console.error("Error deleting message:", error);
+      if (error.response && error.response.status === 401) {
+        setIsAuthenticated(false);
+        localStorage.removeItem("admin_session");
+      }
     }
   };
 
@@ -114,7 +138,7 @@ const AdminMessages = () => {
       setIsAuthenticated(true);
       localStorage.setItem(
         "admin_session",
-        JSON.stringify({ timestamp: Date.now() }),
+        JSON.stringify({ timestamp: Date.now(), password: password }),
       );
       fetchMessages();
     } else {

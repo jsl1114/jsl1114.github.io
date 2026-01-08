@@ -14,4 +14,5 @@ export const config = {
     user: process.env.GOOGLE_EMAIL,
     pass: process.env.GOOGLE_APP_PASSWORD,
   },
+  adminPassword: process.env.VITE_ADMIN_PASSWORD,
 };

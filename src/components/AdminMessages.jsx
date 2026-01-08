@@ -162,7 +162,7 @@ const AdminMessages = () => {
         </h2>
         <button
           onClick={fetchMessages}
-          className="p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          className="hover:cursor-pointer p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
           title="Refresh"
         >
           <RefreshCw
@@ -243,7 +243,7 @@ const AdminMessages = () => {
                 </div>
                 <button
                   onClick={() => deleteMessage(msg.id)}
-                  className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                  className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors hover:cursor-pointer"
                   title="Delete message"
                 >
                   <Trash2 className="w-5 h-5" />

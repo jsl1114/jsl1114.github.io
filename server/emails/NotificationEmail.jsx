@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Html,
   Body,
@@ -11,12 +11,12 @@ import {
   Text,
   Tailwind,
   Img,
-} from '@react-email/components';
+} from "@react-email/components";
 
 export const NotificationEmail = ({
-  name="not entered",
-  email="not entered",
-  message="not entered",
+  name = "not entered",
+  email = "not entered",
+  message = "not entered",
 }) => {
   return (
     <Html>
@@ -38,12 +38,13 @@ export const NotificationEmail = ({
               New Contact Form Submission
             </Heading>
             <Text className="text-black text-[14px] leading-[24px]">
-              You have received a new message from <strong>{name}</strong> ({email}).
+              You have received a new message from <strong>{name}</strong> (
+              {email}).
             </Text>
             <Text className="text-[#666666] text-[12px] leading-[24px]">
               Message content:
             </Text>
-            <Text className="text-black text-[14px] leading-[24px] p-4 bg-gray-100">
+            <Text className="text-black text-[14px] leading-[24px] p-4 bg-gray-100 whitespace-pre-wrap">
               {message}
             </Text>
             <Hr className="border border-solid border-[#eaeaea] my-[26px] mx-0 w-full" />

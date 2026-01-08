@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 import {
   Html,
   Body,
@@ -11,12 +11,9 @@ import {
   Text,
   Tailwind,
   Img,
-} from '@react-email/components';
+} from "@react-email/components";
 
-export const ContactEmail = ({
-  name="magic",
-  message="magic",
-}) => {
+export const ContactEmail = ({ name = "magic", message = "magic\n123" }) => {
   return (
     <Html>
       <Head />
@@ -40,12 +37,13 @@ export const ContactEmail = ({
               Hello {name},
             </Text>
             <Text className="text-black text-[14px] leading-[24px]">
-              I've received your message and will get back to you as soon as possible.
+              I've received your message and will get back to you as soon as
+              possible.
             </Text>
             <Text className="text-[#666666] text-[12px] leading-[24px]">
               Your message:
             </Text>
-            <Text className="text-black text-[14px] leading-[24px] text-left p-4 bg-gray-100">
+            <Text className="text-black text-[14px] leading-[24px] text-left p-4 bg-gray-100 whitespace-pre-wrap">
               {message}
             </Text>
             <Hr className="border border-solid border-[#eaeaea] my-[26px] mx-0 w-full" />

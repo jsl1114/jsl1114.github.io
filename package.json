@@ -11,7 +11,7 @@
     "dev": "vite",
     "predeploy": "vite build",
     "build": "vite build",
-    "deploy": "gh-pages -d dist",
+    "deploy": "cp dist/index.html dist/404.html && gh-pages -d dist",
     "lint": "eslint .",
     "preview": "vite preview",
     "email": "email dev --dir ./server/emails",

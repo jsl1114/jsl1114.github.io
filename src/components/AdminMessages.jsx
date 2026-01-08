@@ -79,6 +79,23 @@ const AdminMessages = () => {
     }
   };
 
+  useEffect(() => {
+    const session = localStorage.getItem("admin_session");
+    if (session) {
+      try {
+        const { timestamp } = JSON.parse(session);
+        if (Date.now() - timestamp < 5 * 60 * 1000) {
+          setIsAuthenticated(true);
+          fetchMessages();
+        } else {
+          localStorage.removeItem("admin_session");
+        }
+      } catch {
+        localStorage.removeItem("admin_session");
+      }
+    }
+  }, []);
+
   const deleteMessage = async (id) => {
     if (!window.confirm("Are you sure you want to delete this message?"))
       return;
@@ -95,6 +112,10 @@ const AdminMessages = () => {
     e.preventDefault();
     if (password === ADMIN_PASSWORD) {
       setIsAuthenticated(true);
+      localStorage.setItem(
+        "admin_session",
+        JSON.stringify({ timestamp: Date.now() }),
+      );
       fetchMessages();
     } else {
       alert("Incorrect password");
@@ -185,8 +206,8 @@ const AdminMessages = () => {
                       •
                     </span>
                     <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                      {new Date(msg.created_at).toLocaleDateString()}{" "}
-                      {new Date(msg.created_at).toLocaleTimeString()}
+                      {new Date(msg.createdAt).toLocaleDateString()}{" "}
+                      {new Date(msg.createdAt).toLocaleTimeString()}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 mb-3">

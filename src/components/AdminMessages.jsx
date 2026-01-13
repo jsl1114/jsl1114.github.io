@@ -179,7 +179,7 @@ const AdminMessages = () => {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto p-6">
+    <div className="w-full p-3 min-w-0">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
           Messages ({messages.length})
@@ -210,7 +210,7 @@ const AdminMessages = () => {
               key={msg.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-white dark:bg-neutral-900 p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-shadow"
+              className="bg-white dark:bg-neutral-900 p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-shadow min-w-0"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.defaultPrevented) return;
@@ -220,9 +220,9 @@ const AdminMessages = () => {
                 }
               }}
             >
-              <div className="flex justify-between items-start gap-4">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+              <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
+                <div className="flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2 mb-2 min-w-0">
                     <h3 className="font-semibold text-lg text-neutral-900 dark:text-white">
                       {msg.name}
                     </h3>
@@ -234,17 +234,17 @@ const AdminMessages = () => {
                       {new Date(msg.createdAt).toLocaleTimeString()}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2 mb-3">
+                  <div className="flex flex-wrap items-center gap-2 mb-3 min-w-0">
                     <a
                       href={`mailto:${msg.email}`}
-                      className="text-blue-600 dark:text-blue-400 text-sm hover:underline"
+                      className="text-blue-600 dark:text-blue-400 text-sm hover:underline break-all min-w-0"
                     >
                       {msg.email}
                     </a>
                     <button
                       type="button"
                       onClick={() => handleCopyEmail(msg.id, msg.email)}
-                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 dark:border-neutral-800 px-2 py-1 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 dark:border-neutral-800 px-2 py-1 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer shrink-0"
                       title="Copy email (or press C while focused)"
                       aria-label={`Copy ${msg.email} to clipboard`}
                     >
@@ -261,16 +261,17 @@ const AdminMessages = () => {
                       )}
                     </button>
                   </div>
-                  <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">
+                  <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed break-words">
                     {msg.message}
                   </p>
                 </div>
                 <button
                   onClick={() => deleteMessage(msg.id)}
-                  className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors hover:cursor-pointer"
+                  className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors hover:cursor-pointer self-end sm:self-auto bg-red-50 dark:bg-red-900/20 w-full sm:w-auto sm:bg-transparent dark:sm:bg-transparent flex items-center justify-center sm:flex-none mt-3 sm:mt-0"
                   title="Delete message"
                 >
                   <Trash2 className="w-5 h-5" />
+                  <div className="pl-1 sm:hidden">Delete</div>
                 </button>
               </div>
             </motion.div>

@@ -1,7 +1,20 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
-import { Trash2, RefreshCw, Lock, Copy, Check } from "lucide-react";
+import {
+  Trash2,
+  RefreshCw,
+  Lock,
+  Copy,
+  Check,
+  ChevronDown,
+} from "lucide-react";
+
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const AdminMessages = () => {
   const [messages, setMessages] = useState([]);
@@ -13,7 +26,6 @@ const AdminMessages = () => {
 
   const serverEndpoint = import.meta.env.VITE_SERVER_ENDPOINT;
 
-  // Simple hardcoded password for basic protection
   const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD || "admin123";
 
   useEffect(() => {
@@ -69,8 +81,6 @@ const AdminMessages = () => {
 
   const getAuthHeader = () => {
     const session = JSON.parse(localStorage.getItem("admin_session") || "{}");
-    // If we have text in the password input (just logged in), use it.
-    // Otherwise fallback to session storage.
     const authPassword = password || session.password;
     return { "x-admin-password": authPassword };
   };
@@ -100,9 +110,6 @@ const AdminMessages = () => {
         const { timestamp } = JSON.parse(session);
         if (Date.now() - timestamp < 5 * 60 * 1000) {
           setIsAuthenticated(true);
-          // fetchMessages will be called but we need to ensure it uses the session password
-          // We can't call fetchMessages() here directly if it depends on state that isn't set yet,
-          // but since we read from localStorage in getAuthHeader, it's fine.
           setTimeout(fetchMessages, 0);
         } else {
           localStorage.removeItem("admin_session");
@@ -220,60 +227,81 @@ const AdminMessages = () => {
                 }
               }}
             >
-              <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
-                <div className="flex-1 min-w-0">
-                  <div className="flex flex-wrap items-center gap-2 mb-2 min-w-0">
-                    <h3 className="font-semibold text-lg text-neutral-900 dark:text-white">
-                      {msg.name}
-                    </h3>
-                    <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                      •
-                    </span>
-                    <span className="text-sm text-neutral-500 dark:text-neutral-400">
-                      {new Date(msg.createdAt).toLocaleDateString()}{" "}
-                      {new Date(msg.createdAt).toLocaleTimeString()}
-                    </span>
+              <Collapsible defaultOpen={false}>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 mb-2 min-w-0">
+                      <h3 className="font-semibold text-lg text-neutral-900 dark:text-white">
+                        {msg.name}
+                      </h3>
+                      <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                        •
+                      </span>
+                      <span className="text-sm text-neutral-500 dark:text-neutral-400">
+                        {new Date(msg.createdAt).toLocaleDateString()}{" "}
+                        {new Date(msg.createdAt).toLocaleTimeString()}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 min-w-0">
+                      <a
+                        href={`mailto:${msg.email}`}
+                        className="text-blue-600 dark:text-blue-400 text-sm hover:underline break-all min-w-0"
+                      >
+                        {msg.email}
+                      </a>
+                      <button
+                        type="button"
+                        onClick={() => handleCopyEmail(msg.id, msg.email)}
+                        className="inline-flex items-center gap-1 rounded-md border border-neutral-200 dark:border-neutral-800 px-2 py-1 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer shrink-0"
+                        title="Copy email (or press C while focused)"
+                        aria-label={`Copy ${msg.email} to clipboard`}
+                      >
+                        {copiedMessageId === msg.id ? (
+                          <>
+                            <Check className="w-3.5 h-3.5" />
+                            Copied
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            Copy
+                          </>
+                        )}
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2 mb-3 min-w-0">
-                    <a
-                      href={`mailto:${msg.email}`}
-                      className="text-blue-600 dark:text-blue-400 text-sm hover:underline break-all min-w-0"
-                    >
-                      {msg.email}
-                    </a>
+
+                  <div className="flex items-center gap-2 self-start w-full sm:w-auto">
+                    <CollapsibleTrigger asChild>
+                      <button
+                        type="button"
+                        className="group inline-flex items-center justify-center gap-1 rounded-lg bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 transition-colors hover:cursor-pointer w-full sm:w-auto"
+                        aria-label="Toggle message"
+                      >
+                        <span className="sm:hidden">View</span>
+                        <span className="hidden sm:inline">View</span>
+                        <ChevronDown className="h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                      </button>
+                    </CollapsibleTrigger>
+
                     <button
-                      type="button"
-                      onClick={() => handleCopyEmail(msg.id, msg.email)}
-                      className="inline-flex items-center gap-1 rounded-md border border-neutral-200 dark:border-neutral-800 px-2 py-1 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer shrink-0"
-                      title="Copy email (or press C while focused)"
-                      aria-label={`Copy ${msg.email} to clipboard`}
+                      onClick={() => deleteMessage(msg.id)}
+                      className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors hover:cursor-pointer self-end sm:self-auto bg-red-50 dark:bg-red-900/20 w-full sm:w-auto sm:bg-transparent dark:sm:bg-transparent flex items-center justify-center sm:flex-none"
+                      title="Delete message"
                     >
-                      {copiedMessageId === msg.id ? (
-                        <>
-                          <Check className="w-3.5 h-3.5" />
-                          Copied
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-3.5 h-3.5" />
-                          Copy
-                        </>
-                      )}
+                      <Trash2 className="w-5 h-5" />
+                      <div className="pl-1 sm:hidden">Delete</div>
                     </button>
                   </div>
-                  <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed break-words">
+                </div>
+
+                <CollapsibleContent className="mt-4 p-2">
+                  <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">
                     {msg.message}
                   </p>
-                </div>
-                <button
-                  onClick={() => deleteMessage(msg.id)}
-                  className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors hover:cursor-pointer self-end sm:self-auto bg-red-50 dark:bg-red-900/20 w-full sm:w-auto sm:bg-transparent dark:sm:bg-transparent flex items-center justify-center sm:flex-none mt-3 sm:mt-0"
-                  title="Delete message"
-                >
-                  <Trash2 className="w-5 h-5" />
-                  <div className="pl-1 sm:hidden">Delete</div>
-                </button>
-              </div>
+                </CollapsibleContent>
+              </Collapsible>
             </motion.div>
           ))}
         </div>

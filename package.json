@@ -8,7 +8,8 @@
     "seed": "node prisma/seed.js"
   },
   "scripts": {
-    "dev": "vite",
+    "tunnel": "ssh -L 3307:127.0.0.1:3306 ubuntu@jasonl.us -i ~/.ssh/ssh-key-2025-12-16.key",
+    "dev": "concurrently --kill-others --names \"tunnel,backend,frontend\" --prefix-colors \"yellow,blue,green\" \"npm run tunnel\" \"npm run server\" \"vite\"",
     "predeploy": "vite build",
     "build": "vite build",
     "deploy": "cp dist/index.html dist/404.html && gh-pages -d dist",
@@ -19,6 +20,7 @@
   },
   "dependencies": {
     "@emailjs/browser": "^4.4.1",
+    "@faker-js/faker": "^10.2.0",
     "@fontsource-variable/inter": "^5.1.1",
     "@prisma/client": "^5.22.0",
     "@radix-ui/react-collapsible": "^1.1.12",
@@ -29,9 +31,12 @@
     "@radix-ui/react-slot": "^1.1.2",
     "@react-email/components": "^1.0.1",
     "@react-email/render": "^2.0.0",
+    "@tanstack/react-query": "^5.90.16",
+    "@tanstack/react-query-devtools": "^5.91.2",
     "axios": "^1.13.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "concurrently": "^9.2.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.2.1",

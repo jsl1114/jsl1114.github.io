@@ -10,6 +10,7 @@ dotenv.config({ path: join(__dirname, "../../.env") });
 
 export const config = {
   port: process.env.PORT || 3000,
+  serverEndPoint: process.env.VITE_SERVER_ENDPOINT,
   email: {
     user: process.env.GOOGLE_EMAIL,
     pass: process.env.GOOGLE_APP_PASSWORD,

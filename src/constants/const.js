@@ -217,6 +217,21 @@ export const PROJECTS = [
     image: "lobster.png",
   },
   {
+    title: "PATH LIVE",
+    desc: "A full-stack real-time platform for tracking train departures in the Port Authority Trans-Hudson transit system",
+    technologies: [
+      "React",
+      "Spring Boot",
+      "Tailwind CSS",
+      "Geolocation",
+      "CI/CD",
+    ],
+    urls: {
+      live: "https://path.jasonl.us",
+    },
+    image: "pathlive.png",
+  },
+  {
     title: "SHell",
     desc: "A simple Linux shell that supports piping, redirection, and background processes and many built-in commands.",
     technologies: ["C", "Unix", "Linux"],

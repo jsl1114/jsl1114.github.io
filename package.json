@@ -12,7 +12,7 @@
     "dev": "concurrently --kill-others --names \"tunnel,backend,frontend\" --prefix-colors \"yellow,blue,green\" \"npm run tunnel\" \"npm run server\" \"vite\"",
     "predeploy": "vite build",
     "build": "vite build",
-    "deploy": "cp dist/index.html dist/404.html && gh-pages -d dist",
+    "deploy": "cp dist/index.html dist/404.html && gh-pages -d dist && rm -rf dist && echo 'Deploy & Cleanup Complete'",
     "lint": "eslint .",
     "preview": "vite preview",
     "email": "email dev --dir ./server/emails",

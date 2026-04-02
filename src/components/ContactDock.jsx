@@ -1,32 +1,81 @@
 import React from "react";
-
+import ReactGA from "react-ga4";
 import { Dock, DockIcon } from "@/components/magicui/dock";
-import { FaLinkedinIn, FaRegFilePdf } from 'react-icons/fa6'
-import { FiGithub } from 'react-icons/fi'
-import { TbMail } from 'react-icons/tb'
-import CV from '../assets/jason_liu_cv.pdf'
+import { FaLinkedinIn, FaRegFilePdf } from "react-icons/fa6";
+import { FiGithub } from "react-icons/fi";
+import { TbMail } from "react-icons/tb";
+import CV from "../assets/jason_liu_cv.pdf";
 
 export default function BottomNav() {
   return (
     <div className="relative">
-      <Dock direction="bottom" iconSize={40} iconMagnification={60} className="border border-neutral-300 dark:border-[#7C7A7B] gap-4">
-        <DockIcon className='bg-black/10 dark:bg-white/10 hover:bg-purple-200/70 dark:hover:bg-white/20 transition-colors duration-200'>
-          <a href="https://www.linkedin.com/in/jinsen-liu/" target="_blank" rel="noopener noreferrer">
+      <Dock
+        direction="bottom"
+        iconSize={40}
+        iconMagnification={60}
+        className="border border-neutral-300 dark:border-[#7C7A7B] gap-4"
+      >
+        <DockIcon className="bg-black/10 dark:bg-white/10 hover:bg-purple-200/70 dark:hover:bg-white/20 transition-colors duration-200">
+          <a
+            href="https://www.linkedin.com/in/jinsen-liu/"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() =>
+              ReactGA.event({
+                category: "Social",
+                action: "social_click",
+                label: "LinkedIn - Dock",
+              })
+            }
+          >
             <Icons.linkedin className="size-6 text-neutral-700 dark:text-neutral-300" />
           </a>
         </DockIcon>
-        <DockIcon className='bg-black/10 dark:bg-white/10 hover:bg-purple-200/70 dark:hover:bg-white/20 transition-colors duration-200'>
-            <a href="https://github.com/jsl1114" target="_blank" rel="noopener noreferrer">
-              <Icons.gitHub className="size-6 text-neutral-700 dark:text-[#D4D4D4]" />
-            </a>
+        <DockIcon className="bg-black/10 dark:bg-white/10 hover:bg-purple-200/70 dark:hover:bg-white/20 transition-colors duration-200">
+          <a
+            href="https://github.com/jsl1114"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() =>
+              ReactGA.event({
+                category: "Social",
+                action: "social_click",
+                label: "GitHub - Dock",
+              })
+            }
+          >
+            <Icons.gitHub className="size-6 text-neutral-700 dark:text-[#D4D4D4]" />
+          </a>
         </DockIcon>
-        <DockIcon className='bg-black/10 dark:bg-white/10 hover:bg-purple-200/70 dark:hover:bg-white/20 transition-colors duration-200'>
-          <a href="mailto:jl13869@nyu.edu" target="_blank" rel="noopener noreferrer">
+        <DockIcon className="bg-black/10 dark:bg-white/10 hover:bg-purple-200/70 dark:hover:bg-white/20 transition-colors duration-200">
+          <a
+            href="mailto:jl13869@nyu.edu"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() =>
+              ReactGA.event({
+                category: "Social",
+                action: "email_click",
+                label: "Email - Dock",
+              })
+            }
+          >
             <Icons.email className="size-6 text-neutral-700 dark:text-neutral-300" />
           </a>
         </DockIcon>
-        <DockIcon className='bg-black/10 dark:bg-white/10 hover:bg-purple-200/70 dark:hover:bg-white/20 transition-colors duration-200'>
-          <a href={CV} target="_blank" rel="noopener noreferrer">
+        <DockIcon className="bg-black/10 dark:bg-white/10 hover:bg-purple-200/70 dark:hover:bg-white/20 transition-colors duration-200">
+          <a
+            href={CV}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() =>
+              ReactGA.event({
+                category: "Social",
+                action: "cv_download",
+                label: "CV - Dock",
+              })
+            }
+          >
             <Icons.cv className="size-6 text-neutral-700 dark:text-neutral-300" />
           </a>
         </DockIcon>
@@ -36,16 +85,8 @@ export default function BottomNav() {
 }
 
 const Icons = {
-  linkedin: (props) => (
-    <FaLinkedinIn {...props} />
-  ),
-  gitHub: (props) => (
-    <FiGithub {...props} />
-  ),
-  email: (props) => (
-    <TbMail {...props} />
-  ),
-  cv: (props) => (
-    <FaRegFilePdf {...props} />
-  ),
+  linkedin: (props) => <FaLinkedinIn {...props} />,
+  gitHub: (props) => <FiGithub {...props} />,
+  email: (props) => <TbMail {...props} />,
+  cv: (props) => <FaRegFilePdf {...props} />,
 };

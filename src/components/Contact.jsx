@@ -1,12 +1,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
-import BottomNav from "./ContactDock.jsx";
+import ReactGA from "react-ga4";
 import {
   containerVariants,
   subtitleVariants,
   titleVariants,
-  dockVariants,
 } from "@/constants/variants.js";
 import { Loader2, Send } from "lucide-react";
 
@@ -42,6 +41,11 @@ const Contact = () => {
 
       setStatus("success");
       setFormData({ name: "", email: "", message: "" });
+      ReactGA.event({
+        category: "Contact",
+        action: "form_submit",
+        label: "Contact Form",
+      });
       setTimeout(() => setStatus(""), 3000);
     } catch (error) {
       console.error("Error submitting form:", error);

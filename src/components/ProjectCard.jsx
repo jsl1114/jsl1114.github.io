@@ -1,5 +1,6 @@
 import { FaLink, FaGithub } from "react-icons/fa6";
 import { motion } from "framer-motion";
+import ReactGA from "react-ga4";
 
 const ProjectCard = ({ title, desc, urls, image, technologies }) => {
   const cardVariants = {
@@ -54,14 +55,34 @@ const ProjectCard = ({ title, desc, urls, image, technologies }) => {
         <div className="flex flex-wrap gap-4">
           {urls.live && (
             <div className="w-8 h-8">
-              <a href={urls.live} target="_blank">
+              <a
+                href={urls.live}
+                target="_blank"
+                onClick={() =>
+                  ReactGA.event({
+                    category: "Projects",
+                    action: "live_link_click",
+                    label: title,
+                  })
+                }
+              >
                 <FaLink className="w-8 h-8 transition-all duration-200 hover:text-neutral-700/80 dark:hover:text-neutral-300/80 text-neutral-700 dark:text-neutral-300" />
               </a>
             </div>
           )}
           {urls.github && (
             <div className="w-8 h-8">
-              <a href={urls.github} target="_blank">
+              <a
+                href={urls.github}
+                target="_blank"
+                onClick={() =>
+                  ReactGA.event({
+                    category: "Projects",
+                    action: "github_link_click",
+                    label: title,
+                  })
+                }
+              >
                 <FaGithub className="w-8 h-8 transition-all duration-200 hover:text-neutral-700/80 dark:hover:text-neutral-300/80 text-neutral-700 dark:text-neutral-300" />
               </a>
             </div>

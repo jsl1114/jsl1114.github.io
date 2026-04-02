@@ -2,6 +2,7 @@ import { useState, useEffect, useContext, useRef } from "react";
 import { FaLinkedinIn } from "react-icons/fa6";
 import { FiGithub } from "react-icons/fi";
 import { TbMail } from "react-icons/tb";
+import ReactGA from "react-ga4";
 import {
   House,
   GraduationCap,
@@ -142,6 +143,20 @@ const Navbar = () => {
                   href={s.name === "CV" ? CV : s.link}
                   target="_blank"
                   rel="noopener noreferrer"
+                  onClick={() =>
+                    ReactGA.event({
+                      category: "Social",
+                      action:
+                        s.name === "CV"
+                          ? "cv_download"
+                          : s.name === "Email"
+                            ? "email_click"
+                            : s.name === "LinkedIn"
+                              ? "LinkedIn"
+                              : "GitHub",
+                      label: `${s.name} - Navbar`,
+                    })
+                  }
                   className={cn(
                     "transition-all duration-500 ease-in-out",
                     isScrolled

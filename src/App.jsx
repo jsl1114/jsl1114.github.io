@@ -6,6 +6,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { useEffect } from "react";
+import ReactGA from "react-ga4";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
 import PageBackground from "./components/PageBackground";
@@ -13,6 +14,10 @@ import PageBackground from "./components/PageBackground";
 const ShortcutHandler = () => {
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    ReactGA.send({ hitType: "pageview", page: location.pathname });
+  }, [location]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {

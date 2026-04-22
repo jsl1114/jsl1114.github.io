@@ -299,10 +299,14 @@ b {
 #command {
   cursor: text;
   min-height: 50px;
-  background: transparent;
-  padding: 0 18px 14px;
+  background: color-mix(in srgb, var(--bg-main) 96%, transparent);
+  backdrop-filter: blur(10px) saturate(115%);
+  padding: 28px 18px;
   color: var(--text-command);
   text-shadow: 0 0 8px var(--prompt-shadow);
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
 }
 
 #liner {

@@ -18,16 +18,16 @@ var pathLive = "https://path.jasonl.us/";
 whois = [
   "<br>",
   "Hey, I'm Jason!👋",
-  'My Chinese name is <span class="highlight">刘锦森</span>, and I am a Senior at NYU Courant.',
+  'My Chinese name is <span class="highlight">刘锦森</span>, and I am a Senior at NYU Courant & a University Honors Scholar at NYU.',
   "I am studying Computer Science and Data Science, with a minor in Business Studies.",
   "I am a full stack software engineer focused on building fast, intuitive, and production-ready web experiences.",
   "I grew up in Chengdu and studied at CDFLS before moving to the U.S. for high school.",
-  "I attended Rutgers Preparatory School in New Brunswick, New Jersey, and graduated with Honors With Distinction in 2022.",
+  "I attended Rutgers Preparatory School in New Jersey, and graduated with Honors With Distinction in 2022.",
   "I am actively seeking frontend, backend, and full stack opportunities.",
   "I bring 5 years of full stack project experience and 3 years of professional engineering experience.",
-  'For details, view my <a href="' +
+  'For more details, view my <a href="' +
     resume +
-    '" target="_blank" rel="noopener noreferrer">Resume</a>.',
+    '" target="_blank" rel="noopener noreferrer">current Resume</a>.',
   "<br>",
 ];
 
@@ -72,7 +72,7 @@ projects = [
   '<span class="highlight">BrownJack</span>                 <span><a target="_blank" href=' +
     brownjack +
     ">visit</a></span>    pure JS injected blackjack game",
-  '<span class="highlight">jinsenliu.me</span>              <span><a target="_blank" href=' +
+  '<span class="highlight">jsl1114.github.io</span>         <span><a target="_blank" href=' +
     personal_website +
     ">visit</a></span>    Jason's personal website with latest updates",
   '<span class="highlight">Interactive terminal</span>               You are already here!',
@@ -95,9 +95,9 @@ help = [
   '<span class="command">history</span>                 View command history',
   '<span class="command">themes</span>                  List available terminal styles',
   '<span class="command">theme &lt;name|number&gt;</span>     Switch style (eg: theme 2 or theme aurora-noir)',
-  '<span class="command">main</span>           Go to Jason\'s homepage',
-  '<span class="command">clear</span>          Clear terminal',
-  '<span class="command">help | man</span>     You obviously already know what this does',
+  '<span class="command">main</span>                    Go to Jason\'s homepage',
+  '<span class="command">clear</span>                   Clear terminal',
+  '<span class="command">help | man</span>              You obviously already know what this does',
   "<br>",
 ];
 

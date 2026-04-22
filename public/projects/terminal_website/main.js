@@ -78,7 +78,7 @@ function enterKey(e) {
       git = commands.length;
       addLine("\r  ", "no-animation", 0);
       addLine(
-        "visitor@https://jsl1114.github.io:~$ " + command.innerHTML,
+        "visitor@jsl1114.github.io:~$ " + command.innerHTML,
         "no-animation",
         0,
       );
@@ -263,7 +263,7 @@ function commander(cmd) {
       newTab(brownjack);
       break;
     case "main":
-      addLine("Opening jinsenliu.me...");
+      addLine("Opening https://jsl1114.github.io...");
       newTab(personal_website);
       break;
     default:

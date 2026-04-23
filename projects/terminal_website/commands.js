@@ -68,7 +68,7 @@ projects = [
     ">visit</a></span>    AI SaaS platform that combines the magic of latest Generative Pre-trained Transformers ",
   '<span class="highlight">Path Live</span>                 <span><a target="_blank" href=' +
     pathLive +
-    ">visit</a></span>    live route planning and path visualization tool",
+    ">visit</a></span>    Live departures for the PATH Train",
   '<span class="highlight">BrownJack</span>                 <span><a target="_blank" href=' +
     brownjack +
     ">visit</a></span>    pure JS injected blackjack game",

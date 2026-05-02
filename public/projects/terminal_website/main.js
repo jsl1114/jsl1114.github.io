@@ -266,6 +266,12 @@ function commander(cmd) {
       addLine("Opening https://jsl1114.github.io...");
       newTab(personal_website);
       break;
+    case "inky":
+      addLine("Opening Inky...");
+      newTab(inky);
+    case "pathlive":
+      addLine("Opening Path Live...");
+      newTab(pathLive);
     default:
       addLine(
         '<span class="inherit">Command not found. For a list of commands, type <span class="command">\'help\'</span> or <span class="command">\'man\'</span>.</span>',

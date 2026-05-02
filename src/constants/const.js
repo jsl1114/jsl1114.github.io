@@ -198,6 +198,15 @@ export const TECHNOLOGIES = [
 
 export const PROJECTS = [
   {
+    title: "Inky",
+    desc: "A group scheduling tool designed to streamline coordination, minimize back-and-forth, and save time for teams",
+    technologies: ["Next.JS", "Drizzle", "XState", "TipTap", "Vitest"],
+    urls: {
+      live: "https://inky.jasonl.us/",
+    },
+    image: "inky.png",
+  },
+  {
     title: "Lobster AI",
     desc: "A Software-as-a-Service (SaaS) platform that provides all-in-one solutions for AI chatbot, image generation, video generation, code editing and music generation.",
     technologies: [

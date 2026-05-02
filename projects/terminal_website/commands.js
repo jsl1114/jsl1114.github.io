@@ -14,11 +14,12 @@ var brownjack =
   "https://jsl1114.github.io/src/assets/projects/brownjack/game.html";
 var personal_website = "https://jsl1114.github.io";
 var pathLive = "https://path.jasonl.us/";
+var inky = "https://inky.jasonl.us/";
 
 whois = [
   "<br>",
   "Hey, I'm Jason!👋",
-  'My Chinese name is <span class="highlight">刘锦森</span>, and I am a Senior at NYU Courant & a University Honors Scholar at NYU.',
+  "I am a Senior at NYU Courant & a University Honors Scholar at NYU.",
   "I am studying Computer Science and Data Science, with a minor in Business Studies.",
   "I am a full stack software engineer focused on building fast, intuitive, and production-ready web experiences.",
   "I grew up in Chengdu and studied at CDFLS before moving to the U.S. for high school.",
@@ -63,6 +64,9 @@ secret = [
 
 projects = [
   "<br>",
+  '<span class="highlight">Inky</span>                      <span><a target="_blank" href=' +
+    inky +
+    ">visit</a></span>    Group scheduling tool designed to streamline coordination ",
   '<span class="highlight">LobsterAI</span>                 <span><a target="_blank" href=' +
     lobster +
     ">visit</a></span>    AI SaaS platform that combines the magic of latest Generative Pre-trained Transformers ",

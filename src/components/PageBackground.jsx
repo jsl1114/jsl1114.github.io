@@ -42,26 +42,34 @@ const PageBackground = () => {
       {/* Dark mode background color */}
       <div className="fixed inset-0 z-[-2] hidden dark:block bg-neutral-950" />
 
-      {/* Dark mode animated background */}
+      {/* Dark mode grain overlay */}
+      <div className="fixed inset-0 z-[-1] hidden dark:block pointer-events-none bg-grain opacity-60" />
+
+      {/* Dark mode animated glows */}
       <div className="fixed inset-0 z-[-1] hidden dark:block overflow-hidden pointer-events-none">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.8 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
           className="absolute inset-0"
         >
           <motion.div
             style={{ top: topPos }}
             animate={{
               scale: [1, 1.2, 1],
-              opacity: [0.5, 0.8, 0.5],
+              opacity: [0.45, 0.75, 0.45],
             }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-              ease: "easeInOut",
+            transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-[radial-gradient(circle,rgba(87,7,140,0.75),transparent_70%)]"
+          />
+          <motion.div
+            animate={{
+              x: [0, 40, 0],
+              y: [0, -30, 0],
+              opacity: [0.25, 0.45, 0.25],
             }}
-            className="absolute left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-[radial-gradient(circle,rgba(87,7,140,0.8),transparent_70%)]"
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-[-15%] right-[-10%] w-[600px] h-[600px] rounded-full bg-[radial-gradient(circle,rgba(137,0,225,0.4),transparent_70%)]"
           />
         </motion.div>
       </div>

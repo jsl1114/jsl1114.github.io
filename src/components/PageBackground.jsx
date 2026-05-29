@@ -1,8 +1,9 @@
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform, useReducedMotion } from "framer-motion";
 
 const PageBackground = () => {
   const { scrollYProgress } = useScroll();
   const topPos = useTransform(scrollYProgress, [0, 0.1], ["-20%", "-70%"]);
+  const reduceMotion = useReducedMotion();
 
   return (
     <>
@@ -12,7 +13,7 @@ const PageBackground = () => {
       {/* Light mode animated background */}
       <div className="fixed inset-0 z-[-1] dark:hidden overflow-hidden pointer-events-none">
         <motion.div
-          animate={{
+          animate={reduceMotion ? {} : {
             x: [0, 30, 0],
             y: [0, 40, 0],
             scale: [1, 1.05, 1],
@@ -25,7 +26,7 @@ const PageBackground = () => {
           className="absolute top-[-10%] left-[-10%] w-[70vw] h-[70vw] rounded-full bg-white shadow-[0_0_120px_rgba(0,0,0,0.03)]"
         />
         <motion.div
-          animate={{
+          animate={reduceMotion ? {} : {
             x: [0, -30, 0],
             y: [0, -40, 0],
             scale: [1, 1.05, 1],
@@ -55,7 +56,7 @@ const PageBackground = () => {
         >
           <motion.div
             style={{ top: topPos }}
-            animate={{
+            animate={reduceMotion ? {} : {
               scale: [1, 1.2, 1],
               opacity: [0.45, 0.75, 0.45],
             }}
@@ -63,7 +64,7 @@ const PageBackground = () => {
             className="absolute left-1/2 -translate-x-1/2 w-[900px] h-[900px] rounded-full bg-[radial-gradient(circle,rgba(87,7,140,0.75),transparent_70%)]"
           />
           <motion.div
-            animate={{
+            animate={reduceMotion ? {} : {
               x: [0, 40, 0],
               y: [0, -30, 0],
               opacity: [0.25, 0.45, 0.25],

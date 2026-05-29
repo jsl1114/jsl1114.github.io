@@ -91,7 +91,7 @@ a {
 }
 
 .card {
-  @apply text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-300 bg-white dark:bg-transparent hover:bg-purple-50/50 dark:hover:bg-[rgba(255,255,255,0.1)] border border-nyu/[.1]  hover:border-nyu/[.2] dark:hover:border-[rgba(255,255,255,0.1)] shadow-sm hover:shadow-lg dark:hover:shadow-neon transition-all ease-in-out duration-300;
+  @apply text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-300 bg-white dark:bg-transparent hover:bg-purple-50/50 dark:hover:bg-[rgba(255,255,255,0.1)] border border-nyu/[.1]  hover:border-nyu/[.2] dark:hover:border-[rgba(255,255,255,0.1)] shadow-sm hover:shadow-lg dark:hover:shadow-glow-purple transition-all ease-in-out duration-300;
 }
 
 .link-symbol {

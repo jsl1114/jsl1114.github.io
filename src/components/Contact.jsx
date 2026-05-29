@@ -75,9 +75,16 @@ const Contact = () => {
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
     >
+      <motion.div
+        variants={subtitleVariants}
+        className="mb-2 flex items-center justify-center gap-3 font-mono text-sm tracking-widest text-nyu dark:text-purple-300"
+      >
+        04
+        <span className="h-px w-10 bg-nyu/40 dark:bg-purple-300/40" />
+      </motion.div>
       <motion.h1
         variants={titleVariants}
-        className="text-4xl tracking-tight font-semibold text-center text-neutral-900 dark:text-white mb-2"
+        className="mt-2 text-5xl lg:text-6xl tracking-tight font-semibold text-center text-neutral-900 dark:text-white mb-2"
       >
         Contact
       </motion.h1>

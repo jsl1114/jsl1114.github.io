@@ -23,7 +23,7 @@ const Experience = () => {
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
     >
-      <SectionHero title={"Experience"} subTitle={"Doing Work"}/>
+      <SectionHero index={"02"} title={"Experience"} subTitle={"Doing Work"} />
       <div>
         {EXPERIENCE.map((e, i) => (
           <ExperienceCard

@@ -23,7 +23,7 @@ const Projects = () => {
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
     >
-      <SectionHero title={"Projects"} subTitle={"Having Fun"} />
+      <SectionHero index={"03"} title={"Projects"} subTitle={"Having Fun"} />
       {PROJECTS.map((p, i) => {
         return <ProjectCard key={i} {...p} />;
       })}

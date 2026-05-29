@@ -14,7 +14,7 @@ const Education = () => {
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
     >
-      <SectionHero title={"Education"} subTitle={"Learning Stuff"} />
+      <SectionHero index={"01"} title={"Education"} subTitle={"Learning Stuff"} />
       <div className='px-2'>
         {EDUCATION.map((edu, i) => (
           <EducationCard

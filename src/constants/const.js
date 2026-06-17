@@ -19,8 +19,8 @@ export const SOCIALS = [
 
 export const SECTIONS = [
   { name: "Home", id: "hero" },
-  { name: "Projects", id: "projects" },
   { name: "Experience", id: "experience" },
+  { name: "Projects", id: "projects" },
   { name: "Education", id: "education" },
   { name: "Contact", id: "contact" },
 ];

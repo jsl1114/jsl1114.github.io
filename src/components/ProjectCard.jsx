@@ -1,7 +1,7 @@
-import { useState } from "react";
 import { FaLink, FaGithub } from "react-icons/fa6";
 import { motion } from "framer-motion";
 import ReactGA from "react-ga4";
+import ProjectCarousel from "./ProjectCarousel";
 
 const cardVariants = {
   hidden: { opacity: 0, y: 30 },
@@ -12,46 +12,39 @@ const cardVariants = {
   },
 };
 
-const ProjectCard = ({ title, desc, urls, image, screenshot, technologies }) => {
-  const [imgError, setImgError] = useState(false);
-  const href = urls.live || urls.github;
+const ProjectCard = ({
+  title,
+  desc,
+  urls,
+  image,
+  screenshots = [],
+  technologies,
+}) => {
   const logoSrc = new URL(`../assets/${image}`, import.meta.url).href;
-  const screenshotSrc = screenshot
-    ? new URL(`../assets/projects/${screenshot}`, import.meta.url).href
-    : null;
-  const showScreenshot = screenshotSrc && !imgError;
+  const images = screenshots.map(
+    (s) => new URL(`../assets/projects/${s}`, import.meta.url).href,
+  );
 
   return (
-    <motion.div variants={cardVariants} className="mb-8 w-full max-w-3xl mx-auto">
-      <div className="card rounded-2xl overflow-hidden group">
-        <a href={href} target="_blank" rel="noreferrer" className="block">
-          <div className="relative aspect-[16/10] flex items-center justify-center overflow-hidden bg-[color-mix(in_srgb,var(--color-accent)_8%,transparent)]">
-            {showScreenshot ? (
-              <img
-                src={screenshotSrc}
-                alt={`${title} screenshot`}
-                loading="lazy"
-                onError={() => setImgError(true)}
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-            ) : (
-              <img
-                src={logoSrc}
-                alt={title}
-                loading="lazy"
-                className="max-h-2/3 max-w-1/2 object-contain p-6 transition-transform duration-500 group-hover:scale-105"
-              />
-            )}
+    <motion.div variants={cardVariants} className="h-full">
+      <div className="card rounded-2xl overflow-hidden flex flex-col h-full">
+        <ProjectCarousel images={images} title={title} />
+        <div className="p-5 flex flex-col flex-1">
+          <div className="flex items-center gap-2.5 mb-2">
+            <img
+              src={logoSrc}
+              alt={`${title} logo`}
+              loading="lazy"
+              className="h-8 w-8 rounded-lg object-contain bg-white/70 dark:bg-white/10 p-1 shrink-0"
+            />
+            <h6 className="text-lg font-semibold text-neutral-900 dark:text-white">
+              {title}
+            </h6>
           </div>
-        </a>
-        <div className="p-6">
-          <h6 className="mb-2 text-lg font-semibold text-neutral-900 dark:text-white">
-            {title}
-          </h6>
           <p className="text-sm text-neutral-700 dark:text-neutral-300 pb-4">
             {desc}
           </p>
-          <div className="flex flex-wrap gap-2 pb-4">
+          <div className="flex flex-wrap gap-2 pb-4 mt-auto">
             {technologies.map((tech, i) => (
               <span key={i} className="chip">
                 {tech}
@@ -72,7 +65,7 @@ const ProjectCard = ({ title, desc, urls, image, screenshot, technologies }) => 
                   })
                 }
               >
-                <FaLink className="w-6 h-6 transition-colors text-neutral-700 dark:text-neutral-300 hover:text-[var(--color-accent)] dark:hover:text-[var(--color-accent-light)]" />
+                <FaLink className="w-5 h-5 transition-colors text-neutral-700 dark:text-neutral-300 hover:text-[var(--color-accent)] dark:hover:text-[var(--color-accent-light)]" />
               </a>
             )}
             {urls.github && (
@@ -88,7 +81,7 @@ const ProjectCard = ({ title, desc, urls, image, screenshot, technologies }) => 
                   })
                 }
               >
-                <FaGithub className="w-6 h-6 transition-colors text-neutral-700 dark:text-neutral-300 hover:text-[var(--color-accent)] dark:hover:text-[var(--color-accent-light)]" />
+                <FaGithub className="w-5 h-5 transition-colors text-neutral-700 dark:text-neutral-300 hover:text-[var(--color-accent)] dark:hover:text-[var(--color-accent-light)]" />
               </a>
             )}
           </div>

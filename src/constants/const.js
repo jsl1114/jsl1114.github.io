@@ -19,9 +19,9 @@ export const SOCIALS = [
 
 export const SECTIONS = [
   { name: "Home", id: "hero" },
-  { name: "Education", id: "education" },
-  { name: "Experience", id: "experience" },
   { name: "Projects", id: "projects" },
+  { name: "Experience", id: "experience" },
+  { name: "Education", id: "education" },
   { name: "Contact", id: "contact" },
 ];
 
@@ -277,7 +277,7 @@ export const PROJECTS = [
       live: "https://jsl1114.github.io/projects/brownjack/game.html",
     },
     image: "brown.webp",
-    screenshots: [],
+    screenshots: ["brown1.png", "brown2.png", "brown3.png"],
   },
   {
     title: "Terminal Portfolio",
@@ -300,6 +300,6 @@ export const PROJECTS = [
       live: "https://jsl1114.github.io/",
     },
     image: "jl.png",
-    screenshots: [],
+    screenshots: ["jl1.png"],
   },
 ];

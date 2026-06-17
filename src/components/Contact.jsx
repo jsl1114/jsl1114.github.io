@@ -114,7 +114,7 @@ const Contact = () => {
             required
             value={formData.name}
             onChange={handleChange}
-            className="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+            className="w-full px-4 py-2 rounded-lg glass text-neutral-900 dark:text-white outline-none transition-all focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-accent)_55%,transparent)] focus:border-transparent"
             placeholder="Your name"
           />
         </div>
@@ -133,7 +133,7 @@ const Contact = () => {
             required
             value={formData.email}
             onChange={handleChange}
-            className="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+            className="w-full px-4 py-2 rounded-lg glass text-neutral-900 dark:text-white outline-none transition-all focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-accent)_55%,transparent)] focus:border-transparent"
             placeholder="your@email.com"
           />
         </div>
@@ -152,7 +152,7 @@ const Contact = () => {
             rows={4}
             value={formData.message}
             onChange={handleChange}
-            className="w-full px-4 py-2 rounded-lg border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-900 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+            className="w-full px-4 py-2 rounded-lg glass text-neutral-900 dark:text-white outline-none transition-all focus:ring-2 focus:ring-[color-mix(in_srgb,var(--color-accent)_55%,transparent)] focus:border-transparent resize-none"
             placeholder="How can I help you?"
           />
         </div>
@@ -160,7 +160,7 @@ const Contact = () => {
         <button
           type="submit"
           disabled={status === "loading"}
-          className="mt-2 w-full px-6 py-3 rounded-lg bg-neutral-800 dark:bg-neutral-300 text-white dark:text-neutral-900 font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 hover:cursor-pointer"
+          className="mt-2 w-full px-6 py-3 rounded-lg bg-[var(--color-accent)] text-white font-medium hover:bg-[var(--color-accent-strong)] transition-colors disabled:opacity-50 flex items-center justify-center gap-2 hover:cursor-pointer"
         >
           {status === "loading" ? (
             <>

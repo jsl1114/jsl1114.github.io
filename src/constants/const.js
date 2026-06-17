@@ -205,7 +205,15 @@ export const PROJECTS = [
       live: "https://inky.jasonl.us/",
     },
     image: "inky.png",
-    screenshots: [],
+    screenshots: [
+      "inky1.png",
+      "inky2.png",
+      "inky3.png",
+      "inky4.png",
+      "inky5.png",
+      "inky6.png",
+      "inky7.png",
+    ],
   },
   {
     title: "Lobster AI",
@@ -225,7 +233,12 @@ export const PROJECTS = [
       live: "https://lobster-ai.vercel.app/",
     },
     image: "lobster.png",
-    screenshots: [],
+    screenshots: [
+      "lobster1.png",
+      "lobster2.png",
+      "lobster3.png",
+      "lobster4.png",
+    ],
   },
   {
     title: "PATH LIVE",
@@ -241,7 +254,7 @@ export const PROJECTS = [
       live: "https://path.jasonl.us",
     },
     image: "pathlive.png",
-    screenshots: [],
+    screenshots: ["pathlive1.png"],
   },
   {
     title: "SHell",
@@ -252,6 +265,7 @@ export const PROJECTS = [
     },
     image: "shell.png",
     screenshots: [],
+    extended: true,
   },
   {
     title: "BrownJack",
@@ -275,7 +289,7 @@ export const PROJECTS = [
       live: "https://jsl1114.github.io/projects/terminal_website/index.html",
     },
     image: "term.webp",
-    screenshots: [],
+    screenshots: ["term1.png"],
   },
   {
     title: "Portfolio Website (currently v2)",

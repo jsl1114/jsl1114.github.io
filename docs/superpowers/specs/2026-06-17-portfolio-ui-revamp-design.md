@@ -101,9 +101,10 @@ grid.
 **Layout**
 
 - Keep the existing `SectionHero` header (`03 / Projects / Having Fun`).
-- Below it, a **2-column responsive grid** (`grid-cols-1` mobile → `lg:grid-cols-2`)
-  of glass project cards. This replaces the current `1/4 + 3/4` row layout for
-  this section.
+- Below it, a **single-column stack** of screenshot-forward glass project cards
+  (one card per row, constrained to a comfortable reading width). This replaces
+  the current `1/4 + 3/4` row layout for this section. Multi-column grid is
+  deferred — the card is built so a grid can be added later without rework.
 
 **Card anatomy (`ProjectCard.jsx`)**
 
@@ -166,8 +167,9 @@ the page.
   reduced-motion and on touch; no jank (rAF-throttled).
 - Editing `--color-accent` in `src/index.css` recolors spotlight, chips, borders,
   index labels, and link hovers across the whole page.
-- Projects render as a 2-column glass grid; screenshots show when present, logo
-  fallback when absent; live/GitHub links and ReactGA events still fire.
+- Projects render as a single-column stack of glass cards; screenshots show when
+  present, logo fallback when absent; live/GitHub links and ReactGA events still
+  fire.
 - No glow on any card; hover = lift + border-brighten only.
 - No visible copy changed; navbar unchanged.
 - Light and dark both legible; Libre Baskerville actually loads.

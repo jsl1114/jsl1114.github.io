@@ -62,15 +62,20 @@ html {
 
 @theme inline {
   --background: hsl(var(--background));
-  --shadow-neon: 0 0 20px #280d3d;
+  /* === Brand accent — change these two to recolor the entire page === */
+  --color-accent: #57078c;
+  --color-accent-strong: #8900e1;
+  /* Existing `*-nyu` utilities follow the accent */
+  --color-nyu: var(--color-accent);
+
+  --shadow-neon: 0 0 20px var(--color-accent);
   --shadow-neon-large: 0px 0px 30px #f2e6fe;
-  --shadow-nyu-large: 0px 0px 60px #8900e1;
+  --shadow-nyu-large: 0px 0px 60px var(--color-accent-strong);
   --shadow-neon-white: 0px 0px 15px white;
   --shadow-neon-black: 0px 0px 15px black;
-  --shadow-glow-purple: 0 0 40px rgba(137, 0, 225, 0.35);
+  --shadow-glow-purple: 0 0 40px color-mix(in srgb, var(--color-accent-strong) 35%, transparent);
   --animate-marquee: marquee var(--duration) linear infinite;
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --color-nyu: #57078c;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
 
   @keyframes marquee {
     from {
@@ -95,7 +100,7 @@ html {
 }
 
 a {
-  @apply transition font-bold duration-500 text-neutral-700 dark:text-neutral-300 hover:text-[#8900e1] dark:hover:text-neutral-400;
+  @apply transition font-bold duration-500 text-neutral-700 dark:text-neutral-300 hover:text-[var(--color-accent-strong)] dark:hover:text-neutral-400;
 }
 
 .card {

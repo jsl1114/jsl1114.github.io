@@ -40,10 +40,7 @@ const EducationCard = ({ school, degree, year, location, gpa, coursework }) => {
         )}
         <div className="flex flex-wrap">
           {coursework.map((w) => (
-            <span
-              className="mr-2 mt-4 rounded bg-purple-100 dark:bg-[#280D3D] text-purple-900 dark:text-neutral-300 px-2 py-1 text-sm font-medium transition-all duration-200 hover:bg-purple-200 dark:hover:bg-[#3a0f4d] cursor-default"
-              key={w}
-            >
+            <span className="chip mr-2 mt-4" key={w}>
               {w}
             </span>
           ))}

@@ -33,7 +33,7 @@ const ProjectCard = ({
   const extra = technologies.length - shownTech.length;
 
   const header = (
-    <div className="flex items-center gap-2.5 mb-2">
+    <div className="flex items-center gap-2.5 mb-2 shrink-0">
       <img
         src={logoSrc}
         alt={`${title} logo`}
@@ -88,12 +88,12 @@ const ProjectCard = ({
       <div className="card rounded-2xl overflow-hidden flex flex-col h-full relative">
         <ProjectCarousel images={images} title={title} />
 
-        <div className="p-5 flex flex-col h-48 overflow-hidden">
+        <div className="p-5 flex flex-col h-52 overflow-hidden">
           {header}
-          <p className="text-sm text-neutral-700 dark:text-neutral-300 line-clamp-2">
+          <p className="text-sm text-neutral-700 dark:text-neutral-300 line-clamp-2 shrink-0">
             {desc}
           </p>
-          <div className="flex flex-wrap gap-2 mt-3 max-h-8 overflow-hidden">
+          <div className="flex flex-wrap gap-2 mt-3 max-h-8 overflow-hidden shrink-0">
             {shownTech.map((tech, i) => (
               <span key={i} className="chip">
                 {tech}

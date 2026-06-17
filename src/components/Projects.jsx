@@ -44,7 +44,7 @@ const Projects = () => {
       <SectionHero index={"03"} title={"Projects"} subTitle={"Having Fun"} />
 
       <motion.div
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8 max-w-4xl mx-auto"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8 max-w-5xl mx-auto"
         variants={gridVariants}
       >
         {featured.map((p, i) => (
@@ -56,7 +56,7 @@ const Projects = () => {
         <Collapsible
           open={open}
           onOpenChange={setOpen}
-          className="max-w-4xl mx-auto mt-8"
+          className="max-w-5xl mx-auto mt-8"
         >
           <div className="flex justify-center">
             <CollapsibleTrigger className="flex items-center gap-2 rounded-full glass px-5 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-[var(--color-accent)] dark:hover:text-[var(--color-accent-light)] transition-colors cursor-pointer">

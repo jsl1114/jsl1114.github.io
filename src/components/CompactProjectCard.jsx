@@ -107,7 +107,7 @@ const CompactProjectCard = ({ title, desc, urls, image, technologies }) => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onMouseLeave={() => setExpanded(false)}
-              className="absolute inset-0 z-10 flex flex-col p-4 overflow-y-auto bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md"
+              className="absolute inset-0 z-10 flex flex-col p-4 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md"
             >
               <div className="flex items-center gap-2.5 mb-2">
                 {logoBadge}

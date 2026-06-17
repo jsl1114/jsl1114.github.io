@@ -125,7 +125,7 @@ const ProjectCard = ({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onMouseLeave={() => setExpanded(false)}
-              className="absolute inset-0 z-10 flex flex-col p-5 overflow-y-auto bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md"
+              className="absolute inset-0 z-10 flex flex-col p-5 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md"
             >
               {header}
               <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-4">

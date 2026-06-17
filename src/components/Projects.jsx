@@ -30,7 +30,7 @@ const Projects = () => {
     >
       <SectionHero index={"03"} title={"Projects"} subTitle={"Having Fun"} />
       <motion.div
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8 mb-10"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8 mb-10 max-w-4xl mx-auto"
         variants={gridVariants}
       >
         {PROJECTS.map((p, i) => {

@@ -65,6 +65,7 @@ html {
   /* === Brand accent — change these two to recolor the entire page === */
   --color-accent: #57078c;
   --color-accent-strong: #8900e1;
+  --color-accent-light: color-mix(in srgb, var(--color-accent-strong) 60%, white);
   /* Existing `*-nyu` utilities follow the accent */
   --color-nyu: var(--color-accent);
 

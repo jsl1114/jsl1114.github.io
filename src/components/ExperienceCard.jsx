@@ -63,7 +63,7 @@ const ExperienceCard = ({
               <br className="block sm:hidden" />
               <span className="hidden sm:inline"> </span>
               <span className="inline-flex items-center">
-                <div className="text-sm !text-nyu dark:!text-purple-100 !font-normal">
+                <div className="text-sm !text-nyu dark:!text-[var(--color-accent-light)] !font-normal">
                   {company}
                 </div>
               </span>
@@ -145,7 +145,7 @@ const ExperienceCard = ({
                             href={link}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center hover:text-nyu dark:hover:text-purple-300 transition-colors font-medium text-xl"
+                            className="inline-flex items-center hover:text-nyu dark:hover:text-[var(--color-accent-light)] transition-colors font-medium text-xl"
                           >
                             {company}
                             <MdArrowOutward className="ml-1" />
@@ -192,7 +192,7 @@ const ExperienceCard = ({
                                     key={i}
                                     className="text-base font-medium text-neutral-700 dark:text-neutral-300 flex items-start"
                                   >
-                                    <span className="mr-2 text-nyu dark:text-purple-400">
+                                    <span className="mr-2 text-nyu dark:text-[var(--color-accent-light)]">
                                       •
                                     </span>
                                     {item}

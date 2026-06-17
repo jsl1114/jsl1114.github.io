@@ -77,10 +77,10 @@ const Contact = () => {
     >
       <motion.div
         variants={subtitleVariants}
-        className="mb-2 flex items-center justify-center gap-3 font-mono text-sm tracking-widest text-nyu dark:text-purple-300"
+        className="mb-2 flex items-center justify-center gap-3 font-mono text-sm tracking-widest text-nyu dark:text-[var(--color-accent-light)]"
       >
         04
-        <span className="h-px w-10 bg-nyu/40 dark:bg-purple-300/40" />
+        <span className="h-px w-10 bg-nyu/40 dark:bg-[color-mix(in_srgb,var(--color-accent-light)_40%,transparent)]" />
       </motion.div>
       <motion.h1
         variants={titleVariants}

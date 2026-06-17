@@ -31,7 +31,7 @@ const EducationCard = ({ school, degree, year, location, gpa, coursework }) => {
           <h6 className="mb-2 font-semibold text-neutral-900 dark:text-white">
             {school}
           </h6>
-          <span className="text-sm text-nyu dark:text-purple-100">
+          <span className="text-sm text-nyu dark:text-[var(--color-accent-light)]">
             {degree}
           </span>
         </div>

@@ -4,7 +4,7 @@ import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa6";
 import { Maximize2, X } from "lucide-react";
 
-const AUTO_MS = 4000;
+const AUTO_MS = 5000;
 
 // Screenshot preview for a project card. Auto-advances (pausing on hover, when
 // the lightbox is open, and when reduced motion is requested) and offers manual
@@ -62,15 +62,6 @@ const ProjectCarousel = ({ images, title }) => {
             className="absolute inset-0 w-full h-full object-cover cursor-zoom-in"
           />
         </AnimatePresence>
-
-        <button
-          type="button"
-          aria-label="Enlarge screenshot"
-          onClick={() => setLightbox(true)}
-          className="absolute top-2 right-2 grid place-items-center h-8 w-8 rounded-full bg-black/40 text-white backdrop-blur-sm hover:bg-black/60 transition-colors"
-        >
-          <Maximize2 className="h-3.5 w-3.5" />
-        </button>
 
         {count > 1 && (
           <>

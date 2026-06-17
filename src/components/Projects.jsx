@@ -35,16 +35,16 @@ const Projects = () => {
 
   return (
     <motion.div
-      className="border-b border-neutral-300 dark:border-neutral-800 pt-10 pb-10"
+      className="border-b border-neutral-300 dark:border-neutral-800 pb-10"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
     >
-      <SectionHero index={"03"} title={"Projects"} subTitle={"Having Fun"} />
+      <SectionHero title={"Projects"} subTitle={"Having Fun"} />
 
       <motion.div
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8 max-w-5xl mx-auto"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto"
         variants={gridVariants}
       >
         {featured.map((p, i) => (

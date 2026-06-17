@@ -1,24 +1,13 @@
 import { subtitleVariants, titleVariants } from "@/constants/variants.js";
 import { motion } from "framer-motion";
 
-const SectionHero = ({ title, subTitle, index }) => {
+const SectionHero = ({ title, subTitle }) => {
   return (
     <div className="flex lg:justify-center items-end">
       <div className="w-full lg:w-1/4">
-        {index && (
-          <motion.div
-            variants={subtitleVariants}
-            className="mb-2 flex items-center gap-3 font-mono text-sm tracking-widest text-nyu dark:text-[var(--color-accent-light)]"
-          >
-            {index}
-            <span className="h-px w-10 bg-nyu/40 dark:bg-[color-mix(in_srgb,var(--color-accent-light)_40%,transparent)]" />
-          </motion.div>
-        )}
         <motion.h1
           variants={titleVariants}
-          className={`font-semibold tracking-tight text-neutral-900 dark:text-white ${
-            index ? "mt-2 text-5xl lg:text-6xl" : "mt-10 text-4xl"
-          } ${!subTitle && "mb-12"}`}
+          className={`font-semibold tracking-tight text-neutral-900 dark:text-white mt-10 text-5xl ${!subTitle && "mb-12"}`}
         >
           {title}
         </motion.h1>

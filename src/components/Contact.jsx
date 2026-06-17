@@ -75,13 +75,6 @@ const Contact = () => {
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
     >
-      <motion.div
-        variants={subtitleVariants}
-        className="mb-2 flex items-center justify-center gap-3 font-mono text-sm tracking-widest text-nyu dark:text-[var(--color-accent-light)]"
-      >
-        04
-        <span className="h-px w-10 bg-nyu/40 dark:bg-[color-mix(in_srgb,var(--color-accent-light)_40%,transparent)]" />
-      </motion.div>
       <motion.h1
         variants={titleVariants}
         className="mt-2 text-5xl lg:text-6xl tracking-tight font-semibold text-center text-neutral-900 dark:text-white mb-2"

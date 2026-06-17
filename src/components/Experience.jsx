@@ -1,7 +1,7 @@
-import { EXPERIENCE } from '@/constants/const'
-import ExperienceCard from './ExperienceCard'
-import { motion } from 'framer-motion'
-import SectionHero from './SectionHero'
+import { EXPERIENCE } from "@/constants/const";
+import ExperienceCard from "./ExperienceCard";
+import { motion } from "framer-motion";
+import SectionHero from "./SectionHero";
 
 const Experience = () => {
   const containerVariants = {
@@ -13,17 +13,17 @@ const Experience = () => {
         delayChildren: 0.3,
       },
     },
-  }
+  };
 
   return (
     <motion.div
-      className='flex flex-wrap flex-col border-b border-neutral-300 dark:border-neutral-800 pt-10'
+      className="flex flex-wrap flex-col border-b border-neutral-300 dark:border-neutral-800 pt-10"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
     >
-      <SectionHero index={"02"} title={"Experience"} subTitle={"Doing Work"} />
+      <SectionHero title={"Experience"} subTitle={"Doing Work"} />
       <div>
         {EXPERIENCE.map((e, i) => (
           <ExperienceCard
@@ -39,6 +39,6 @@ const Experience = () => {
         ))}
       </div>
     </motion.div>
-  )
-}
-export default Experience
+  );
+};
+export default Experience;

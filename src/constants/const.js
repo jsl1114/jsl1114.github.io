@@ -61,7 +61,7 @@ export const EXPERIENCE = [
   {
     link: "https://nyu.edu",
     company: "New York University",
-    role: "Lead Full Stack Software Engineer",
+    role: "Full Stack Software Engineer",
     time: "Apr 2025 - Present",
     location: "New York, NY",
     desc: [
@@ -89,7 +89,7 @@ export const EXPERIENCE = [
   {
     link: "https://scale.com",
     company: "Scale AI",
-    role: "Coding Exptertise for AI Training",
+    role: "Software Engineer for AI Training",
     time: "May 2024 - Present",
     location: "Remote",
     desc: [
@@ -102,13 +102,6 @@ export const EXPERIENCE = [
         content: [
           "Teaching robots how to code better than humans (scary but cool)",
           "Working in my pajamas",
-          "The feeling when the AI finally understands recursion",
-        ],
-      },
-      {
-        title: "Fun Fact",
-        content: [
-          "I'm pretty sure the AI is learning my bad coding habits too",
         ],
       },
     ],

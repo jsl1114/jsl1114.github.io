@@ -21,13 +21,14 @@ const Hero = () => {
             Full-Stack Developer
           </span>
           <p className="text-center lg:mx-50 py-10 text-neutral-600 dark:text-neutral-400">
-            Hi, I'm Jason! I am a cs undergrad at{" "}
-            <a href="https://nyu.edu" target="_blank">
-              New York University
-            </a>
-            . I love building things and solving problems. I enjoy Full-Stack
-            Development, Multimodal Learning and NLP. When I am not coding, I am
-            probably fishing, playing badminton or buying mechanical keyboards.
+            Hi, I'm Jason! I am a software engineer focused on building scalable
+            products and solving practical problems. I have experience across
+            full stack development and AI related systems, with a strong
+            interest in designing reliable software, improving system
+            performance, and turning complex ideas into usable tools. I enjoy
+            working across the stack and am especially interested in multimodal
+            AI, data driven applications, and building products that people rely
+            on every day.
           </p>
         </div>
       </motion.div>

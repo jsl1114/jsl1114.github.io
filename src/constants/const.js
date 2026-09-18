@@ -199,13 +199,13 @@ export const PROJECTS = [
     },
     image: "inky.png",
     screenshots: [
-      "inky1.png",
-      "inky2.png",
-      "inky3.png",
-      "inky4.png",
-      "inky5.png",
-      "inky6.png",
-      "inky7.png",
+      "inky1.webp",
+      "inky2.webp",
+      "inky3.webp",
+      "inky4.webp",
+      "inky5.webp",
+      "inky6.webp",
+      "inky7.webp",
     ],
   },
   {
@@ -227,10 +227,10 @@ export const PROJECTS = [
     },
     image: "lobster.png",
     screenshots: [
-      "lobster1.png",
-      "lobster2.png",
-      "lobster3.png",
-      "lobster4.png",
+      "lobster1.webp",
+      "lobster2.webp",
+      "lobster3.webp",
+      "lobster4.webp",
     ],
   },
   {
@@ -247,7 +247,7 @@ export const PROJECTS = [
       live: "https://path.jasonl.us",
     },
     image: "pathlive.png",
-    screenshots: ["pathlive1.png"],
+    screenshots: ["pathlive1.webp"],
   },
   {
     title: "SHell",
@@ -270,7 +270,7 @@ export const PROJECTS = [
       live: "https://jsl1114.github.io/projects/brownjack/game.html",
     },
     image: "brown.webp",
-    screenshots: ["brown1.png", "brown2.png", "brown3.png"],
+    screenshots: ["brown1.webp", "brown2.webp", "brown3.webp"],
   },
   {
     title: "Terminal Portfolio",
@@ -282,7 +282,7 @@ export const PROJECTS = [
       live: "https://jsl1114.github.io/projects/terminal_website/index.html",
     },
     image: "term.webp",
-    screenshots: ["term1.png"],
+    screenshots: ["term1.webp"],
   },
   {
     title: "Portfolio Website (currently v2)",
@@ -293,6 +293,6 @@ export const PROJECTS = [
       live: "https://jsl1114.github.io/",
     },
     image: "jl.png",
-    screenshots: ["jl1.png"],
+    screenshots: ["jl1.webp"],
   },
 ];

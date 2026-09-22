@@ -17,7 +17,7 @@ const HighlightText = ({ text, highlight }) => {
         part.toLowerCase() === highlight.toLowerCase() ? (
           <span
             key={i}
-            className="bg-yellow-200 dark:bg-yellow-900/50 dark:text-yellow-100 rounded-[2px] px-0.5"
+            className="bg-neutral-900/10 dark:bg-white/20 rounded-[2px] px-0.5"
           >
             {part}
           </span>
@@ -40,7 +40,7 @@ const AdminMessageItem = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="bg-white dark:bg-neutral-900 p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm hover:shadow-md transition-shadow min-w-0"
+      className="card p-6 rounded-2xl min-w-0"
       tabIndex={0}
       onKeyDown={(e) => {
         if (e.defaultPrevented) return;
@@ -54,13 +54,13 @@ const AdminMessageItem = ({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex-1 min-w-0">
             <div className="flex flex-wrap items-center gap-2 mb-2 min-w-0">
-              <h3 className="font-semibold text-lg text-neutral-900 dark:text-white">
+              <h3 className="text-xl text-neutral-900 dark:text-white">
                 <HighlightText text={msg.name} highlight={searchQuery} />
               </h3>
-              <span className="text-sm text-neutral-500 dark:text-neutral-400">
+              <span className="text-sm text-[var(--color-muted)] dark:text-[var(--color-muted-dark)]">
                 •
               </span>
-              <span className="text-sm text-neutral-500 dark:text-neutral-400">
+              <span className="text-sm text-[var(--color-muted)] dark:text-[var(--color-muted-dark)]">
                 {new Date(msg.createdAt).toLocaleDateString()}{" "}
                 {new Date(msg.createdAt).toLocaleTimeString()}
               </span>
@@ -69,14 +69,14 @@ const AdminMessageItem = ({
             <div className="flex flex-wrap items-center gap-2 min-w-0">
               <a
                 href={`mailto:${msg.email}`}
-                className="text-blue-600 dark:text-blue-400 text-sm hover:underline break-all min-w-0"
+                className="text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] text-sm underline underline-offset-4 break-all min-w-0"
               >
                 <HighlightText text={msg.email} highlight={searchQuery} />
               </a>
               <button
                 type="button"
                 onClick={() => handleCopyEmail(msg.id, msg.email)}
-                className="inline-flex items-center gap-1 rounded-md border border-neutral-200 dark:border-neutral-800 px-2 py-1 text-xs text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors cursor-pointer shrink-0"
+                className="inline-flex items-center gap-1 rounded-full border border-black/10 dark:border-white/[.08] px-2.5 py-1 text-xs text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] hover:border-black/35 dark:hover:border-white/35 transition-colors cursor-pointer shrink-0"
                 title="Copy email (or press C while focused)"
                 aria-label={`Copy ${msg.email} to clipboard`}
               >
@@ -99,7 +99,7 @@ const AdminMessageItem = ({
             <CollapsibleTrigger asChild>
               <button
                 type="button"
-                className="group inline-flex items-center justify-center gap-1 rounded-lg bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 transition-colors hover:cursor-pointer w-full sm:w-auto"
+                className="pill pill-ghost group w-full sm:w-auto"
                 aria-label="Toggle message"
               >
                 <span className="sm:hidden">View</span>
@@ -120,7 +120,7 @@ const AdminMessageItem = ({
         </div>
 
         <CollapsibleContent className="mt-4 p-2">
-          <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">
+          <p className="text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] whitespace-pre-wrap leading-[1.625]">
             <HighlightText text={msg.message} highlight={searchQuery} />
           </p>
         </CollapsibleContent>

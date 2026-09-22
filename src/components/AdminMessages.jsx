@@ -152,12 +152,12 @@ const AdminMessages = () => {
   return (
     <div className="w-full p-3 min-w-0">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-2xl font-bold text-neutral-900 dark:text-white">
+        <h2 className="text-3xl text-neutral-900 dark:text-white">
           Messages ({meta.msgCount})
         </h2>
         <button
           onClick={() => refetch()}
-          className="hover:cursor-pointer p-2 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
+          className="hover:cursor-pointer p-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
           title="Refresh"
         >
           <RefreshCw
@@ -180,7 +180,7 @@ const AdminMessages = () => {
         />
       </div>
       {messages.length === 0 ? (
-        <div className="text-center p-10 text-neutral-500 dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-900/50 rounded-xl border border-neutral-200 dark:border-neutral-800">
+        <div className="text-center p-10 text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] glass rounded-2xl">
           No messages found.
         </div>
       ) : (

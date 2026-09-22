@@ -1,72 +1,43 @@
 import { useState, useEffect, useContext, useRef } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { FaLinkedinIn } from "react-icons/fa6";
-import { FiGithub } from "react-icons/fi";
-import { TbMail } from "react-icons/tb";
 import ReactGA from "react-ga4";
-import {
-  House,
-  GraduationCap,
-  Briefcase,
-  Folder,
-  ContactRound,
-  LucideDot,
-  Sun,
-  Moon,
-} from "lucide-react";
+import { Sun, Moon } from "lucide-react";
 import CVIcon from "./CVIcon";
 import Logo from "../assets/logo.svg";
 import CV from "../assets/jason_liu_cv.pdf";
-import { SOCIALS, SECTIONS } from "../constants/const.js";
+import { SECTIONS } from "../constants/const.js";
 import { cn } from "@/lib/utils";
 import { ThemeContext } from "./ThemeProvider";
-import NewYearTypeWriter from "./HolidayTypeWriter";
 
 // Hysteresis so a few pixels of trackpad jitter can't flip the bar back and forth
 const COLLAPSE_AT = 24;
 const EXPAND_AT = 8;
-// Ignore tiny scroll wobble when deciding direction (mobile theme toggler)
-const DIRECTION_THRESHOLD = 6;
 
-const SocialLinks = ({ compact }) =>
-  SOCIALS.map((s) => (
-    <a
-      key={s.name}
-      href={s.name === "CV" ? CV : s.link}
-      target="_blank"
-      rel="noopener noreferrer"
-      onClick={() =>
-        ReactGA.event({
-          category: "Social",
-          action:
-            s.name === "CV"
-              ? "cv_download"
-              : s.name === "Email"
-                ? "email_click"
-                : s.name === "LinkedIn"
-                  ? "LinkedIn"
-                  : "GitHub",
-          label: `${s.name} - Navbar`,
-        })
-      }
-      className={cn(
-        "transition-colors duration-300 ease-out",
-        compact
-          ? "px-2 py-1 text-neutral-600 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white"
-          : "text-2xl text-neutral-700 dark:text-neutral-300 hover:text-violet-600 dark:hover:text-violet-300",
-      )}
-    >
-      {s.name === "LinkedIn" && <FaLinkedinIn size={24} />}
-      {s.name === "GitHub" && <FiGithub size={24} />}
-      {s.name === "Email" && <TbMail size={24} />}
-      {s.name === "CV" && <CVIcon size={24} />}
-    </a>
-  ));
+const CvLink = ({ compact }) => (
+  <a
+    href={CV}
+    target="_blank"
+    rel="noopener noreferrer"
+    onClick={() =>
+      ReactGA.event({
+        category: "Social",
+        action: "cv_download",
+        label: "CV - Navbar",
+      })
+    }
+    className={cn(
+      "transition-colors duration-300 ease-out text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white",
+      compact ? "px-1.5 py-1" : "px-1",
+    )}
+    aria-label="Download CV"
+  >
+    <CVIcon size={compact ? 18 : 20} />
+  </a>
+);
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
-  const [isScrollUp, setIsScrollUp] = useState(true);
   const { theme, toggleTheme } = useContext(ThemeContext);
   const navContainerRef = useRef(null);
   const reduceMotion = useReducedMotion();
@@ -83,12 +54,12 @@ const Navbar = () => {
     <button
       onClick={toggleTheme}
       className={cn(
-        "hidden sm:flex items-center justify-center rounded-full transition-colors duration-300 hover:text-violet-600 dark:hover:text-yellow-400 text-neutral-700 dark:text-neutral-300 hover:cursor-pointer",
+        "flex items-center justify-center rounded-full transition-colors duration-300 text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white hover:cursor-pointer",
         extraClass,
       )}
       aria-label="Toggle theme"
     >
-      {theme === "dark" ? <Sun size={20} /> : <Moon size={20} />}
+      {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
     </button>
   );
 
@@ -122,17 +93,11 @@ const Navbar = () => {
       });
     };
 
-    let lastDirectionY = window.scrollY;
     let ticking = false;
 
     const update = () => {
       ticking = false;
       const scrollY = window.scrollY;
-
-      if (Math.abs(scrollY - lastDirectionY) > DIRECTION_THRESHOLD) {
-        setIsScrollUp(scrollY < lastDirectionY);
-        lastDirectionY = scrollY;
-      }
 
       setIsScrolled((wasScrolled) =>
         wasScrolled ? scrollY > EXPAND_AT : scrollY > COLLAPSE_AT,
@@ -184,118 +149,142 @@ const Navbar = () => {
     }
   };
 
-  return (
-    <>
-      <div
-        ref={navContainerRef}
-        className="fixed top-0 left-0 w-full flex justify-center items-center z-10 transition-[padding] duration-200"
-      >
-        <div className="w-[90%] flex justify-center items-center">
-          <nav
+  // The spy reports "" until the first measure lands; fall back to the top
+  // section so the mobile readout stays hidden while at Home.
+  const activeName =
+    SECTIONS.find((s) => s.id === activeSection)?.name ?? SECTIONS[0].name;
+
+  // Narrow screens have no room for the link row, so the centre carries just
+  // the section you're in. Names swap bottom-to-top: the outgoing one rises
+  // out of the clip while the incoming one rises into it.
+  const sectionReadout = (
+    <div className="relative h-5 w-full overflow-hidden lg:hidden">
+      <AnimatePresence initial={false}>
+        {activeName !== SECTIONS[0].name && (
+          <motion.span
+            key={activeName}
+            initial={{ y: "110%", opacity: 0 }}
+            animate={{ y: "0%", opacity: 1 }}
+            exit={{ y: "-110%", opacity: 0 }}
+            transition={
+              reduceMotion
+                ? { duration: 0 }
+                : { duration: 0.38, ease: [0.25, 0.46, 0.45, 0.94] }
+            }
+            className="absolute inset-0 flex items-center justify-center text-[13px] font-medium tracking-[0.02em] text-neutral-900 dark:text-white"
+          >
+            {activeName}
+          </motion.span>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+
+  // Links belong to the collapsed bar only — at the top of the page the page
+  // itself is the navigation. The cell stays mounted and fades so collapsing
+  // doesn't shift the grid, and goes inert rather than unmounting so nothing
+  // invisible stays tabbable. Never wrap this in a second AnimatePresence: one
+  // fighting the popLayout swap below leaves the collapsed bar empty.
+  const sectionLinks = (
+    <div
+      className={cn(
+        "hidden lg:flex items-center justify-center gap-10 text-sm font-medium transition-opacity duration-300 ease-out motion-reduce:transition-none",
+        isScrolled ? "opacity-100" : "pointer-events-none opacity-0",
+      )}
+      aria-hidden={!isScrolled}
+    >
+      {SECTIONS.map((s) => (
+        <div key={s.id} className="relative py-5">
+          <button
+            onClick={() => handleSectionClick(s.id)}
+            tabIndex={isScrolled ? 0 : -1}
             className={cn(
-              "mt-5 flex mb-10 items-center -top-1 lg:top-0 rounded-full px-4 py-0 relative overflow-hidden border-2 border-transparent",
-              "transition-[width,background-color,border-color,box-shadow] duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none",
-              isScrolled
-                ? "w-4/5 backdrop-blur-xl shadow-lg bg-white/90 dark:bg-neutral-900/80 border-neutral-300/60 dark:border-white/20"
-                : "w-full",
+              "transition-colors duration-300 cursor-pointer",
+              activeSection === s.id
+                ? "text-neutral-900 dark:text-white"
+                : "text-neutral-500 hover:text-black dark:text-neutral-400 dark:hover:text-white",
             )}
           >
-            <div className="flex flex-shrink-0 items-center my-4">
-              <img
-                className="mx-2 w-10 brightness-50 dark:brightness-100 contrast-125 dark:contrast-100 saturate-150 dark:saturate-100 transition-all duration-300"
-                src={Logo}
-                alt="Logo"
-              />
-            </div>
-
-            <AnimatePresence mode="popLayout" initial={false}>
-              {isScrolled ? (
-                <motion.div
-                  key="compact"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, transition: leave }}
-                  transition={enter}
-                  className="flex flex-1 items-center"
-                >
-                  <div className="flex items-center ml-2">
-                    <SocialLinks compact />
-                  </div>
-
-                  {themeToggle("ml-auto mr-3")}
-
-                  <div className="hidden sm:flex items-center justify-center text-sm">
-                    {SECTIONS.map((s) => (
-                      <div
-                        key={s.id}
-                        className="relative flex flex-col items-center justify-center gap-0"
-                      >
-                        <button
-                          onClick={() => handleSectionClick(s.id)}
-                          className={cn(
-                            "px-2 rounded-full transition-colors duration-300 cursor-pointer flex flex-col items-center gap-1",
-                            activeSection === s.id
-                              ? "text-neutral-900 dark:text-white"
-                              : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white",
-                          )}
-                        >
-                          {s.name === "Home" && <House />}
-                          {s.name === "Education" && <GraduationCap />}
-                          {s.name === "Experience" && <Briefcase />}
-                          {s.name === "Projects" && <Folder />}
-                          {s.name === "Contact" && <ContactRound />}
-                          {/* {s.name} */}
-                        </button>
-                        {activeSection === s.id && (
-                          <motion.div
-                            layoutId="nav-active-dot"
-                            transition={
-                              reduceMotion
-                                ? { duration: 0 }
-                                : { duration: 0.25, ease: "easeOut" }
-                            }
-                            className="absolute -bottom-5"
-                          >
-                            <LucideDot className="text-neutral-900 dark:text-white" />
-                          </motion.div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="full"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0, transition: leave }}
-                  transition={enter}
-                  className="flex flex-1 items-center justify-end gap-4"
-                >
-                  {themeToggle()}
-                  <SocialLinks />
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </nav>
+            {s.name}
+          </button>
+          {activeSection === s.id && (
+            <motion.div
+              layoutId="nav-active-rule"
+              transition={
+                reduceMotion
+                  ? { duration: 0 }
+                  : { duration: 0.25, ease: "easeOut" }
+              }
+              className="absolute inset-x-0 bottom-3 h-px bg-neutral-900 dark:bg-white"
+            />
+          )}
         </div>
-      </div>
+      ))}
+    </div>
+  );
 
-      {/* Mobile-only floating theme toggler (bottom-right) */}
-      <button
-        onClick={toggleTheme}
-        className={cn(
-          "fixed bottom-4 right-4 z-20 flex items-center justify-center rounded-full border border-neutral-300/70 bg-white/90 text-neutral-700 shadow-lg backdrop-blur-md transition-all duration-300 ease-out motion-reduce:transition-none hover:-translate-y-0.5 hover:text-violet-600 dark:border-white/20 dark:bg-neutral-900/90 dark:text-neutral-200 dark:hover:text-yellow-400 sm:hidden",
-          isScrollUp
-            ? "h-11 w-11 opacity-100 scale-100"
-            : "h-3 w-3 opacity-70 scale-75",
-        )}
-        aria-label="Toggle theme"
-      >
-        {isScrollUp &&
-          (theme === "dark" ? <Sun size={20} /> : <Moon size={20} />)}
-      </button>
-    </>
+  return (
+    <div
+      ref={navContainerRef}
+      className="fixed top-0 left-0 w-full flex justify-center items-center z-10 transition-[padding] duration-200"
+    >
+      <div className="w-[90%] max-w-[1280px] flex justify-center items-center">
+        <nav
+          className={cn(
+            "mt-5 mb-10 grid grid-cols-[auto_1fr_auto] items-center -top-1 lg:top-0 rounded-full px-4 sm:px-8 py-0 relative overflow-hidden border border-transparent",
+            "transition-[width,background-color,border-color] duration-[400ms] ease-[cubic-bezier(0.32,0.72,0,1)] motion-reduce:transition-none",
+            isScrolled
+              ? "w-4/5 backdrop-blur-xl bg-white/85 dark:bg-neutral-950/80 border-black/10 dark:border-white/15"
+              : "w-full",
+          )}
+        >
+          <button
+            onClick={() => handleSectionClick("hero")}
+            className="my-4 flex shrink-0 cursor-pointer items-center"
+            aria-label="Back to top"
+          >
+            <img
+              className="mx-2 w-9 brightness-50 contrast-125 saturate-150 transition-all duration-300 sm:w-10 dark:brightness-100 dark:contrast-100 dark:saturate-100"
+              src={Logo}
+              alt="Jason Liu logo"
+            />
+          </button>
+
+          <div className="flex min-w-0 items-center justify-center">
+            {sectionReadout}
+            {sectionLinks}
+          </div>
+
+          <AnimatePresence mode="popLayout" initial={false}>
+            {isScrolled ? (
+              <motion.div
+                key="compact"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: leave }}
+                transition={enter}
+                className="flex items-center justify-end gap-1"
+              >
+                <CvLink compact />
+                {themeToggle("ml-2")}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="full"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: leave }}
+                transition={enter}
+                className="flex items-center justify-end gap-3"
+              >
+                <CvLink />
+                {themeToggle("ml-1")}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </nav>
+      </div>
+    </div>
   );
 };
 export default Navbar;

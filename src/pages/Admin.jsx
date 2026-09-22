@@ -10,7 +10,7 @@ const Admin = () => {
         <div className="mb-6 sm:mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <button
             onClick={() => navigate("/")}
-            className="inline-flex items-center justify-center rounded-lg bg-neutral-200 px-4 py-2 font-medium text-neutral-900 hover:opacity-80 hover:cursor-pointer dark:bg-neutral-800 dark:text-white w-full sm:w-auto"
+            className="pill pill-ghost w-full sm:w-auto"
           >
             ← Back to Site
           </button>

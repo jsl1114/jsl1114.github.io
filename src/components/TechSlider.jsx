@@ -10,7 +10,7 @@ const TechCard = ({ tech }) => {
   return (
     <figure
       className={cn(
-        'relative h-30 w-30 cursor-pointer rounded-xl p-4 transition-transform duration-300 hover:scale-110 hover:-translate-y-2'
+        'relative h-[clamp(56px,8svh,72px)] w-[clamp(56px,8svh,72px)] cursor-pointer rounded-xl p-1.5 transition-transform duration-300 hover:scale-110 hover:-translate-y-2 sm:h-24 sm:w-24 sm:p-3 lg:h-[clamp(88px,13svh,120px)] lg:w-[clamp(88px,13svh,120px)] lg:p-4'
         // 'border-gray-50/[.1] bg-gray-50/[.10] hover:bg-gray-50/[.15]'
       )}
     >
@@ -19,9 +19,10 @@ const TechCard = ({ tech }) => {
           width='70'
           height='70'
           alt={tech}
+          className='h-auto w-[clamp(28px,4.5svh,36px)] sm:w-12 lg:w-[clamp(46px,8svh,70px)]'
           src={`https://cdn.simpleicons.org/${tech}/${tech}`}
         />
-        <figcaption className='text-sm font-medium text-neutral-800 dark:text-white h-2 [text-transform:capitalize]'>
+        <figcaption className='font-sans text-[10px] font-medium text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] h-2 [text-transform:capitalize] sm:text-xs lg:text-sm'>
           {tech
             .replace('dot', '.')
             .replace('js', 'JS')
@@ -35,8 +36,8 @@ const TechCard = ({ tech }) => {
 
 export default function TechSlider() {
   return (
-    <div className='relative flex w-full lg:w-2/3 flex-col items-center justify-center overflow-x-hidden rounded-4xl pointer-events-none bg-[#FEFEFF] dark:bg-white/[.2] border-3 border-nyu/10 dark:border-white/[.2] shadow-nyu-large dark:shadow-neon-large'>
-      <Marquee pauseOnHover>
+    <div className='relative flex w-full lg:w-2/3 flex-col items-center justify-center overflow-x-hidden rounded-4xl pointer-events-none bg-white/70 dark:bg-white/[.04] backdrop-blur-md border border-black/10 dark:border-white/[.08]'>
+      <Marquee pauseOnHover className='p-1 sm:p-2'>
         {firstRow.map((tech, i) => (
           <TechCard
             key={i}
@@ -44,7 +45,7 @@ export default function TechSlider() {
           />
         ))}
       </Marquee>
-      <Marquee reverse pauseOnHover>
+      <Marquee reverse pauseOnHover className='p-1 sm:p-2'>
         {secondRow.map((tech) => (
           <TechCard
             key={tech}

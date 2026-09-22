@@ -40,7 +40,7 @@ const ProjectCard = ({
         loading="lazy"
         className="h-8 w-8 rounded-lg object-contain bg-white/70 dark:bg-white/10 p-1 shrink-0"
       />
-      <h6 className="text-lg font-semibold text-neutral-900 dark:text-white truncate min-w-0">
+      <h6 className="text-xl text-neutral-900 dark:text-white truncate min-w-0">
         {title}
       </h6>
     </div>
@@ -61,7 +61,7 @@ const ProjectCard = ({
             })
           }
         >
-          <FaLink className="w-5 h-5 transition-colors text-neutral-700 dark:text-neutral-300 hover:text-[var(--color-accent)] dark:hover:text-[var(--color-accent-light)]" />
+          <FaLink className="w-5 h-5 transition-colors text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white" />
         </a>
       )}
       {urls.github && (
@@ -77,7 +77,7 @@ const ProjectCard = ({
             })
           }
         >
-          <FaGithub className="w-5 h-5 transition-colors text-neutral-700 dark:text-neutral-300 hover:text-[var(--color-accent)] dark:hover:text-[var(--color-accent-light)]" />
+          <FaGithub className="w-5 h-5 transition-colors text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white" />
         </a>
       )}
     </div>
@@ -90,7 +90,7 @@ const ProjectCard = ({
 
         <div className="p-5 flex flex-col h-52 overflow-hidden">
           {header}
-          <p className="text-sm text-neutral-700 dark:text-neutral-300 line-clamp-2 shrink-0">
+          <p className="text-sm leading-[1.625] text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] line-clamp-2 shrink-0">
             {desc}
           </p>
           <div className="flex flex-wrap gap-2 mt-3 max-h-8 overflow-hidden shrink-0">
@@ -110,7 +110,7 @@ const ProjectCard = ({
               onMouseEnter={() => setExpanded(true)}
               onFocus={() => setExpanded(true)}
               onClick={() => setExpanded((v) => !v)}
-              className="ml-auto grid place-items-center h-8 w-8 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-[var(--color-accent)] dark:hover:text-[var(--color-accent-light)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+              className="ml-auto grid place-items-center h-8 w-8 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
             >
               <Expand className="w-4 h-4" />
             </button>
@@ -125,10 +125,10 @@ const ProjectCard = ({
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onMouseLeave={() => setExpanded(false)}
-              className="absolute inset-0 z-10 flex flex-col p-5 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md"
+              className="absolute inset-0 z-10 flex flex-col p-5 bg-white/95 dark:bg-[#0b1120]/95 backdrop-blur-md"
             >
               {header}
-              <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-4">
+              <p className="text-sm leading-[1.625] text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] mb-4">
                 {desc}
               </p>
               <div className="flex flex-wrap gap-2 mb-4">

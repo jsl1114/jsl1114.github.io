@@ -33,21 +33,21 @@ const AdminPageNav = ({
           placeholder="Search..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="pl-8 pr-3 py-1.5 text-sm border border-neutral-200 dark:border-neutral-800 rounded-md outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-neutral-900 w-full sm:w-64"
+          className="pl-8 pr-3 py-1.5 text-sm rounded-full glass outline-none transition-colors focus:border-black/50 dark:focus:border-white/50 w-full sm:w-64"
         />
       </div>
 
       <div className="flex flex-col sm:flex-row gap-4 items-center">
-        <div className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap">
+        <div className="text-sm text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] whitespace-nowrap">
           page {page} of {totalPages}
         </div>
         <div className="flex items-center gap-2">
           <div className="flex items-center gap-2">
-            <div className="text-sm text-neutral-600 dark:text-neutral-400 whitespace-nowrap"></div>
+            <div className="text-sm text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] whitespace-nowrap"></div>
             <select
               value={String(limit)}
               onChange={(e) => setLimit(Number(e.target.value))}
-              className="bg-transparent border border-neutral-200 dark:border-neutral-800 rounded px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-transparent border border-black/10 dark:border-white/[.08] rounded-full px-3 py-1 text-sm outline-none transition-colors focus:border-black/50 dark:focus:border-white/50"
             >
               {mppOptions.map(({ value, label }) => (
                 <option value={value} key={value}>
@@ -63,7 +63,7 @@ const AdminPageNav = ({
               className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
               title="First page"
             >
-              <ChevronFirst className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+              <ChevronFirst className="w-5 h-5 text-[var(--color-muted)] dark:text-[var(--color-muted-dark)]" />
             </button>
             <button
               onClick={() => setPage((p) => Math.max(1, p - 1))}
@@ -71,7 +71,7 @@ const AdminPageNav = ({
               className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
               title="Previous page"
             >
-              <ChevronLeft className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+              <ChevronLeft className="w-5 h-5 text-[var(--color-muted)] dark:text-[var(--color-muted-dark)]" />
             </button>
             <button
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
@@ -79,7 +79,7 @@ const AdminPageNav = ({
               className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
               title="Next page"
             >
-              <ChevronRight className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+              <ChevronRight className="w-5 h-5 text-[var(--color-muted)] dark:text-[var(--color-muted-dark)]" />
             </button>
             <button
               onClick={() => setPage(totalPages)}
@@ -87,7 +87,7 @@ const AdminPageNav = ({
               className="p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
               title="Last page"
             >
-              <ChevronLast className="w-5 h-5 text-neutral-600 dark:text-neutral-400" />
+              <ChevronLast className="w-5 h-5 text-[var(--color-muted)] dark:text-[var(--color-muted-dark)]" />
             </button>
           </div>
         </div>

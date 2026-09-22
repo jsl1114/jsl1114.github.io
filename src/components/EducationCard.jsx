@@ -19,19 +19,19 @@ const EducationCard = ({ school, degree, year, location, gpa, coursework }) => {
       className="flex flex-wrap lg:justify-center mb-8"
     >
       <div className="w-full lg:w-1/4">
-        <p className="mb-2 text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="mb-2 text-sm text-[var(--color-muted)] dark:text-[var(--color-muted-dark)]">
           {year}
         </p>
-        <p className="mb-2 text-sm text-neutral-500 dark:text-neutral-400 italic">
+        <p className="mb-2 text-sm text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] italic">
           {location}
         </p>
       </div>
       <div className="w-full max-w-xl lg:w-3/4">
         <div className="flex flex-col sm:flex-row sm:justify-between">
-          <h6 className="mb-2 font-semibold text-neutral-900 dark:text-white">
+          <h6 className="mb-2 text-xl text-neutral-900 dark:text-white">
             {school}
           </h6>
-          <span className="text-sm text-nyu dark:text-[var(--color-accent-light)]">
+          <span className="font-sans text-sm text-[var(--color-muted)] dark:text-[var(--color-muted-dark)]">
             {degree}
           </span>
         </div>

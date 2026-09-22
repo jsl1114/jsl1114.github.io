@@ -36,10 +36,10 @@ const ExperienceCard = ({
       className="flex flex-wrap lg:justify-center mb-8"
     >
       <div className="w-full lg:w-1/4 pt-4 px-2">
-        <p className="mb-2 text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="mb-2 text-sm text-[var(--color-muted)] dark:text-[var(--color-muted-dark)]">
           {time}
         </p>
-        <p className="mb-2 text-sm text-neutral-500 dark:text-neutral-400 italic">
+        <p className="mb-2 text-sm text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] italic">
           {location}
         </p>
       </div>
@@ -56,14 +56,14 @@ const ExperienceCard = ({
                 setIsOpen(true);
               }
             }}
-            className="w-full max-w-xl lg:w-3/4 card py-4 px-2 rounded-xl group cursor-pointer outline-none relative hover:bg-neutral-100 dark:hover:bg-neutral-800/50 transition-colors duration-300 dark:border dark:border-neutral-800"
+            className="w-full max-w-xl lg:w-3/4 card py-5 px-4 rounded-xl group cursor-pointer outline-none relative hover:bg-white/90 dark:hover:bg-white/[.07] transition-colors duration-300"
           >
-            <div className="mb-2 font-semibold text-neutral-900 dark:text-white sm:justify-between sm:flex">
+            <div className="mb-2 font-display text-xl leading-tight text-neutral-900 dark:text-white sm:justify-between sm:flex sm:items-baseline">
               {role}
               <br className="block sm:hidden" />
               <span className="hidden sm:inline"> </span>
               <span className="inline-flex items-center">
-                <div className="text-sm !text-nyu dark:!text-[var(--color-accent-light)] !font-normal">
+                <div className="font-sans text-sm text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] font-normal">
                   {company}
                 </div>
               </span>
@@ -72,7 +72,7 @@ const ExperienceCard = ({
             <ul className="pl-4 list-disc">
               {desc.map((w, i) => (
                 <li
-                  className="mt-2 rounded text-neutral-700 dark:text-neutral-300 text-sm font-medium"
+                  className="mt-2 rounded text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] text-sm leading-[1.625]"
                   key={i}
                 >
                   {w}
@@ -95,7 +95,7 @@ const ExperienceCard = ({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.15 }}
-                  className="fixed inset-0 z-50 bg-neutral-900/40 dark:bg-black/50 backdrop-blur-md"
+                  className="fixed inset-0 z-50 bg-neutral-900/30 dark:bg-black/60 backdrop-blur-md"
                 />
               </DialogPrimitive.Overlay>
               <div className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none">
@@ -105,13 +105,13 @@ const ExperienceCard = ({
                     animate={{ x: 0, opacity: 1 }}
                     exit={{ x: -50, opacity: 0 }}
                     transition={{ duration: 0.1, ease: "easeOut" }}
-                    className="w-[min(700px,calc(100vw-2rem))] max-h-[85vh] pointer-events-auto outline-none rounded-xl border border-nyu/[.2] bg-white dark:bg-neutral-900 shadow-lg flex flex-col relative"
+                    className="w-[min(700px,calc(100vw-2rem))] max-h-[85vh] pointer-events-auto outline-none rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0b1120] flex flex-col relative"
                   >
                     <div className="absolute top-6 right-6 sm:top-10 sm:right-10 z-1">
                       <DialogClose asChild>
                         <button
                           type="button"
-                          className="p-2 rounded-full bg-neutral-100 dark:bg-neutral-800 text-neutral-500 hover:bg-neutral-200 hover:cursor-pointer dark:hover:bg-neutral-700 transition-colors"
+                          className="p-2 rounded-full bg-black/5 dark:bg-white/10 text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:cursor-pointer transition-colors"
                         >
                           <span className="sr-only">Close</span>
                           <svg
@@ -135,33 +135,29 @@ const ExperienceCard = ({
                     <div className="w-full overflow-y-auto p-6 sm:p-10">
                       <div className="flex items-start justify-between gap-6 mb-8">
                         <div className="min-w-0 flex-1">
-                          <div className="text-xs font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3">
+                          <div className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] mb-3">
                             Experience
                           </div>
-                          <h2 className="text-3xl sm:text-4xl font-bold text-neutral-900 dark:text-white tracking-tight mb-3">
+                          <h2 className="text-3xl sm:text-4xl text-neutral-900 dark:text-white tracking-[-0.025em] mb-3">
                             {role}
                           </h2>
                           <a
                             href={link}
                             target="_blank"
                             rel="noreferrer"
-                            className="inline-flex items-center hover:text-nyu dark:hover:text-[var(--color-accent-light)] transition-colors font-medium text-xl"
+                            className="inline-flex items-center transition-colors font-medium text-lg"
                           >
                             {company}
                             <MdArrowOutward className="ml-1" />
                           </a>
-                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 text-lg font-medium text-neutral-600 dark:text-neutral-300">
-                            <span className="text-neutral-500 dark:text-neutral-400">
-                              {time}
-                            </span>
+                          <div className="flex flex-wrap items-center gap-x-2 gap-y-2 mt-1 text-sm text-[var(--color-muted)] dark:text-[var(--color-muted-dark)]">
+                            <span>{time}</span>
                             {location && (
                               <>
                                 <span className="hidden sm:inline text-neutral-300 dark:text-neutral-600">
                                   •
                                 </span>
-                                <span className="text-neutral-500 dark:text-neutral-400">
-                                  {location}
-                                </span>
+                                <span>{location}</span>
                               </>
                             )}
                           </div>
@@ -172,7 +168,7 @@ const ExperienceCard = ({
                         {desc.map((w, i) => (
                           <p
                             key={i}
-                            className="text-md leading-relaxed text-neutral-700 dark:text-neutral-300"
+                            className="text-[16px] leading-[1.625] text-[var(--color-muted)] dark:text-[var(--color-muted-dark)]"
                           >
                             {w}
                           </p>
@@ -183,16 +179,16 @@ const ExperienceCard = ({
                         {additionalInfo &&
                           additionalInfo.map((section, idx) => (
                             <div key={idx}>
-                              <div className="text-sm font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 mb-3">
+                              <div className="text-xs font-medium uppercase tracking-[0.12em] text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] mb-3">
                                 {section.title}
                               </div>
                               <ul className="space-y-2">
                                 {section.content.map((item, i) => (
                                   <li
                                     key={i}
-                                    className="text-base font-medium text-neutral-700 dark:text-neutral-300 flex items-start"
+                                    className="text-[16px] leading-[1.625] text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] flex items-start"
                                   >
-                                    <span className="mr-2 text-nyu dark:text-[var(--color-accent-light)]">
+                                    <span className="mr-2 text-neutral-900 dark:text-white">
                                       •
                                     </span>
                                     {item}

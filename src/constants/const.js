@@ -1,19 +1,23 @@
-export const SOCIALS = [
+// Direct channels listed beside the contact form. `value` is what shows under
+// the label — keep it short enough to sit on one line.
+export const CONTACT_CHANNELS = [
   {
-    name: "LinkedIn",
-    link: "https://www.linkedin.com/in/jinsen-liu/",
+    label: "LinkedIn",
+    value: "in/jinsen-liu",
+    href: "https://www.linkedin.com/in/jinsen-liu/",
+    icon: "linkedin",
   },
   {
-    name: "GitHub",
-    link: "https://github.com/jsl1114",
+    label: "GitHub",
+    value: "jsl1114",
+    href: "https://github.com/jsl1114",
+    icon: "github",
   },
   {
-    name: "Email",
-    link: "mailto:jl13869@nyu.edu",
-  },
-  {
-    name: "CV",
-    link: "../assets/jason_liu_cv.pdf",
+    label: "Google Meet",
+    value: "Book a time with me",
+    href: "https://calendar.google.com/calendar/u/0/appointments/schedules/AcZssZ1Ogi016XOjaq0g6Jiyi73-xI6tgs1M2OeZ-3exQTZAghPE6nOlV8qzS7re2m0D8Tw_6O29-3nZ",
+    icon: "meet",
   },
 ];
 

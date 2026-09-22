@@ -17,7 +17,7 @@ const Experience = () => {
 
   return (
     <motion.div
-      className="flex flex-wrap flex-col border-b border-neutral-300 dark:border-neutral-800"
+      className="flex flex-wrap flex-col border-b border-black/10 dark:border-white/[.08]"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"

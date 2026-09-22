@@ -35,7 +35,7 @@ const Projects = () => {
 
   return (
     <motion.div
-      className="border-b border-neutral-300 dark:border-neutral-800 pb-10"
+      className="border-b border-black/10 dark:border-white/[.08] pb-10"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"
@@ -59,7 +59,7 @@ const Projects = () => {
           className="max-w-5xl mx-auto mt-8"
         >
           <div className="flex justify-center">
-            <CollapsibleTrigger className="flex items-center gap-2 rounded-full glass px-5 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:text-[var(--color-accent)] dark:hover:text-[var(--color-accent-light)] transition-colors cursor-pointer">
+            <CollapsibleTrigger className="pill pill-ghost">
               {open ? "Show Less" : `More Projects (${extended.length})`}
               <ChevronDown
                 className={`w-4 h-4 transition-transform duration-300 ${

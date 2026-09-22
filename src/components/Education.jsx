@@ -7,7 +7,7 @@ import SectionHero from "./SectionHero";
 const Education = () => {
   return (
     <motion.div
-      className="border-b border-neutral-300 dark:border-neutral-800"
+      className="border-b border-black/10 dark:border-white/[.08]"
       variants={containerVariants}
       initial="hidden"
       whileInView="visible"

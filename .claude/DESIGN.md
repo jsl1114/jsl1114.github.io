@@ -195,9 +195,12 @@ Three rules keep it honest:
 ## Contact
 
 Two columns from `lg`, stacked below it: the message form on the left, direct
-channels on the right under an `OR REACH ME DIRECTLY` micro-label. Channels come
-from `CONTACT_CHANNELS` in `src/constants/const.js` — add one there, not in the
-component. The public channels are LinkedIn, GitHub, and Google Meet. Do not
+channels on the right. Channels come from `CONTACT_CHANNELS` in
+`src/constants/const.js` — add one there, not in the component.
+
+**No email channel.** Email is deliberately not listed anywhere on the page:
+it's on the CV, and the point is that people read that first. The form's own
+Email field is the *visitor's* address and is unrelated. The public channels are LinkedIn, GitHub, and Google Meet. Do not
 expose a direct email address here or in the terminal demo; visitors can find
 it in the resume. The message form remains available.
 

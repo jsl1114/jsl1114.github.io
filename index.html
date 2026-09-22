@@ -31,6 +31,19 @@
   <!-- The entry curtain is plain HTML/CSS rather than a React component so it
        covers the viewport from the very first paint, before the bundle runs. -->
   <style>
+    /* Safari extends the document canvas into its safe-area/overscroll region.
+       Fixed background layers alone leave that canvas transparent. Keep this
+       before the bundle loads so the saved theme also applies on first paint. */
+    html {
+      background-color: #fafafa;
+      color-scheme: light;
+    }
+
+    html.dark {
+      background-color: #0b1120;
+      color-scheme: dark;
+    }
+
     #curtain {
       position: fixed;
       inset: 0;

@@ -13,12 +13,12 @@ const PageBackground = () => {
         className="fixed inset-0 z-[-1] dark:hidden pointer-events-none"
         style={{
           background:
-            "radial-gradient(800px circle at var(--mx, 50%) var(--my, 40%), color-mix(in srgb, var(--color-accent) 10%, transparent), transparent 60%)",
+            "radial-gradient(800px circle at var(--mx, 50%) var(--my, 40%), color-mix(in srgb, var(--color-ink) 5%, transparent), transparent 60%)",
         }}
       />
 
       {/* Dark mode base */}
-      <div className="fixed inset-0 z-[-2] hidden dark:block bg-neutral-950" />
+      <div className="fixed inset-0 z-[-2] hidden dark:block bg-[#0b1120]" />
 
       {/* Dark mode grain overlay */}
       <div className="fixed inset-0 z-[-1] hidden dark:block pointer-events-none bg-grain opacity-60" />
@@ -28,7 +28,7 @@ const PageBackground = () => {
         className="fixed inset-0 z-[-1] hidden dark:block pointer-events-none"
         style={{
           background:
-            "radial-gradient(850px circle at var(--mx, 50%) var(--my, 40%), color-mix(in srgb, var(--color-accent-strong) 38%, transparent), color-mix(in srgb, var(--color-accent) 16%, transparent) 35%, transparent 65%)",
+            "radial-gradient(850px circle at var(--mx, 50%) var(--my, 40%), rgba(255,255,255,0.06), transparent 65%)",
         }}
       />
     </>

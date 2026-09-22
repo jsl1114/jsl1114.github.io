@@ -9,6 +9,7 @@ import { useEffect } from "react";
 import ReactGA from "react-ga4";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
+import NotFound from "./pages/NotFound";
 import PageBackground from "./components/PageBackground";
 
 const ShortcutHandler = () => {
@@ -41,11 +42,12 @@ function App() {
   return (
     <Router>
       <ShortcutHandler />
-      <div className="relative w-full overflow-x-hidden text-neutral-800 dark:text-neutral-300 antialiased selection:bg-cyan-300 selection:text-cyan-900 bg-transparent dark:bg-transparent transition-colors duration-300 min-h-screen">
+      <div className="relative w-full overflow-x-hidden text-neutral-800 dark:text-neutral-300 antialiased selection:bg-neutral-900 selection:text-white dark:selection:bg-white dark:selection:text-neutral-900 bg-transparent dark:bg-transparent transition-colors duration-300 min-h-screen">
         <PageBackground />
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </Router>

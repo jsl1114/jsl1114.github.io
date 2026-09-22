@@ -49,7 +49,7 @@ export default function BottomNav() {
         </DockIcon>
         <DockIcon className="bg-black/10 dark:bg-white/10 hover:bg-purple-200/70 dark:hover:bg-white/20 transition-colors duration-200">
           <a
-            href="mailto:jl13869@nyu.edu"
+            href="mailto:jason.dev.0211@gmail.com"
             target="_blank"
             rel="noopener noreferrer"
             onClick={() =>

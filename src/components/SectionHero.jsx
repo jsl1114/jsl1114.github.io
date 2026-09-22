@@ -7,14 +7,14 @@ const SectionHero = ({ title, subTitle }) => {
       <div className="w-full lg:w-1/4">
         <motion.h1
           variants={titleVariants}
-          className={`font-semibold tracking-tight text-neutral-900 dark:text-white mt-10 text-5xl ${!subTitle && "mb-12"}`}
+          className={`tracking-[-0.025em] text-neutral-900 dark:text-white mt-10 text-5xl lg:text-6xl ${!subTitle && "mb-12"}`}
         >
           {title}
         </motion.h1>
         {subTitle && (
           <motion.h2
             variants={subtitleVariants}
-            className="mb-8 mt-2 text-md text-neutral-600 dark:text-neutral-400 max-w-none"
+            className="mb-8 mt-2 font-sans text-[18px] text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] max-w-none"
           >
             {subTitle}
           </motion.h2>

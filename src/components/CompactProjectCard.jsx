@@ -27,7 +27,7 @@ const CompactProjectCard = ({ title, desc, urls, image, technologies }) => {
             })
           }
         >
-          <FaLink className="w-4 h-4 transition-colors text-neutral-700 dark:text-neutral-300 hover:text-[var(--color-accent)] dark:hover:text-[var(--color-accent-light)]" />
+          <FaLink className="w-4 h-4 transition-colors text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white" />
         </a>
       )}
       {urls.github && (
@@ -43,7 +43,7 @@ const CompactProjectCard = ({ title, desc, urls, image, technologies }) => {
             })
           }
         >
-          <FaGithub className="w-4 h-4 transition-colors text-neutral-700 dark:text-neutral-300 hover:text-[var(--color-accent)] dark:hover:text-[var(--color-accent-light)]" />
+          <FaGithub className="w-4 h-4 transition-colors text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white" />
         </a>
       )}
     </div>
@@ -69,7 +69,7 @@ const CompactProjectCard = ({ title, desc, urls, image, technologies }) => {
         {logoBadge}
         <div className="flex flex-col min-w-0 flex-1">
           <div className="flex items-center gap-3 mb-1">
-            <h6 className="text-base font-semibold text-neutral-900 dark:text-white truncate min-w-0">
+            <h6 className="text-lg text-neutral-900 dark:text-white truncate min-w-0">
               {title}
             </h6>
             <div className="ml-auto flex items-center gap-3 shrink-0">
@@ -81,13 +81,13 @@ const CompactProjectCard = ({ title, desc, urls, image, technologies }) => {
                 onMouseEnter={() => setExpanded(true)}
                 onFocus={() => setExpanded(true)}
                 onClick={() => setExpanded((v) => !v)}
-                className="grid place-items-center h-7 w-7 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-[var(--color-accent)] dark:hover:text-[var(--color-accent-light)] hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+                className="grid place-items-center h-7 w-7 rounded-full text-neutral-500 dark:text-neutral-400 hover:text-black dark:hover:text-white hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
               >
                 <Expand className="w-3.5 h-3.5" />
               </button>
             </div>
           </div>
-          <p className="text-sm text-neutral-700 dark:text-neutral-300 line-clamp-2">
+          <p className="text-sm leading-[1.625] text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] line-clamp-2">
             {desc}
           </p>
           <div className="flex flex-wrap gap-2 mt-3">
@@ -107,16 +107,16 @@ const CompactProjectCard = ({ title, desc, urls, image, technologies }) => {
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
               onMouseLeave={() => setExpanded(false)}
-              className="absolute inset-0 z-10 flex flex-col p-4 bg-white/95 dark:bg-neutral-900/95 backdrop-blur-md"
+              className="absolute inset-0 z-10 flex flex-col p-4 bg-white/95 dark:bg-[#0b1120]/95 backdrop-blur-md"
             >
               <div className="flex items-center gap-2.5 mb-2">
                 {logoBadge}
-                <h6 className="text-base font-semibold text-neutral-900 dark:text-white">
+                <h6 className="text-lg text-neutral-900 dark:text-white">
                   {title}
                 </h6>
                 <div className="ml-auto">{links}</div>
               </div>
-              <p className="text-sm text-neutral-700 dark:text-neutral-300 mb-3">
+              <p className="text-sm leading-[1.625] text-[var(--color-muted)] dark:text-[var(--color-muted-dark)] mb-3">
                 {desc}
               </p>
               <div className="flex flex-wrap gap-2">

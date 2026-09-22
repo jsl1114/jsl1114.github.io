@@ -24,15 +24,6 @@ html {
     sans-serif;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: "Libre Baskerville", Georgia, "Times New Roman", serif;
-}
-
 html,
 body,
 #root {
@@ -58,25 +49,45 @@ body {
 
 html {
   scroll-behavior: smooth;
+  /* How long the entry curtain covers the page before the copy rises. */
+  --enter-delay: 1.55s;
+}
+
+/* The curtain only plays once per page load; later mounts start immediately. */
+html[data-entered] {
+  --enter-delay: 0s;
 }
 
 @theme inline {
   --background: hsl(var(--background));
-  /* === Brand accent — change these two to recolor the entire page === */
-  --color-accent: #57078c;
-  --color-accent-strong: #8900e1;
-  --color-accent-light: color-mix(in srgb, var(--color-accent-strong) 60%, white);
-  /* Existing `*-nyu` utilities follow the accent */
+  /* === Editorial palette — deliberately monochrome, no accent hue === */
+  --color-ink: #0f172a;
+  --color-ink-dark: #f4f4f5;
+  --color-muted: hsl(215, 25%, 32%);
+  --color-muted-dark: hsl(215, 16%, 65%);
+  /* Actions are pure black on light, pure white on dark */
+  --color-accent: var(--color-ink);
+  --color-accent-strong: #000000;
+  --color-accent-light: hsl(215, 20%, 78%);
+  /* Existing `*-nyu` utilities follow the ink */
   --color-nyu: var(--color-accent);
 
-  --shadow-neon: 0 0 20px var(--color-accent);
-  --shadow-neon-large: 0px 0px 30px #f2e6fe;
-  --shadow-nyu-large: 0px 0px 60px var(--color-accent-strong);
-  --shadow-neon-white: 0px 0px 15px white;
-  --shadow-neon-black: 0px 0px 15px black;
-  --shadow-glow-purple: 0 0 40px color-mix(in srgb, var(--color-accent-strong) 35%, transparent);
-  --animate-marquee: marquee var(--duration) linear infinite;
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
+
+  --animate-marquee: marquee var(--duration) linear infinite;
+  --animate-bob: bob 1.9s ease-in-out infinite;
+
+  @keyframes bob {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(4px);
+    }
+  }
 
   @keyframes marquee {
     from {
@@ -86,68 +97,133 @@ html {
       transform: translateX(calc(-100% - var(--gap)));
     }
   }
-  --animate-gradient-xy: gradient-xy 15s ease infinite;
-  @keyframes gradient-xy {
-    0% {
-      background-position: 0% 50%;
+
+  /* Entrance: fade and rise. The only animation the design uses. */
+  @keyframes fade-rise {
+    from {
+      opacity: 0;
+      transform: translateY(24px);
     }
-    50% {
-      background-position: 100% 50%;
-    }
-    100% {
-      background-position: 0% 50%;
+    to {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 }
 
-a {
-  @apply transition font-bold duration-500 text-neutral-700 dark:text-neutral-300 hover:text-[var(--color-accent-strong)] dark:hover:text-neutral-400;
+@layer base {
+  /* Editorial display face. Instrument Serif ships one weight, so headings
+     never take a `font-bold`/`font-semibold` utility — it would synthesise a
+     fake bold. Layered as `base` so `font-sans` on a heading still wins. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Instrument Serif", Georgia, "Times New Roman", serif;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+
+  a {
+    @apply transition font-medium duration-300 text-neutral-800 dark:text-neutral-300 hover:text-black dark:hover:text-white;
+  }
 }
 
-.card {
-  @apply text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-neutral-300
-    bg-white/60 dark:bg-white/[.05] backdrop-blur-md
-    border border-black/10 dark:border-white/[.08]
-    hover:border-[color-mix(in_srgb,var(--color-accent)_35%,transparent)]
-    dark:hover:border-[color-mix(in_srgb,var(--color-accent-strong)_45%,transparent)]
-    shadow-sm hover:shadow-lg
-    transition-all ease-in-out duration-300;
+@layer components {
+  /* Primary conversion button: high-contrast, rounded-full, scales on hover. */
+  .pill {
+    @apply inline-flex items-center justify-center gap-2 rounded-full
+      px-6 py-2.5 text-sm font-medium
+      bg-black text-white hover:text-white dark:bg-white dark:text-neutral-900 dark:hover:text-neutral-900
+      transition-transform duration-200 ease-in-out cursor-pointer
+      hover:scale-[1.03] motion-reduce:hover:scale-100
+      disabled:opacity-50 disabled:hover:scale-100;
+  }
+
+  /* Hero-sized variant: 20px 56px, 16px type. */
+  .pill-lg {
+    @apply px-14 py-5 text-base;
+  }
+
+  /* Secondary action — same geometry, hairline instead of a filled ground. */
+  .pill-ghost {
+    @apply bg-transparent text-neutral-800 hover:text-black dark:bg-transparent dark:text-neutral-200 dark:hover:text-white
+      border border-black/15 dark:border-white/20
+      hover:border-black/40 dark:hover:border-white/40;
+  }
+
+  .card {
+    @apply text-neutral-700 dark:text-neutral-300 hover:text-neutral-900 dark:hover:text-white
+      bg-white/70 dark:bg-white/[.04] backdrop-blur-md
+      border border-black/10 dark:border-white/[.08]
+      hover:border-black/25 dark:hover:border-white/25
+      transition-colors ease-in-out duration-300;
+  }
+
+  .glass {
+    @apply bg-white/70 dark:bg-white/[.04] backdrop-blur-md border border-black/10 dark:border-white/[.08];
+  }
+
+  /* Metadata tag: a hairline label, not a filled badge. */
+  .chip {
+    @apply px-2.5 py-1 rounded-full text-xs font-medium tracking-wide cursor-default
+      transition-colors duration-200
+      border border-black/[.12] dark:border-white/15
+      text-[var(--color-muted)] dark:text-[var(--color-muted-dark)]
+      hover:border-black/35 dark:hover:border-white/35
+      hover:text-neutral-900 dark:hover:text-white;
+  }
+
+  .link-symbol {
+    @apply transform transition-transform text-neutral-900 dark:text-white group-hover:translate-x-[2px] group-hover:-translate-y-[2px];
+  }
+
+  .dialog-overlay {
+    @apply fixed inset-0 z-50 bg-neutral-900/30 dark:bg-black/60 backdrop-blur-md;
+  }
+
+  .dialog-content {
+    @apply fixed left-1/2 top-1/2 z-50 w-[min(900px,calc(100vw-2rem))] max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-2xl border border-black/10 dark:border-white/10 bg-white dark:bg-[#0b1120] p-6 sm:p-8 outline-none;
+  }
 }
 
-.glass {
-  @apply bg-white/60 dark:bg-white/[.05] backdrop-blur-md border border-black/10 dark:border-white/[.08];
-}
+@layer utilities {
+  /* The hero entrance runs in CSS so it plays on first paint rather than
+     waiting for hydration. Delays stagger in 200ms steps, offset by
+     --enter-delay so the copy rises into the parting entry curtain
+     (see the inline curtain styles in index.html). */
+  .fade-rise {
+    animation: fade-rise 0.8s ease-out both;
+    animation-delay: var(--enter-delay);
+  }
 
-.chip {
-  @apply px-2 py-1 rounded text-sm font-medium cursor-default transition-colors duration-200
-    bg-[color-mix(in_srgb,var(--color-accent)_12%,transparent)] text-[var(--color-accent)]
-    dark:bg-[color-mix(in_srgb,var(--color-accent-strong)_18%,transparent)] dark:text-[var(--color-accent-light)]
-    hover:bg-[color-mix(in_srgb,var(--color-accent)_22%,transparent)]
-    dark:hover:bg-[color-mix(in_srgb,var(--color-accent-strong)_30%,transparent)];
-}
+  .fade-rise-delay-1 {
+    animation-delay: calc(var(--enter-delay) + 0.2s);
+  }
 
-.link-symbol {
-  @apply transform transition-transform text-nyu dark:text-purple-100 group-hover:translate-x-[2px] group-hover:-translate-y-[2px];
-}
+  .fade-rise-delay-2 {
+    animation-delay: calc(var(--enter-delay) + 0.4s);
+  }
 
-.dialog-overlay {
-  @apply fixed inset-0 z-50 bg-neutral-900/40 dark:bg-black/50 backdrop-blur-md;
-}
+  @media (prefers-reduced-motion: reduce) {
+    .fade-rise {
+      animation: none;
+    }
+  }
 
-.dialog-content {
-  @apply fixed left-1/2 top-1/2 z-50 w-[min(900px,calc(100vw-2rem))] max-h-[85vh] -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-xl border border-nyu/[.2] bg-white dark:bg-neutral-900 p-6 sm:p-8 shadow-lg outline-none;
-}
+  /* Performance optimizations for animations */
+  .animate-marquee {
+    will-change: transform;
+  }
 
-/* Performance optimizations for animations */
-.animate-marquee {
-  will-change: transform;
-}
+  .group:hover .link-symbol {
+    will-change: transform;
+  }
 
-.group:hover .link-symbol {
-  will-change: transform;
-}
-
-/* Faint grain overlay for dark backgrounds */
-.bg-grain {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  /* Faint grain overlay for dark backgrounds */
+  .bg-grain {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
 }

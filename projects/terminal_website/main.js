@@ -208,18 +208,6 @@ function commander(cmd) {
         );
       }
       break;
-    case "email":
-      addLine(
-        'Email: <a href="' +
-          email +
-          '">' +
-          email.replace("mailto:", "") +
-          "</a>",
-        "color2",
-        80,
-      );
-      newTab(email);
-      break;
     case "resume":
     case "cv":
       addLine(

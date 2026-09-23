@@ -34,7 +34,7 @@ function tone(ctx, { freq, at = 0, length = 0.18, type = 'triangle', gain = 1, s
   osc.stop(start + length + 0.02)
 }
 
-// A short burst of filtered noise: the snap of a card on felt.
+// A short burst of filtered noise (used for the flip, riffle and bust).
 function snap(ctx, { at = 0, length = 0.06, freq = 2400, gain = 0.9 } = {}) {
   const start = ctx.currentTime + at
   const buffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * length), ctx.sampleRate)
@@ -51,6 +51,55 @@ function snap(ctx, { at = 0, length = 0.06, freq = 2400, gain = 0.9 } = {}) {
   source.start(start)
 }
 
+// A card landing on felt: a very short, bright click (the card's edge) and a
+// soft low thud (the card settling). A long noise burst is what sounded like a
+// gas burner; the click here lasts a few milliseconds and falls off fast.
+// Every value can be tuned in the dev test page's Sound lab.
+export const CARD_SOUND = {
+  clickMs: 9, // how long the click lasts
+  clickHz: 3200, // its brightness (a low-pass cutoff)
+  clickDecay: 6, // how sharply it falls off: higher is crisper
+  clickLevel: 0.9,
+  thudHz: 150, // the thud's pitch, sliding down as it settles
+  thudMs: 45,
+  thudLevel: 0.55,
+  vary: 0.12, // random variation per card, so a deal isn't machine-like
+}
+
+export function cardSound(ctx, at = 0, settings = CARD_SOUND) {
+  const t = ctx.currentTime + at
+  const vary = (x) => x * (1 + (Math.random() * 2 - 1) * settings.vary)
+
+  const length = Math.max(0.002, vary(settings.clickMs) / 1000)
+  const buffer = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * length), ctx.sampleRate)
+  const data = buffer.getChannelData(0)
+  for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.exp((-settings.clickDecay * i) / data.length)
+  const click = ctx.createBufferSource()
+  click.buffer = buffer
+  const tone = ctx.createBiquadFilter()
+  tone.type = 'lowpass'
+  tone.frequency.value = vary(settings.clickHz)
+  const clickGain = ctx.createGain()
+  clickGain.gain.value = VOLUME * settings.clickLevel
+  click.connect(tone).connect(clickGain).connect(ctx.destination)
+  click.start(t)
+
+  if (settings.thudLevel > 0) {
+    const thud = ctx.createOscillator()
+    const thudGain = ctx.createGain()
+    const thudLength = settings.thudMs / 1000
+    thud.type = 'sine'
+    thud.frequency.setValueAtTime(vary(settings.thudHz), t)
+    thud.frequency.exponentialRampToValueAtTime(Math.max(40, settings.thudHz * 0.55), t + thudLength)
+    thudGain.gain.setValueAtTime(0.0001, t)
+    thudGain.gain.exponentialRampToValueAtTime(VOLUME * settings.thudLevel, t + 0.004)
+    thudGain.gain.exponentialRampToValueAtTime(0.0001, t + thudLength)
+    thud.connect(thudGain).connect(ctx.destination)
+    thud.start(t)
+    thud.stop(t + thudLength + 0.02)
+  }
+}
+
 const arpeggio = (ctx, notes, { step = 0.09, length = 0.3, type = 'triangle', gain = 0.8, at = 0 } = {}) =>
   notes.forEach((freq, i) => tone(ctx, { freq, at: at + i * step, length, type, gain }))
 
@@ -58,7 +107,7 @@ const arpeggio = (ctx, notes, { step = 0.09, length = 0.3, type = 'triangle', ga
 const C5 = 523.25, E5 = 659.25, G5 = 783.99, C6 = 1046.5, E6 = 1318.5, G6 = 1568, C7 = 2093
 
 const SOUNDS = {
-  deal: (ctx, at) => snap(ctx, { at }),
+  deal: (ctx, at) => cardSound(ctx, at),
   flip: (ctx) => snap(ctx, { length: 0.12, freq: 1200, gain: 0.7 }),
   // A riffle: a quick run of soft snaps.
   shuffle: (ctx) => {
@@ -87,6 +136,9 @@ const SOUNDS = {
     arpeggio(ctx, [C5, E5, G5, C6], { at: 2.45, step: 0, length: 1, gain: 0.7 })
   },
 }
+
+// The audio context, for the dev test page's Sound lab (null when muted).
+export const audioContext = () => context()
 
 export function play(name, { at = 0 } = {}) {
   try {

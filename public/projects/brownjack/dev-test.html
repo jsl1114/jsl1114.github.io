@@ -25,6 +25,9 @@
       background: white; color: var(--bark); font-size: 12px;
     }
     .dev-btn.plain { padding: 8px 14px; }
+    .lab { display: grid; grid-template-columns: auto 1fr 64px; gap: 6px 10px; align-items: center; font-size: 12px; }
+    .lab input { width: 100%; accent-color: var(--bark); }
+    .lab output { font-variant-numeric: tabular-nums; text-align: right; }
     .dev-row .emblem { width: 22px; font-size: 8px; }
     .dev-swatch { width: 22px; height: 22px; overflow: hidden; border-radius: 50%; background: center / cover; }
     .dev-swatch svg { display: block; width: 100%; height: 100%; }
@@ -38,6 +41,16 @@
     <section class="panel dev">
       <h1>BrownJack · dev test</h1>
       <p>Click to play the exact animation the game shows. Click the overlay or press Esc to skip.</p>
+      <h2>Sound lab · dealing a card</h2>
+      <p>Move the sliders, play a card or a whole deal, and when it sounds right press <strong>Copy settings</strong> and paste them to Claude.</p>
+      <div class="dev-row" id="sound-presets"></div>
+      <div class="lab" id="sound-lab"></div>
+      <div class="dev-row">
+        <button type="button" class="dev-btn plain" id="lab-one">Play one card</button>
+        <button type="button" class="dev-btn plain" id="lab-deal">Play a deal (4 cards)</button>
+        <button type="button" class="dev-btn plain" id="lab-copy">Copy settings</button>
+      </div>
+      <p id="lab-status" role="status"></p>
       <h2>Rank-ups · within a tier</h2>
       <div class="dev-row" id="division-steps"></div>
       <h2>Rank-ups · new tier</h2>

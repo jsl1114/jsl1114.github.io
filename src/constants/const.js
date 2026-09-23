@@ -322,25 +322,35 @@ export const PROJECTS = [
     slug: "brownjack",
     reflections: [
       {
-        title: "Turning rules into interactions",
+        title: "The bug wasn't where it felt like it was",
         description:
-          "I found it interesting to translate Blackjack rules into a sequence of player and dealer actions. I learned to think explicitly about the state of a round and which choices should be available at each point.",
+          "When the game felt unfair, I expected to find a broken shuffle. The shuffle was fine; the real problems were two games running at once, a dealer that chased the player's total, and a running total that broke on face cards. I learned to test my assumptions before fixing the thing that seems most obviously wrong.",
       },
       {
-        title: "Keeping the interface honest",
+        title: "Tuning with simulations",
         description:
-          "Building the game with plain JavaScript helped me understand the relationship between application state and the DOM. I learned how important clear feedback is when a single action changes several things on screen.",
+          "I found it interesting to design a ranking that gets harder as you climb. Instead of guessing point values, I simulated hundreds of thousands of hands of basic-strategy play to see how long each tier takes and how rare each badge really is, then tuned the numbers until the curve felt right.",
+      },
+      {
+        title: "Rewards that feel earned",
+        description:
+          "Building badges, rank-up animations and sounds taught me how much small moments of feedback shape a game. I learned to match each celebration to how rare the achievement is, and to lock it briefly so it can't be dismissed by a key press meant for the game.",
+      },
+      {
+        title: "Keeping the rules honest",
+        description:
+          "I kept the rules, scoring and save files as small pure modules with their own tests, separate from the page. That made it much easier to add doubles, splits, a six-deck shoe and seasons without breaking what already worked, and to reject tampered or damaged save files.",
       },
     ],
-    desc: "A client-side Blackjack game that allows users to play against an computer that behaves like a dealer with customizable functions.",
-    technologies: ["HTML", "CSS", "JavaScript"],
+    desc: "A browser Blackjack game with ranked seasons, 61 badges, a basic-strategy coach, doubles and splits, and a daily challenge with the same deal for everyone.",
+    technologies: ["HTML", "CSS", "JavaScript", "Web Audio API", "node:test"],
     urls: {
       github:
         "https://github.com/jsl1114/jsl1114.github.io/tree/v2/public/projects/brownjack",
       live: "https://jsl1114.github.io/projects/brownjack/game.html",
     },
     image: "brown.webp",
-    screenshots: ["brown1.webp", "brown2.webp", "brown3.webp"],
+    screenshots: ["brown1.webp", "brown2.webp", "brown3.webp", "brown4.webp"],
   },
   {
     title: "Terminal Portfolio",

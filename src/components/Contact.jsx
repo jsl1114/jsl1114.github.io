@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
+import { useHomeEntrance } from "@/hooks/useHomeEntrance";
 import axios from "axios";
 import ReactGA from "react-ga4";
 import {
@@ -57,6 +58,7 @@ const ChannelList = () => (
 );
 
 const Contact = () => {
+  const firstVisit = useHomeEntrance();
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -118,7 +120,7 @@ const Contact = () => {
     <motion.div
       className="flex flex-wrap flex-col border-b border-black/10 dark:border-white/[.08] pt-10 justify-center items-center w-full"
       variants={containerVariants}
-      initial="hidden"
+      initial={firstVisit ? "hidden" : "visible"}
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
     >

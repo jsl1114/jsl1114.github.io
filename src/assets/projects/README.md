@@ -4,7 +4,7 @@ Drop project screenshots here, then list their filenames in the matching
 project's `screenshots` array in `src/constants/const.js`. Each project's card
 shows them in an auto-advancing carousel (with arrows + dots).
 
-Recommended: **16:9 aspect ratio, ~1600×900px**, compressed (webp or png).
+Recommended: **16:9 aspect ratio, ~3200×1800px** (sharp on retina screens), as webp at q92.
 
 Example (`src/constants/const.js`):
 

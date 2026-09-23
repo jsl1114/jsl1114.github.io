@@ -1,0 +1,28 @@
+{
+  "game": "brownjack",
+  "version": 1,
+  "exportedAt": "2026-09-24T00:00:00.000Z",
+  "profile": {
+    "rp": 640,
+    "peakRp": 700,
+    "games": 120,
+    "wins": 55,
+    "losses": 55,
+    "pushes": 10,
+    "streak": 2,
+    "bestStreak": 6,
+    "lossStreak": 0,
+    "blackjacks": 7,
+    "daredevilWins": 0,
+    "badges": {
+      "heater": {
+        "count": 3,
+        "first": 1700000000000
+      }
+    },
+    "showcase": [
+      "heater"
+    ]
+  },
+  "checksum": "bec09b5a"
+}

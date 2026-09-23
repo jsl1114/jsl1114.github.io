@@ -11,6 +11,7 @@
 </head>
 
 <body>
+  <div class="table-art" id="table-art" aria-hidden="true"></div>
   <main class="table">
     <section class="start" id="start">
       <h1 class="title">
@@ -114,6 +115,7 @@
       <button type="button" class="close" id="close-badges" aria-label="Close">×</button>
     </div>
     <dl class="stats" id="stats"></dl>
+    <p class="showcase-hint" id="collection-hint"></p>
     <div class="season-medals" id="season-medals" hidden></div>
     <p class="showcase-hint" id="showcase-hint"></p>
     <div id="badge-sections"></div>
@@ -159,7 +161,10 @@
 
     <section class="setting">
       <h3>Table &amp; cards</h3>
-      <p>Each tier you reach unlocks a wood table and a card back. The rest are earned: win, streak, collect.</p>
+      <p>
+        Tables are earned with collection points: every badge adds some (Common 1 · Rare 3 · Epic 8 ·
+        Legendary 20). Card backs come with each tier, and each Legendary badge has its own.
+      </p>
       <div class="swatches" id="table-picker" aria-label="Table"></div>
       <div class="swatches backs" id="back-picker" aria-label="Card back"></div>
     </section>

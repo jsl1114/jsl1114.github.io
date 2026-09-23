@@ -7,6 +7,7 @@
 // dismissed by a click or key press that was meant for the game.
 import { DIVISIONS } from './ranked.mjs'
 import { buzz, play } from './sound.mjs'
+import { tableSVG } from './tableart.mjs'
 
 // How long each celebration ignores clicks and keys, in ms: long enough to land
 // the animation's main beat.
@@ -205,7 +206,7 @@ function buildUnlock(item, kind, how) {
   if (kind === 'table') {
     const top = node('div', 'unlock-table')
     const felt = node('span', 'unlock-felt')
-    felt.dataset.table = item.id
+    felt.innerHTML = tableSVG(item.id, 206, 118, { detail: false })
     top.append(felt, node('span', 'unlock-sheen'))
     stage.append(top)
   } else {

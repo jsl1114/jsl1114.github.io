@@ -2,6 +2,7 @@
 import { BADGES, CATEGORIES, LEGEND_AT, POINTS_PER_DIVISION, rankOf } from './ranked.mjs'
 import { celebrate, celebrateRank, celebrateUnlock, emblemElement, glyphElement } from './celebrate.mjs'
 import { CARD_BACKS, TABLES, byRank, progress } from './cosmetics.mjs'
+import { tableSVG } from './tableart.mjs'
 import { newProfile } from './ranked.mjs'
 
 function devButton(icon, label, onClick) {
@@ -35,16 +36,16 @@ document.getElementById('tier-flips').append(
 )
 
 // Achievement unlocks (rank ones are named on the tier-up celebration instead).
-const empty = { profile: newProfile(), daily: { bestStreak: 0, completed: 0 } }
+const empty = { profile: newProfile() }
 const unlockButton = (item, kind) => {
   const icon = document.createElement('span')
   icon.className = 'dev-swatch'
-  if (kind === 'table') icon.dataset.table = item.id
+  if (kind === 'table') icon.innerHTML = tableSVG(item.id, 44, 44, { detail: false })
   else icon.style.backgroundImage = `url('./assets/cards/${item.file}')`
   return devButton(icon, `${item.name} · ${kind}`, () => celebrateUnlock(item, kind, progress(item, empty).text))
 }
 document.getElementById('unlocks').append(
-  ...TABLES.filter((t) => !byRank(t)).map((t) => unlockButton(t, 'table')),
+  ...TABLES.filter((t) => t.unlock[1] > 0).map((t) => unlockButton(t, 'table')),
   ...CARD_BACKS.filter((b) => !byRank(b)).map((b) => unlockButton(b, 'back')),
 )
 

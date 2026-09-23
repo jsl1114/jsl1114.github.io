@@ -61,20 +61,6 @@ export function dailyStreak(history, today) {
   return streak
 }
 
-// Longest run of consecutive finished days, and how many days were finished.
-export function dailyRecord(history) {
-  const done = Object.keys(history).filter((key) => history[key]?.rounds?.length === DAILY_HANDS).sort()
-  let best = 0
-  let run = 0
-  let previous = null
-  for (const key of done) {
-    run = previous && previousKey(key) === previous ? run + 1 : 1
-    best = Math.max(best, run)
-    previous = key
-  }
-  return { bestStreak: best, completed: done.length }
-}
-
 // A saved day, checked so a damaged entry can't break the game: { rounds, drawn }.
 export function cleanDay(day) {
   if (!day || !Array.isArray(day.rounds) || !Number.isInteger(day.drawn) || day.drawn < 0) return null

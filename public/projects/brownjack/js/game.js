@@ -32,11 +32,22 @@ import { MAX_SAVE_BYTES, exportSave, parseSave, saveFileName } from './save.mjs'
 import { buzz, canVibrate, play } from './sound.mjs'
 import { getSettings, setSetting } from './prefs.mjs'
 import { bestMove, describeSpot } from './strategy.mjs'
-import { CARD_BACKS, TABLES, byRank, progress, selected, unlockedIds, unlocksAt } from './cosmetics.mjs'
+import {
+  CARD_BACKS,
+  TABLES,
+  TOTAL_POINTS,
+  byRank,
+  collectionPoints,
+  nextTable,
+  progress,
+  selected,
+  unlockedIds,
+  unlocksAt,
+} from './cosmetics.mjs'
+import { tableSVG } from './tableart.mjs'
 import {
   DAILY_HANDS,
   cleanDay,
-  dailyRecord,
   dailyKey,
   dailyNumber,
   dailyShoe,
@@ -83,6 +94,7 @@ const el = {
   rankMeta: $('rank-meta'),
   rankSeason: $('rank-season'),
   seasonMedals: $('season-medals'),
+  collectionHint: $('collection-hint'),
   notice: $('notice'),
   openBadges: $('open-badges'),
   badgeCount: $('badge-count'),
@@ -120,6 +132,7 @@ const el = {
   hapticsRow: $('haptics-row'),
   settingCoach: $('setting-coach'),
   tablePicker: $('table-picker'),
+  tableArt: $('table-art'),
   backPicker: $('back-picker'),
   coach: $('coach'),
 }
@@ -335,13 +348,29 @@ let beforePeak = 0
 
 // ---- Cosmetics -----------------------------------------------------------------
 
-// What the unlock conditions read: the profile and the daily-challenge record.
-const collectionContext = () => ({ profile, daily: dailyRecord(dailyHistory) })
+// What the unlock conditions read.
+const collectionContext = () => ({ profile })
 const currentBack = () => selected(CARD_BACKS, getSettings().cardBack, collectionContext())
 
+// Oak is the wooden table under the page; the others are drawn full screen,
+// with the printed line in the gap between the dealer's cards and the player's.
 function applyTable() {
-  document.documentElement.dataset.table = selected(TABLES, getSettings().table, collectionContext()).id
+  const { id } = selected(TABLES, getSettings().table, collectionContext())
+  document.documentElement.dataset.table = id
+  let printAt = 0.5
+  if (!el.game.hidden) {
+    const top = el.dealerCards.getBoundingClientRect().bottom
+    const bottom = el.playerHands.getBoundingClientRect().top
+    if (bottom > top) printAt = (top + bottom) / 2 / innerHeight
+  }
+  el.tableArt.innerHTML = tableSVG(id, innerWidth, innerHeight, { printAt })
 }
+
+let resizeTimer
+addEventListener('resize', () => {
+  clearTimeout(resizeTimer)
+  resizeTimer = setTimeout(applyTable, 120)
+})
 
 // Celebrate tables and backs unlocked since last time. Rank unlocks are already
 // named on the tier-up celebration, so only the others get their own.
@@ -373,8 +402,12 @@ function renderCosmetics() {
         button.setAttribute('aria-pressed', String(item.id === current.id))
         const preview = document.createElement('span')
         preview.className = 'swatch-preview'
-        if (key === 'table') preview.dataset.table = item.id
-        else preview.style.backgroundImage = `url('./assets/cards/${item.file}')`
+        if (key === 'table') {
+          preview.dataset.table = item.id
+          preview.innerHTML = tableSVG(item.id, 200, 80, { detail: false })
+        } else {
+          preview.style.backgroundImage = `url('./assets/cards/${item.file}')`
+        }
         const label = document.createElement('span')
         label.className = 'swatch-name'
         label.textContent = unlocked ? item.name : `🔒 ${item.name}`
@@ -584,6 +617,7 @@ function renderBadgesDialog() {
     ['Blackjacks', profile.blackjacks],
     ['Strategy', profile.decisions ? `${Math.round((100 * profile.goodDecisions) / profile.decisions)}%` : '—'],
     ['Best textbook run', profile.bestTextbookStreak],
+    ['Collection', `${collectionPoints(profile)} / ${TOTAL_POINTS} pts`],
   ]
   el.stats.replaceChildren(
     ...stats.map(([label, value]) => {
@@ -597,6 +631,10 @@ function renderBadgesDialog() {
     }),
   )
 
+  const upcoming = nextTable(collectionContext())
+  el.collectionHint.textContent = upcoming
+    ? `Badges earn collection points (Common 1 · Rare 3 · Epic 8 · Legendary 20). ${progress(upcoming, collectionContext()).current} of ${upcoming.unlock[1]} toward the ${upcoming.name} table.`
+    : 'Every table is unlocked.'
   const medals = [...(profile.seasons ?? [])].reverse()
   el.seasonMedals.hidden = medals.length === 0
   el.seasonMedals.replaceChildren(
@@ -870,6 +908,7 @@ function startRound({ daily = false } = {}) {
   el.dealerCounter.classList.remove('winner')
   el.again.hidden = el.toSetup.hidden = true
 
+  const arriving = el.game.hidden
   el.start.hidden = true
   el.game.hidden = false
 
@@ -888,6 +927,8 @@ function startRound({ daily = false } = {}) {
   renderShoe()
   updateCounts()
   updateActions()
+  // Line the print up with the hands once the table is on screen.
+  if (arriving) applyTable()
   saveDailyProgress()
   // Nothing is preselected: moves are a click or H / S / D / P, never Enter.
   el.game.focus({ preventScroll: true })
@@ -1247,6 +1288,7 @@ function showSetup({ keepNotice = false } = {}) {
   renderDailyButton()
   el.game.hidden = true
   el.start.hidden = false
+  applyTable()
   renderRank()
   el.play.focus()
 }

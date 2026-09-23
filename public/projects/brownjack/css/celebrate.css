@@ -697,8 +697,6 @@
 .unlock-felt {
   position: absolute;
   inset: 0;
-  background: var(--table-bg);
-  filter: var(--table-filter);
   animation: unlock-felt 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both;
 }
 

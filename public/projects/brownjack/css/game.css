@@ -40,50 +40,22 @@ body::before {
 [data-table] {
   --table-bg: url('../assets/bg.jpg') center / cover;
   --table-filter: none;
-  --weave: repeating-linear-gradient(45deg, rgb(255 255 255 / 0.03) 0 2px, transparent 2px 5px),
-    repeating-linear-gradient(-45deg, rgb(0 0 0 / 0.06) 0 2px, transparent 2px 5px);
 }
 
-[data-table='walnut'] { --table-filter: brightness(0.62) saturate(1.15) contrast(1.1); }
-[data-table='maple'] { --table-filter: sepia(0.35) saturate(0.9) brightness(1.3); }
-[data-table='cherry'] { --table-filter: hue-rotate(-14deg) saturate(1.6) brightness(0.85); }
-[data-table='ebony'] { --table-filter: brightness(0.33) contrast(1.35) saturate(0.6); }
-
-[data-table='gilded-oak'] {
-  --table-bg: radial-gradient(ellipse at 50% 35%, rgb(255 219 88 / 0.35), transparent 60%),
-    linear-gradient(135deg, rgb(255 219 88 / 0.18), transparent 40%, rgb(255 219 88 / 0.18)),
-    url('../assets/bg.jpg') center / cover;
-  --table-filter: sepia(0.45) saturate(1.5) brightness(1.05);
+/* Every other table is a casino layout drawn in #table-art (tableart.mjs). */
+.table-art {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
 }
 
-[data-table='caramel'] {
-  --table-bg: var(--weave), radial-gradient(ellipse at center, #c8843c 0%, #8a4f1c 60%, #472208 100%);
-}
-
-/* Leather: a soft grain and a darker edge. */
-[data-table='cocoa'] {
-  --table-bg: radial-gradient(circle at 30% 40%, rgb(255 255 255 / 0.05) 0 1px, transparent 2px) 0 0 / 7px 7px,
-    radial-gradient(circle at 70% 60%, rgb(0 0 0 / 0.12) 0 1px, transparent 2px) 0 0 / 9px 9px,
-    radial-gradient(ellipse at center, #7a4a2a 0%, #4f2d17 60%, #26140a 100%);
-}
-
-[data-table='espresso'] {
-  --table-bg: var(--weave), radial-gradient(ellipse at center, #5a3622 0%, #2e1a0e 60%, #140a04 100%);
-}
-
-[data-table='toffee'] {
-  --table-bg: var(--weave), radial-gradient(ellipse at center, #d9a066 0%, #a8662e 60%, #5c3312 100%);
-}
-
-/* Velvet: a sheen that runs across the table. */
-[data-table='chocolate'] {
-  --table-bg: linear-gradient(115deg, transparent 30%, rgb(255 220 190 / 0.1) 45%, transparent 60%),
-    radial-gradient(ellipse at center, #6b3420 0%, #3f1d10 60%, #1f0c05 100%);
-}
-
-/* BrownJack's signature: the title's mustard, edged in bark brown. */
-[data-table='mustard'] {
-  --table-bg: var(--weave), radial-gradient(ellipse at center, #ffdb58 0%, #e0b12a 45%, #9c6a10 80%, #492612 100%);
+.table-art svg,
+.swatch-preview svg,
+.unlock-felt svg {
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 body {
   color: var(--bark);
@@ -1181,6 +1153,16 @@ kbd {
   background: var(--table-bg);
   filter: var(--table-filter);
   box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1);
+}
+
+.swatch-preview[data-table]:not([data-table='oak']) {
+  background: none;
+  filter: none;
+  overflow: hidden;
+}
+
+.swatches.backs {
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .backs .swatch-preview {

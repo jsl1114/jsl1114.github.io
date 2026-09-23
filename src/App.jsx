@@ -36,17 +36,70 @@ const pageVariants = {
 // also suppress every nested entrance animation on first load.
 let hasNavigated = false;
 
+// Scroll positions survive a refresh or a back/forward into the site through
+// sessionStorage. A fresh visit (typed URL, new link) starts from the top.
+const SCROLL_KEY = "scroll-positions";
+const PROJECTS_OPEN_KEY = "projects-open";
+
+const [navEntry] = performance.getEntriesByType("navigation");
+const isReturnVisit =
+  navEntry?.type === "reload" || navEntry?.type === "back_forward";
+
+const readStored = (key) => {
+  if (!isReturnVisit) return null;
+  try {
+    return JSON.parse(sessionStorage.getItem(key));
+  } catch {
+    return null;
+  }
+};
+
+const writeStored = (key, value) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // Storage can be unavailable (private mode); restoring is best-effort.
+  }
+};
+
 const RouteFrame = ({ location, positions, children }) => {
   useLayoutEffect(() => {
     const scrollPositions = positions.current;
     const saved = scrollPositions.get(location.key);
     const section =
       location.hash && document.getElementById(location.hash.slice(1));
-    window.scrollTo({
-      top: saved ?? (section ? section.offsetTop : 0),
-      behavior: "instant",
-    });
-    return () => scrollPositions.set(location.key, window.scrollY);
+    const restore = () =>
+      window.scrollTo({
+        top: saved ?? (section ? section.offsetTop : 0),
+        behavior: "instant",
+      });
+    restore();
+
+    // After a refresh the web font and images land after this first scroll and
+    // push content down, so scroll again once they have, unless the visitor
+    // has already started scrolling.
+    const inputs = ["wheel", "touchstart", "keydown", "mousedown"];
+    let settled = saved == null || document.readyState === "complete";
+    const settle = () => (settled = true);
+    const reapply = () => settled || restore();
+    if (!settled) {
+      inputs.forEach((e) => window.addEventListener(e, settle, { passive: true }));
+      document.fonts.ready.then(reapply);
+      window.addEventListener("load", reapply);
+    }
+
+    const persist = () => {
+      scrollPositions.set(location.key, window.scrollY);
+      writeStored(SCROLL_KEY, [...scrollPositions]);
+    };
+    window.addEventListener("pagehide", persist);
+    return () => {
+      settle();
+      inputs.forEach((e) => window.removeEventListener(e, settle));
+      window.removeEventListener("load", reapply);
+      window.removeEventListener("pagehide", persist);
+      scrollPositions.set(location.key, window.scrollY);
+    };
   }, [location.key, location.hash, positions]);
 
   return children;
@@ -55,8 +108,11 @@ const RouteFrame = ({ location, positions, children }) => {
 const PageRoutes = () => {
   const location = useLocation();
   const reduceMotion = useReducedMotion();
-  const positions = useRef(new Map());
-  const [projectsOpen, setProjectsOpen] = useState(false);
+  const positions = useRef(null);
+  if (!positions.current) positions.current = new Map(readStored(SCROLL_KEY));
+  const [projectsOpen, setProjectsOpen] = useState(
+    () => readStored(PROJECTS_OPEN_KEY) === true,
+  );
   const transition = {
     direction: location.pathname.startsWith("/work/") ? 1 : -1,
     reduceMotion,
@@ -65,6 +121,10 @@ const PageRoutes = () => {
   useEffect(() => {
     hasNavigated = true;
   }, []);
+
+  useEffect(() => {
+    writeStored(PROJECTS_OPEN_KEY, projectsOpen);
+  }, [projectsOpen]);
 
   useEffect(() => {
     const previous = window.history.scrollRestoration;

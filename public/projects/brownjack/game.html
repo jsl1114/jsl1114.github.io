@@ -1,24 +1,157 @@
 <!doctype html>
-<html>
+<html lang="en">
 
 <head>
-  <title>Cards!</title>
-  <link rel="stylesheet" href="css/game.css" type="text/css" media="screen" title="no title" charset="utf-8">
   <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>BrownJack</title>
+  <link rel="stylesheet" href="css/game.css" />
+  <link rel="stylesheet" href="css/celebrate.css" />
+  <script type="module" src="js/game.js"></script>
 </head>
 
 <body>
-  <!-- TODO: bring in your JavasScript file here -->
-  <script type="module" src="js/cards.mjs"></script>
-  <script src="js/game.js"></script>
-  <div class="start">
-    <form method="POST" action="">
-      <label for="startValues">Start Values:</label> <input type="text" name="startValues" id="startValues">
-      <input class="playBtn" type="submit" value="Play">
-    </form>
-  </div>
-  <div class="game">
-  </div>
+  <main class="table">
+    <section class="start" id="start">
+      <h1 class="title">
+        BrownJack
+        <a class="link" href="https://jsl1114.github.io" target="_blank" rel="noopener">by Jason</a>
+      </h1>
+
+      <div class="panel">
+        <button type="button" class="settings-btn" id="open-settings" aria-label="Settings" title="Settings">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+          </svg>
+        </button>
+        <div class="rank-card">
+          <div class="emblem" id="emblem"></div>
+          <div class="rank-info">
+            <p class="rank-name" id="rank-name"></p>
+            <div class="rank-bar"><span id="rank-bar"></span></div>
+            <p class="rank-meta" id="rank-meta"></p>
+          </div>
+        </div>
+        <div class="showcase" id="showcase" hidden></div>
+        <p class="notice" id="notice" hidden></p>
+        <button type="button" class="btn" id="play">Play <kbd>Enter</kbd></button>
+        <button type="button" class="badges-btn" id="open-badges">
+          Badges &amp; stats <span id="badge-count"></span>
+        </button>
+
+        <details class="setup">
+          <summary>
+            Rig the game <span class="optional">optional</span>
+            <span class="stack-count" id="stack-count"></span>
+          </summary>
+          <p class="hint">
+            Rigged cards come off the top first: you, dealer, you, dealer (face down), then each hit.
+            A rigged game is practice: no RP is won or lost and no badges are earned.
+          </p>
+          <ol class="stack" id="stack"></ol>
+          <div class="setup-actions">
+            <div class="picker" id="picker">
+              <button type="button" class="picker-toggle" id="picker-toggle" aria-haspopup="true"
+                aria-expanded="false" aria-controls="picker-menu">+ Add card</button>
+              <div class="picker-menu" id="picker-menu" hidden></div>
+            </div>
+            <button type="button" class="text-btn" id="clear-stack" hidden>Clear</button>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="game" id="game" hidden>
+      <div class="rank-chip" id="rank-chip">
+        <span class="emblem mini" id="chip-emblem"></span>
+        <div class="chip-body">
+          <div class="chip-top"><strong id="chip-name"></strong><span id="chip-rp"></span></div>
+          <div class="rank-bar chip-bar"><span id="chip-bar"></span></div>
+          <p class="chip-next" id="chip-next"></p>
+        </div>
+        <div class="chip-showcase" id="chip-showcase" hidden></div>
+      </div>
+      <div class="hand">
+        <h2 class="counter" id="dealer-counter">Dealer <strong class="count" id="dealer-count"></strong></h2>
+        <div class="cards" id="dealer-cards"></div>
+      </div>
+
+      <p class="result" id="result" aria-live="polite"></p>
+
+      <div class="hand">
+        <h2 class="counter" id="player-counter">You <strong class="count" id="player-count"></strong></h2>
+        <div class="cards" id="player-cards"></div>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="action" id="stand">Stand <kbd>S</kbd></button>
+        <button type="button" class="action primary" id="hit">Hit <kbd>H</kbd></button>
+        <button type="button" class="action primary" id="again" hidden>Play again <kbd>Enter</kbd></button>
+        <button type="button" class="action" id="to-setup" hidden>Menu</button>
+      </div>
+      <div class="round-score" id="round-score" hidden></div>
+    </section>
+  </main>
+
+  <dialog class="badges-dialog" id="badges-dialog" aria-labelledby="badges-title">
+    <div class="dialog-head">
+      <h2 id="badges-title">Badges &amp; stats</h2>
+      <button type="button" class="close" id="close-badges" aria-label="Close">×</button>
+    </div>
+    <dl class="stats" id="stats"></dl>
+    <p class="showcase-hint" id="showcase-hint"></p>
+    <div id="badge-sections"></div>
+    <details class="how">
+      <summary>How ranking works</summary>
+      <p>
+        Five tiers of three divisions, 100 RP each. Past Diamond III every 100 RP is a Legend star.
+        Wins earn less and losses cost more as you climb.
+      </p>
+      <table>
+        <thead><tr><th>Tier</th><th>Win</th><th>Loss</th></tr></thead>
+        <tbody id="points-table"></tbody>
+      </table>
+      <p id="bonus-list"></p>
+      <p>Closing the page mid-hand counts as a loss.</p>
+    </details>
+  </dialog>
+
+  <dialog class="badges-dialog settings-dialog" id="settings-dialog" aria-labelledby="settings-title">
+    <div class="dialog-head">
+      <h2 id="settings-title">Settings</h2>
+      <button type="button" class="close" id="close-settings" aria-label="Close">×</button>
+    </div>
+
+    <section class="setting">
+      <h3>Export save</h3>
+      <p>Download your rank, stats and badges as a file, to keep a backup or move to another browser.</p>
+      <button type="button" class="setting-btn" id="export-save">Download save file</button>
+    </section>
+
+    <section class="setting">
+      <h3>Import save</h3>
+      <p>Load a BrownJack save file. It replaces the progress on this device.</p>
+      <button type="button" class="setting-btn" id="choose-save">Choose save file…</button>
+      <input type="file" id="save-file" accept=".json,application/json" hidden />
+      <div class="import-preview" id="import-preview" hidden>
+        <p id="import-summary"></p>
+        <div class="setting-actions">
+          <button type="button" class="setting-btn danger" id="confirm-import">Replace my progress</button>
+          <button type="button" class="text-btn" id="cancel-import">Cancel</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="setting">
+      <h3>Reset progress</h3>
+      <p>Erase your rank, stats and badges on this device.</p>
+      <button type="button" class="text-btn reset" id="reset-progress">Reset progress</button>
+    </section>
+
+    <p class="setting-status" id="settings-status" role="status" aria-live="polite"></p>
+  </dialog>
 </body>
 
 </html>

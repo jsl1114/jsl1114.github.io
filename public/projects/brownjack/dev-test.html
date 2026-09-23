@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+
+<!-- Dev only: served by `vite` but stripped from the production build (see vite.config.js). -->
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex" />
+  <title>BrownJack · dev test</title>
+  <link rel="stylesheet" href="css/game.css" />
+  <link rel="stylesheet" href="css/celebrate.css" />
+  <style>
+    .dev { width: min(100%, 560px); }
+    .dev h1 { font-size: 20px; }
+    .dev p { font-size: 12px; line-height: 1.5; color: var(--walnut); }
+    .dev h2 { margin-top: 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; }
+    .dev-row { display: flex; flex-wrap: wrap; gap: 8px; }
+    .dev-row .badge-glyph { width: 28px; height: 28px; border-width: 2px; font-size: 9px; }
+    .dev-row .badge-glyph.long { font-size: 6px; }
+    .dev h3 { margin: 10px 0 6px; font-size: 11px; color: var(--walnut); }
+    .dev-btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 6px 12px 6px 6px; border: 1px solid rgb(73 38 18 / 0.2); border-radius: 999px;
+      background: white; color: var(--bark); font-size: 12px;
+    }
+    .dev-btn.plain { padding: 8px 14px; }
+    .dev-row .emblem { width: 22px; font-size: 8px; }
+    .dev-btn:hover { background: var(--mustard); }
+  </style>
+  <script type="module" src="js/dev-test.js"></script>
+</head>
+
+<body>
+  <main class="table">
+    <section class="panel dev">
+      <h1>BrownJack · dev test</h1>
+      <p>Click to play the exact animation the game shows. Click the overlay or press Esc to skip.</p>
+      <h2>Rank-ups · within a tier</h2>
+      <div class="dev-row" id="division-steps"></div>
+      <h2>Rank-ups · new tier</h2>
+      <div class="dev-row" id="tier-flips"></div>
+      <h2>Badges by rarity</h2>
+      <div class="dev-row" id="by-rarity"></div>
+      <h2>Every badge</h2>
+      <div id="by-badge"></div>
+      <h2>Queue</h2>
+      <div class="dev-row">
+        <button type="button" class="dev-btn plain" id="play-all">A lucky hand: promotion + four badges</button>
+      </div>
+      <p><a href="game.html">← Back to the game</a></p>
+    </section>
+  </main>
+</body>
+
+</html>

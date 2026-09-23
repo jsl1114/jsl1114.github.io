@@ -2,7 +2,6 @@
 import {
   RANKS,
   SUITS,
-  CUT_CARD,
   buildDeck,
   canSplit,
   createShoe,
@@ -87,10 +86,7 @@ const el = {
   openBadges: $('open-badges'),
   badgeCount: $('badge-count'),
   rankChip: $('rank-chip'),
-  shoe: $('shoe'),
-  shoeFill: $('shoe-fill'),
-  shoeCut: $('shoe-cut'),
-  shoeLeft: $('shoe-left'),
+  cutCard: $('cut-card'),
   chipEmblem: $('chip-emblem'),
   chipName: $('chip-name'),
   chipRp: $('chip-rp'),
@@ -809,13 +805,10 @@ async function playDealerReveal() {
   state.revealing = false
 }
 
+// Like a real table, the only thing shown about the shoe is the cut card coming
+// out: the hand in progress is the last before a reshuffle.
 function renderShoe() {
-  el.shoe.hidden = !state.ranked
-  if (!state.ranked) return
-  const { cards, size } = state.shoe
-  el.shoeFill.style.width = `${(100 * cards.length) / size}%`
-  el.shoeCut.style.left = `${100 * (1 - CUT_CARD)}%`
-  el.shoeLeft.textContent = `${cards.length} cards left`
+  el.cutCard.hidden = !(state.ranked && needsShuffle(state.shoe))
 }
 
 function startRound({ daily = false } = {}) {

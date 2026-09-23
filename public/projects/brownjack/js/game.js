@@ -862,13 +862,15 @@ function startRound({ daily = false } = {}) {
   updateCounts()
   updateActions()
   saveDailyProgress()
-  el.hit.focus()
+  // Nothing is preselected: moves are a click or H / S / D / P, never Enter.
+  el.game.focus({ preventScroll: true })
 
   if (isBlackjack(hand.cards) || isBlackjack(state.dealer)) finish()
 }
 
 // Check a choice against basic strategy, and have the coach say so if it's on.
 function recordDecision(move) {
+  disarmLeave()
   const { cards } = activeHand()
   const options = { canDouble: canDoubleNow(), canSplit: canSplitNow() }
   const best = bestMove(cards, state.dealer[0], options)
@@ -964,7 +966,8 @@ function afterMove() {
   renderShoe()
   updateCounts()
   updateActions()
-  ;(el.hit.hidden ? el.again : el.hit).focus()
+  if (el.hit.hidden) el.again.focus()
+  else el.game.focus({ preventScroll: true })
 }
 
 // The dealer plays out in state now; the table shows it card by card after.
@@ -1205,7 +1208,9 @@ function nextRound() {
   startRound()
 }
 
-function showSetup() {
+function showSetup({ keepNotice = false } = {}) {
+  disarmLeave()
+  if (!keepNotice) el.notice.hidden = true
   state.done = true
   el.dailyDone.hidden = true
   renderDailyButton()
@@ -1219,7 +1224,7 @@ function showSetup() {
 
 el.play.addEventListener('click', startRound)
 el.again.addEventListener('click', nextRound)
-el.toSetup.addEventListener('click', showSetup)
+el.toSetup.addEventListener('click', () => showSetup())
 el.hit.addEventListener('click', hit)
 el.double.addEventListener('click', double)
 el.split.addEventListener('click', split)
@@ -1409,7 +1414,78 @@ el.resetProgress.addEventListener('click', () => {
   setStatus('Progress reset.')
 })
 
+// ---- Leaving mid-hand -------------------------------------------------------------
+// A ranked or daily hand left unfinished counts as a loss of everything at stake,
+// whether the page was closed or the player pressed Esc twice.
+
+const validStake = (value) => (Number.isInteger(value) && value >= 1 && value <= 4 ? value : 1)
+
+function forfeitRanked(atStake) {
+  const result = scoreRound(profile, { winner: 'dealer', forfeit: true, stake: validStake(atStake) })
+  profile = result.profile
+  saveProfile()
+  writeStorage(ROUND_KEY, null)
+  return signed(result.delta)
+}
+
+function forfeitDaily(key, atStake) {
+  const stakeNow = validStake(atStake)
+  const day = dailyDay(key)
+  if (day.rounds.length < DAILY_HANDS) {
+    day.rounds.push({ hands: [{ winner: 'dealer', doubled: stakeNow > 1 }], score: -stakeNow, forfeit: true })
+  }
+  const drawn = key === state.dailyKey && state.dailyShoe ? state.dailyShoe.size - state.dailyShoe.cards.length : day.drawn
+  dailyHistory[key] = { rounds: day.rounds, drawn }
+  saveDailyHistory()
+  return formatScore(-stakeNow)
+}
+
+function showWarning(text) {
+  el.notice.classList.remove('info')
+  el.notice.textContent = text
+  el.notice.hidden = false
+}
+
+const LEAVE_WINDOW = 3000
+let leaveArmed = null
+
+// Esc: straight home when nothing is at stake; mid-hand, a second Esc confirms.
+function requestLeave() {
+  if (state.done || state.mode === 'rigged') return showSetup()
+  if (!leaveArmed) {
+    el.result.textContent = 'Press Esc again to leave: this hand counts as a loss'
+    el.result.classList.add('warn')
+    leaveArmed = setTimeout(disarmLeave, LEAVE_WINDOW)
+    return
+  }
+  disarmLeave()
+  state.done = true
+  if (state.mode === 'daily') {
+    showWarning(`You left your daily hand, so it counted as a loss (${forfeitDaily(state.dailyKey, stake())}).`)
+  } else {
+    showWarning(`You left mid-hand, so it counted as a loss (${forfeitRanked(stake())} RP).`)
+  }
+  showSetup({ keepNotice: true })
+}
+
+function disarmLeave() {
+  clearTimeout(leaveArmed)
+  leaveArmed = null
+  if (el.result.classList.contains('warn')) {
+    el.result.classList.remove('warn')
+    el.result.textContent = ''
+  }
+}
+
+// Enter and Space never play a move, even on a focused move button.
+const MOVE_BUTTONS = new Set(['hit', 'stand', 'double', 'split'])
+const blockMoveKeys = (event) => {
+  if ((event.key === 'Enter' || event.key === ' ') && MOVE_BUTTONS.has(event.target.id)) event.preventDefault()
+}
+window.addEventListener('keyup', blockMoveKeys)
+
 window.addEventListener('keydown', (event) => {
+  blockMoveKeys(event)
   if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) return
   if (el.badgesDialog.open || el.settingsDialog.open || isCelebrating()) return
   // During the dealer's reveal any key skips to the result.
@@ -1433,7 +1509,13 @@ window.addEventListener('keydown', (event) => {
 
   if (!el.start.hidden) {
     if (key === 'enter' && !onControl) startRound()
-  } else if (!state.done) {
+    return
+  }
+  if (key === 'escape') {
+    event.preventDefault()
+    return requestLeave()
+  }
+  if (!state.done) {
     if (key === 'h') hit()
     if (key === 's') stand()
     if (key === 'd') double()
@@ -1444,15 +1526,9 @@ window.addEventListener('keydown', (event) => {
 })
 
 if (readStorage(ROUND_KEY)) {
-  // The flag holds the bets at risk (a double or split raises it); anything odd counts as one.
-  const saved = Number(readStorage(ROUND_KEY))
-  const atStake = Number.isInteger(saved) && saved >= 1 && saved <= 4 ? saved : 1
-  const result = scoreRound(profile, { winner: 'dealer', forfeit: true, stake: atStake })
-  profile = result.profile
-  saveProfile()
-  writeStorage(ROUND_KEY, null)
-  el.notice.textContent = `Your last ranked hand was left unfinished and counted as a loss (${signed(result.delta)} RP).`
-  el.notice.hidden = false
+  // The flag holds the bets at risk (a double or split raises it).
+  const lost = forfeitRanked(Number(readStorage(ROUND_KEY)))
+  showWarning(`Your last ranked hand was left unfinished and counted as a loss (${lost} RP).`)
 }
 
 const seasonNote = applySeason()
@@ -1472,16 +1548,8 @@ if (caughtUp.earned.length) {
 // A daily hand left unfinished counts as a loss of whatever was at stake.
 const today = dailyHistory[dailyKey()]
 if (today?.inHand) {
-  const day = dailyDay(dailyKey())
-  const atStake = Number.isInteger(today.inHand) && today.inHand >= 1 && today.inHand <= 4 ? today.inHand : 1
-  if (day.rounds.length < DAILY_HANDS) {
-    day.rounds.push({ hands: [{ winner: 'dealer', doubled: atStake > 1 }], score: -atStake, forfeit: true })
-  }
-  dailyHistory[dailyKey()] = { rounds: day.rounds, drawn: day.drawn }
-  saveDailyHistory()
-  el.notice.classList.remove('info')
-  el.notice.textContent = `Your daily hand was left unfinished and counted as a loss (${formatScore(-atStake)}).`
-  el.notice.hidden = false
+  const lost = forfeitDaily(dailyKey(), today.inHand)
+  showWarning(`Your daily hand was left unfinished and counted as a loss (${lost}).`)
 }
 
 renderStack()

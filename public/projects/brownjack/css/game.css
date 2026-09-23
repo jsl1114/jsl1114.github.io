@@ -23,6 +23,49 @@ html {
   background-size: cover;
 }
 
+/* Tables unlocked by rank: a felt is a vignette over a fine weave. The
+   settings swatches reuse the same backgrounds. */
+:root {
+  --weave: repeating-linear-gradient(45deg, rgb(255 255 255 / 0.025) 0 2px, transparent 2px 5px),
+    repeating-linear-gradient(-45deg, rgb(0 0 0 / 0.05) 0 2px, transparent 2px 5px);
+}
+
+html[data-table='casino'],
+.swatch-preview[data-table='casino'] {
+  background: var(--weave), radial-gradient(ellipse at center, #2f8a4f 0%, #145a2e 60%, #0a3219 100%);
+}
+
+html[data-table='royal'],
+.swatch-preview[data-table='royal'] {
+  background: var(--weave), radial-gradient(ellipse at center, #2c4f9e 0%, #16275a 60%, #0b1330 100%);
+}
+
+html[data-table='velvet'],
+.swatch-preview[data-table='velvet'] {
+  background: var(--weave), radial-gradient(ellipse at center, #9a2440 0%, #5c0f24 60%, #310612 100%);
+}
+
+html[data-table='midnight'],
+.swatch-preview[data-table='midnight'] {
+  background: var(--weave), radial-gradient(ellipse at center, #2b3140 0%, #14171f 60%, #07080b 100%);
+}
+
+html[data-table='aurora'],
+.swatch-preview[data-table='aurora'] {
+  background: radial-gradient(ellipse at 20% 10%, rgb(255 215 106 / 0.35), transparent 45%),
+    radial-gradient(ellipse at 80% 90%, rgb(64 224 208 / 0.3), transparent 50%),
+    radial-gradient(ellipse at center, #5a2a8c 0%, #2a1050 60%, #12061f 100%);
+}
+
+html[data-table]:not([data-table='oak']) {
+  min-height: 100%;
+  background-attachment: fixed;
+}
+
+.swatch-preview[data-table='oak'] {
+  background: url('../assets/bg.jpg') center / cover;
+}
+
 body {
   color: var(--bark);
 }
@@ -979,6 +1022,53 @@ kbd {
 
 .settings-dialog {
   width: min(440px, calc(100vw - 32px));
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.swatch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 6px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.55);
+  color: var(--bark);
+  font-size: 10px;
+}
+
+.swatch[aria-pressed='true'] {
+  border-color: var(--bark);
+  background: white;
+}
+
+.swatch:disabled {
+  opacity: 0.55;
+}
+
+.swatch-preview {
+  width: 100%;
+  height: 44px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.1);
+}
+
+.backs .swatch-preview {
+  width: 40px;
+  height: 58px;
+  background: center / contain no-repeat;
+  box-shadow: none;
+}
+
+.swatch:disabled .swatch-preview {
+  filter: grayscale(0.7);
 }
 
 .toggle {

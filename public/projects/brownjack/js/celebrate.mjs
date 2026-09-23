@@ -51,9 +51,10 @@ export function celebrate(badge) {
 }
 
 // `from` and `to` are rankOf() results for a promotion or a new Legend star.
-export function celebrateRank(from, to) {
+// `note` (optional) is an extra line, such as what the new tier unlocks.
+export function celebrateRank(from, to, { note } = {}) {
   if (from.tier === to.tier) return enqueue(() => buildDivisionStep(from, to), LOCK.division, 'division', 'rankUp')
-  return enqueue(() => buildTierFlip(from, to), to.tier === 'Legend' ? LOCK.legend : LOCK.tier, 'tier', 'rankUp')
+  return enqueue(() => buildTierFlip(from, to, note), to.tier === 'Legend' ? LOCK.legend : LOCK.tier, 'tier', 'rankUp')
 }
 
 function node(tag, className, text) {
@@ -91,11 +92,12 @@ function rings(container, total) {
   }
 }
 
-function captions(card, kicker, name, desc) {
+function captions(card, kicker, name, desc, note) {
   card.append(
     node('p', 'celebration-kicker', kicker),
     node('h2', 'celebration-name', name),
     ...(desc ? [node('p', 'celebration-desc', desc)] : []),
+    ...(note ? [node('p', 'celebration-desc celebration-note', note)] : []),
     node('p', 'celebration-hint', 'Click anywhere or press any key to continue'),
   )
 }
@@ -127,7 +129,7 @@ function buildDivisionStep(from, to) {
 }
 
 // New tier: toss a coin with the old emblem on the front and the new one on the back.
-function buildTierFlip(from, to) {
+function buildTierFlip(from, to, note) {
   const legend = to.tier === 'Legend'
   const overlay = overlayElement(
     `rank-up tier tier-${to.tier.toLowerCase()}${legend ? ' to-legend' : ''}`,
@@ -151,7 +153,7 @@ function buildTierFlip(from, to) {
 
   const card = node('div', 'celebration-card')
   card.append(stage)
-  captions(card, legend ? 'You are a Legend' : 'New tier', to.name, `${from.name} → ${to.name}`)
+  captions(card, legend ? 'You are a Legend' : 'New tier', to.name, `${from.name} → ${to.name}`, note)
   overlay.append(screenFx, card)
   return overlay
 }

@@ -33,6 +33,7 @@ import { MAX_SAVE_BYTES, exportSave, parseSave, saveFileName } from './save.mjs'
 import { buzz, canVibrate, play } from './sound.mjs'
 import { getSettings, setSetting } from './prefs.mjs'
 import { bestMove, describeSpot } from './strategy.mjs'
+import { CARD_BACKS, TABLES, isUnlocked, selected, unlockTier, unlocksAt } from './cosmetics.mjs'
 
 const $ = (id) => document.getElementById(id)
 const el = {
@@ -99,6 +100,8 @@ const el = {
   settingHaptics: $('setting-haptics'),
   hapticsRow: $('haptics-row'),
   settingCoach: $('setting-coach'),
+  tablePicker: $('table-picker'),
+  backPicker: $('back-picker'),
   coach: $('coach'),
 }
 
@@ -147,7 +150,7 @@ function cardElement(card, faceDown = false) {
   const inner = document.createElement('div')
   inner.className = 'card-inner'
   img.className = 'card-back'
-  img.src = './assets/cards/back.svg'
+  img.src = `./assets/cards/${currentBack().file}`
   img.alt = 'Face-down card'
   const face = document.createElement('img')
   face.className = 'card-face'
@@ -300,6 +303,49 @@ const saveProfile = () => writeStorage(PROFILE_KEY, JSON.stringify(profile))
 const badgeById = (id) => BADGES.find((badge) => badge.id === id)
 // Ranked hands played since the page loaded, for the Marathon badge.
 let sessionHands = 0
+// Best-ever RP before the current hand, to spot a first time in a tier.
+let beforePeak = 0
+
+// ---- Cosmetics -----------------------------------------------------------------
+
+const peakTier = () => rankOf(profile.peakRp).tierIndex
+const currentBack = () => selected(CARD_BACKS, getSettings().cardBack, peakTier())
+
+function applyTable() {
+  document.documentElement.dataset.table = selected(TABLES, getSettings().table, peakTier()).id
+}
+
+function renderCosmetics() {
+  const tier = peakTier()
+  const picker = (container, list, key, current) =>
+    container.replaceChildren(
+      ...list.map((item) => {
+        const unlocked = isUnlocked(item, tier)
+        const button = document.createElement('button')
+        button.type = 'button'
+        button.className = 'swatch'
+        button.disabled = !unlocked
+        button.setAttribute('aria-pressed', String(item.id === current.id))
+        const preview = document.createElement('span')
+        preview.className = 'swatch-preview'
+        if (key === 'table') preview.dataset.table = item.id
+        else preview.style.backgroundImage = `url('./assets/cards/${item.file}')`
+        const label = document.createElement('span')
+        label.textContent = unlocked ? item.name : `🔒 ${unlockTier(item)}`
+        button.title = unlocked ? item.name : `${item.name}: reach ${unlockTier(item)} to unlock`
+        button.append(preview, label)
+        button.addEventListener('click', () => {
+          setSetting(key, item.id)
+          applyTable()
+          renderCosmetics()
+          container.querySelector('[aria-pressed="true"]')?.focus()
+        })
+        return button
+      }),
+    )
+  picker(el.tablePicker, TABLES, 'table', selected(TABLES, getSettings().table, tier))
+  picker(el.backPicker, CARD_BACKS, 'cardBack', currentBack())
+}
 
 const signed = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '±0')
 
@@ -879,6 +925,7 @@ function finish() {
   const split = state.hands.length > 1
   const winners = state.hands.map((hand) => outcome(hand.cards, state.dealer, { split }))
   const beforeRp = profile.rp
+  beforePeak = profile.peakRp
   if (state.ranked) sessionHands++
   const result = scoreRound(profile, {
     hands: state.hands.map((hand, i) => ({
@@ -930,7 +977,11 @@ function showResult(winners, result, beforeRp) {
   el.again.focus()
   // A promotion (or a new Legend star) plays first, then the hand's badges.
   const step = (rp) => Math.floor(rp / POINTS_PER_DIVISION)
-  if (!result.unranked && step(result.profile.rp) > step(beforeRp)) celebrateRank(result.before, result.after)
+  if (!result.unranked && step(result.profile.rp) > step(beforeRp)) {
+    // A new best tier unlocks a table and card back.
+    const newTier = result.after.tierIndex > rankOf(beforePeak).tierIndex
+    celebrateRank(result.before, result.after, { note: newTier ? `Unlocked: ${unlocksAt(result.after.tierIndex)}` : '' })
+  }
   for (const id of result.earned) celebrate(badgeById(id))
 }
 
@@ -1005,6 +1056,7 @@ el.openSettings.addEventListener('click', () => {
   el.settingSound.checked = prefs.sound
   el.settingHaptics.checked = prefs.haptics
   el.settingCoach.checked = prefs.coach
+  renderCosmetics()
   el.hapticsRow.hidden = !canVibrate()
   clearImport()
   disarmReset()
@@ -1099,6 +1151,8 @@ el.confirmImport.addEventListener('click', () => {
   const stored = saveProfile()
   clearImport()
   renderRank()
+  applyTable()
+  renderCosmetics()
   setStatus(
     stored
       ? `Save imported: ${describe(profile)}.`
@@ -1119,6 +1173,8 @@ el.resetProgress.addEventListener('click', () => {
   profile = newProfile()
   saveProfile()
   renderRank()
+  applyTable()
+  renderCosmetics()
   disarmReset()
   setStatus('Progress reset.')
 })
@@ -1177,4 +1233,5 @@ if (caughtUp.earned.length) {
 
 renderStack()
 renderRank()
+applyTable()
 for (const id of caughtUp.earned) celebrate(badgeById(id))

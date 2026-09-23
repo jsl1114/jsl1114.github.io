@@ -96,6 +96,15 @@
   animation: celebration-rise 0.5s 0.55s ease-out both;
 }
 
+.celebration-note {
+  margin-top: 4px;
+  color: var(--accent);
+}
+
+.rank-up.tier .celebration-note {
+  animation-delay: 2.85s;
+}
+
 /* The hint appears once the lock has passed and the celebration can be closed. */
 .celebration-hint {
   margin-top: 32px;

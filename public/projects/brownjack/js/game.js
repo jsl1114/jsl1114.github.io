@@ -114,6 +114,9 @@ const el = {
   ladder: $('ladder'),
   notice: $('notice'),
   openBadges: $('open-badges'),
+  openStats: $('open-stats'),
+  statsDialog: $('stats-dialog'),
+  closeStats: $('close-stats'),
   badgeCount: $('badge-count'),
   rankChip: $('rank-chip'),
   cutCard: $('cut-card'),
@@ -662,7 +665,7 @@ function renderStats() {
     cell.title = 'Open the rank roadmap'
     cell.append(emblemElement(rankOf(rp)), make('strong', '', rankOf(rp).name), make('small', '', label))
     cell.addEventListener('click', () => {
-      el.badgesDialog.close()
+      el.statsDialog.close()
       el.openRoadmap.click()
     })
     plates.append(cell)
@@ -716,10 +719,8 @@ function renderStats() {
   el.stats.replaceChildren(plates, record, strategy, tiles)
 }
 
-function renderBadgesDialog() {
+function renderStatsDialog() {
   renderStats()
-
-  renderCollection(el.collection)
   const medals = [...(profile.seasons ?? [])].reverse()
   el.seasonMedals.hidden = medals.length === 0
   el.seasonMedals.replaceChildren(
@@ -736,6 +737,26 @@ function renderBadgesDialog() {
       return item
     }),
   )
+  el.pointsTable.replaceChildren(
+    ...[...TIERS, 'Legend'].map((tier, i) => {
+      const row = document.createElement('tr')
+      for (const value of [tier, `+${WIN_POINTS[i]}`, `−${LOSS_POINTS[i]}`]) {
+        const cell = document.createElement('td')
+        cell.textContent = value
+        row.append(cell)
+      }
+      return row
+    }),
+  )
+  el.bonusList.textContent =
+    `Bonuses on a win: blackjack +${BONUS.blackjack}, daredevil (you hit on a hard 17 or more) ` +
+    `+${BONUS.daredevil}, five-card Charlie +${BONUS.charlie}, and +${BONUS.streakStep} per win ` +
+    `past the second in a row (up to +${BONUS.streakCap}). Doubling down puts twice the RP at stake ` +
+    'either way, and after a split each hand wins or loses on its own.'
+}
+
+function renderBadgesDialog() {
+  renderCollection(el.collection)
   const showcase = profile.showcase ?? []
   el.showcaseHint.textContent = `Pin up to ${SHOWCASE_SIZE} earned badges to show beside your rank · ${showcase.length}/${SHOWCASE_SIZE} pinned`
   renderBadgeTabs()
@@ -756,22 +777,6 @@ function renderBadgesDialog() {
     }),
   )
 
-  el.pointsTable.replaceChildren(
-    ...[...TIERS, 'Legend'].map((tier, i) => {
-      const row = document.createElement('tr')
-      for (const value of [tier, `+${WIN_POINTS[i]}`, `−${LOSS_POINTS[i]}`]) {
-        const cell = document.createElement('td')
-        cell.textContent = value
-        row.append(cell)
-      }
-      return row
-    }),
-  )
-  el.bonusList.textContent =
-    `Bonuses on a win: blackjack +${BONUS.blackjack}, daredevil (you hit on a hard 17 or more) ` +
-    `+${BONUS.daredevil}, five-card Charlie +${BONUS.charlie}, and +${BONUS.streakStep} per win ` +
-    `past the second in a row (up to +${BONUS.streakCap}). Doubling down puts twice the RP at stake ` +
-    'either way, and after a split each hand wins or loses on its own.'
 }
 
 // ---- Collection points and badge tabs ----------------------------------------------
@@ -1581,6 +1586,15 @@ el.roadmapDialog.addEventListener('click', (event) => {
   if (event.target === el.roadmapDialog) el.roadmapDialog.close()
 })
 
+el.openStats.addEventListener('click', () => {
+  renderStatsDialog()
+  el.statsDialog.showModal()
+})
+el.closeStats.addEventListener('click', () => el.statsDialog.close())
+el.statsDialog.addEventListener('click', (event) => {
+  if (event.target === el.statsDialog) el.statsDialog.close()
+})
+
 el.openBadges.addEventListener('click', () => {
   renderBadgesDialog()
   el.badgesDialog.showModal()
@@ -1826,7 +1840,7 @@ window.addEventListener('keyup', blockMoveKeys)
 window.addEventListener('keydown', (event) => {
   blockMoveKeys(event)
   if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) return
-  if (el.badgesDialog.open || el.settingsDialog.open || el.roadmapDialog.open || isCelebrating()) return
+  if (document.querySelector('dialog[open]') || isCelebrating()) return
   // During the dealer's reveal any key skips to the result.
   if (state.revealing) {
     if (!['Shift', 'Control', 'Alt', 'Meta', 'Tab'].includes(event.key)) skipReveal()

@@ -837,6 +837,17 @@ kbd {
   color: var(--walnut);
 }
 
+.menu-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: -6px;
+}
+
+.menu-row .badges-btn {
+  margin-top: 0;
+}
+
 .badges-btn {
   margin-top: -6px;
   padding: 8px;

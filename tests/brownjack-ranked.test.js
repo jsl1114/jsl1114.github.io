@@ -108,6 +108,9 @@ test("badges unlock from hands, streaks and milestones, once where they should",
   assert.ok(unlocks(at(0), { ...loss, at: new Date(2026, 1, 13, 20).getTime() }, "friday-13"));
   assert.ok(unlocks(at(0), { ...loss, at: new Date(2026, 8, 23, 3).getTime() }, "night-owl"));
   assert.ok(unlocks(at(0), { ...loss, sessionHands: 50 }, "marathon"));
+  assert.ok(unlocks(at(8, { peakRp: 640 }), loss, "bankruptcy"), "Gold player hits 0 RP");
+  assert.ok(!unlocks(at(8, { peakRp: 300 }), loss, "bankruptcy"), "never reached Gold");
+  assert.ok(!unlocks(at(0, { peakRp: 640 }), loss, "bankruptcy"), "already at 0");
   assert.ok(unlocks(at(0), { ...win, lastInShoe: true }, "last-call"));
   assert.ok(!unlocks(at(0), { ...loss, lastInShoe: true }, "last-call"));
   assert.ok(unlocks(at(0), { ...win, player: hand(["A"], ["K"]), firstInShoe: true }, "fresh-start"));

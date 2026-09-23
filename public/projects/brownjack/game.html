@@ -44,9 +44,10 @@
           <strong id="daily-label">Daily</strong>
           <span id="daily-meta"></span>
         </button>
-        <button type="button" class="badges-btn" id="open-badges">
-          Badges &amp; stats <span id="badge-count"></span>
-        </button>
+        <div class="menu-row">
+          <button type="button" class="badges-btn" id="open-stats">Stats</button>
+          <button type="button" class="badges-btn" id="open-badges">Badges <span id="badge-count"></span></button>
+        </div>
 
         <details class="setup">
           <summary>
@@ -110,17 +111,13 @@
     <p class="share-status" id="share-status" role="status"></p>
   </div>
 
-  <dialog class="badges-dialog" id="badges-dialog" aria-labelledby="badges-title">
+  <dialog class="badges-dialog" id="stats-dialog" aria-labelledby="stats-title">
     <div class="dialog-head">
-      <h2 id="badges-title">Badges &amp; stats</h2>
-      <button type="button" class="close" id="close-badges" aria-label="Close">×</button>
+      <h2 id="stats-title">Stats</h2>
+      <button type="button" class="close" id="close-stats" aria-label="Close">×</button>
     </div>
     <div class="stat-board" id="stats"></div>
-    <div class="collection" id="collection"></div>
     <div class="season-medals" id="season-medals" hidden></div>
-    <p class="showcase-hint" id="showcase-hint"></p>
-    <div class="badge-tabs" id="badge-tabs" role="tablist" aria-label="Badge types"></div>
-    <div id="badge-sections"></div>
     <details class="how">
       <summary>How ranking works</summary>
       <p>
@@ -139,6 +136,17 @@
         tables and card backs are never reset.
       </p>
     </details>
+  </dialog>
+
+  <dialog class="badges-dialog" id="badges-dialog" aria-labelledby="badges-title">
+    <div class="dialog-head">
+      <h2 id="badges-title">Badges</h2>
+      <button type="button" class="close" id="close-badges" aria-label="Close">×</button>
+    </div>
+    <div class="collection" id="collection"></div>
+    <p class="showcase-hint" id="showcase-hint"></p>
+    <div class="badge-tabs" id="badge-tabs" role="tablist" aria-label="Badge types"></div>
+    <div id="badge-sections"></div>
   </dialog>
 
   <dialog class="badges-dialog roadmap-dialog" id="roadmap-dialog" aria-labelledby="roadmap-title">

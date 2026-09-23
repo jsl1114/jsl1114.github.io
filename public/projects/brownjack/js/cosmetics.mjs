@@ -78,6 +78,8 @@ export const CARD_BACKS = [
   legendaryBack('constellation', 'constellation', 'Star chart'),
   legendaryBack('season-legend', 'season', 'Laurel'),
   legendaryBack('completionist', 'completionist', 'Mosaic'),
+  legendaryBack('friday-13', 'friday13', 'Hockey mask'),
+  legendaryBack('bankruptcy', 'bestboss', "World's best boss"),
 ]
 
 // { unlocked, current, target, text, status } for one item; `status` is a short

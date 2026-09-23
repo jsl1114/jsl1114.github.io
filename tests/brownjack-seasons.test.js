@@ -59,3 +59,10 @@ test("season history survives export and import, and bad entries are rejected", 
   data.checksum = checksum(data.profile);
   assert.match(parseSave(JSON.stringify(data)).error, /seasons are invalid/);
 });
+
+test("seasons never roll backwards", () => {
+  const later = at(740, { season: 3, seasonPeakRp: 740, seasonGames: 5 });
+  const { profile, ended } = rollSeason(later, 2);
+  assert.equal(profile, later);
+  assert.equal(ended, null);
+});

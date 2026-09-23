@@ -33,7 +33,9 @@ export function softReset(rp) {
 // Returns { profile, ended, earned }: `ended` is the medal for the season that
 // just finished, if one did; `earned` any badges that unlocks.
 export function rollSeason(profile, id, now = Date.now()) {
-  if (profile.season === id) return { profile, ended: null, earned: [] }
+  // Seasons only move forward: a clock set back (or a save from a later season)
+  // leaves the profile where it is rather than resetting it again.
+  if (profile.season >= id) return { profile, ended: null, earned: [] }
   if (!profile.season) {
     return { profile: { ...profile, season: id, seasonPeakRp: profile.rp, seasonGames: 0 }, ended: null, earned: [] }
   }

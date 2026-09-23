@@ -177,11 +177,18 @@ export function tableSVG(id, width, height, { detail = true, printAt = 0.5 } = {
       const a = (Math.PI / 3) * i - Math.PI / 2
       return `${x + Math.cos(a) * size * k},${y + Math.sin(a) * size * k}`
     }).join(' ')
+    // Filled with the tier's metal: a polished gradient, a bevelled inner plate
+    // and a highlight across the top, like the rank emblem.
+    const [light, dark] = theme.railColors
+    svg += `<defs><linearGradient id="metal${n}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${light}"/><stop offset="0.5" stop-color="${theme.ink}"/><stop offset="1" stop-color="${dark}"/></linearGradient>`
+    svg += `<linearGradient id="bevel${n}" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="${light}"/><stop offset="1" stop-color="${dark}"/></linearGradient></defs>`
     for (const side of [-1, 1]) {
       const x = cx + side * dx
       const y = cy + Math.sqrt(Math.max(0, lineR * lineR - dx * dx))
-      svg += `<polygon points="${hex(x, y, 1)}" fill="${theme.felt[1]}" fill-opacity="0.85" stroke="${theme.ink}" stroke-opacity="0.6" stroke-width="${stroke * 1.5}"/>`
-      svg += `<polygon points="${hex(x, y, 0.68)}" fill="none" stroke="${theme.ink}" stroke-opacity="0.35" stroke-width="${stroke}"/>`
+      svg += `<polygon points="${hex(x, y + size * 0.08, 1.04)}" fill="#000" fill-opacity="0.35"/>`
+      svg += `<polygon points="${hex(x, y, 1)}" fill="url(#metal${n})" stroke="${dark}" stroke-width="${stroke}"/>`
+      svg += `<polygon points="${hex(x, y, 0.7)}" fill="url(#bevel${n})" stroke="${light}" stroke-opacity="0.7" stroke-width="${stroke}"/>`
+      svg += `<ellipse cx="${x}" cy="${y - size * 0.42}" rx="${size * 0.5}" ry="${size * 0.14}" fill="#fff" fill-opacity="0.35"/>`
     }
   }
   svg += `</g>`

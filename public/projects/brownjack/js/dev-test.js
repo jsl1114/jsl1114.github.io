@@ -89,7 +89,6 @@ const SLIDERS = [
 const PRESETS = {
   'Current default': { ...CARD_SOUND },
   'Crisp snap': { clickMs: 5, clickHz: 5200, clickDecay: 9, clickLevel: 1, thudHz: 180, thudMs: 25, thudLevel: 0.3, vary: 0.1 },
-  'Soft felt': { clickMs: 14, clickHz: 1600, clickDecay: 5, clickLevel: 0.6, thudHz: 120, thudMs: 70, thudLevel: 0.8, vary: 0.15 },
   'Old (burner)': { clickMs: 60, clickHz: 8000, clickDecay: 1, clickLevel: 0.9, thudHz: 150, thudMs: 10, thudLevel: 0, vary: 0 },
 }
 const lab = { ...CARD_SOUND }

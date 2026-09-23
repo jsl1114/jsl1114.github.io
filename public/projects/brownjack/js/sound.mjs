@@ -55,15 +55,16 @@ function snap(ctx, { at = 0, length = 0.06, freq = 2400, gain = 0.9 } = {}) {
 // soft low thud (the card settling). A long noise burst is what sounded like a
 // gas burner; the click here lasts a few milliseconds and falls off fast.
 // Every value can be tuned in the dev test page's Sound lab.
+// Tuned by ear in the Sound lab: a soft felt landing.
 export const CARD_SOUND = {
-  clickMs: 9, // how long the click lasts
-  clickHz: 3200, // its brightness (a low-pass cutoff)
-  clickDecay: 6, // how sharply it falls off: higher is crisper
-  clickLevel: 0.9,
-  thudHz: 150, // the thud's pitch, sliding down as it settles
-  thudMs: 45,
-  thudLevel: 0.55,
-  vary: 0.12, // random variation per card, so a deal isn't machine-like
+  clickMs: 14, // how long the click lasts
+  clickHz: 2200, // its brightness (a low-pass cutoff)
+  clickDecay: 5, // how sharply it falls off: higher is crisper
+  clickLevel: 0.6,
+  thudHz: 120, // the thud's pitch, sliding down as it settles
+  thudMs: 70,
+  thudLevel: 0.8,
+  vary: 0.26, // random variation per card, so a deal isn't machine-like
 }
 
 export function cardSound(ctx, at = 0, settings = CARD_SOUND) {

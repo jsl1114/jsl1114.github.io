@@ -26,6 +26,7 @@ import {
 } from './ranked.mjs'
 import { celebrate, celebrateRank, glyphElement, isCelebrating } from './celebrate.mjs'
 import { MAX_SAVE_BYTES, exportSave, parseSave, saveFileName } from './save.mjs'
+import { buzz, canVibrate, getSettings, play, setSetting } from './sound.mjs'
 
 const $ = (id) => document.getElementById(id)
 const el = {
@@ -84,6 +85,9 @@ const el = {
   confirmImport: $('confirm-import'),
   cancelImport: $('cancel-import'),
   settingsStatus: $('settings-status'),
+  settingSound: $('setting-sound'),
+  settingHaptics: $('setting-haptics'),
+  hapticsRow: $('haptics-row'),
 }
 
 const SUIT_SYMBOLS = { spades: '♠', hearts: '♥', clubs: '♣', diamonds: '♦' }
@@ -575,6 +579,7 @@ async function revealHoleCard() {
   // Flip onto a loaded image rather than a blank one.
   await face.decode().catch(() => {})
   if (state.skipping) hole.classList.add('instant')
+  else play('flip')
   hole.classList.add('flipped')
 }
 
@@ -589,6 +594,7 @@ async function playDealerReveal() {
   for (let i = el.dealerCards.children.length; i < state.dealer.length; i++) {
     await pause(PACE.draw)
     el.dealerCards.append(cardElement(state.dealer[i]))
+    if (!state.skipping) play('deal')
     showDealerTotal(i + 1)
   }
   await pause(PACE.settle)
@@ -627,6 +633,7 @@ function startRound() {
   draw(state.dealer, el.dealerCards)
   draw(state.player, el.playerCards)
   draw(state.dealer, el.dealerCards, true)
+  for (let i = 0; i < 4; i++) play('deal', { at: i * 0.08 })
   updateCounts()
   el.hit.focus()
 
@@ -637,6 +644,7 @@ function hit() {
   if (state.done) return
   const before = handValue(state.player)
   draw(state.player, el.playerCards)
+  play('deal')
   updateCounts()
   const { total } = handValue(state.player)
   if (!before.soft && before.total >= 17) {
@@ -695,6 +703,12 @@ function finish() {
 
 function showResult(winner, result, beforeRp) {
   el.result.textContent = resultText(winner)
+  const sting =
+    winner === 'push' ? 'push'
+    : winner === 'player' ? (isBlackjack(state.player) ? 'blackjack' : 'win')
+    : handValue(state.player).total > 21 ? 'bust' : 'lose'
+  play(sting)
+  if (sting === 'bust' || sting === 'blackjack' || sting === 'win') buzz(sting)
   if (winner !== 'dealer') el.playerCounter.classList.add('winner')
   if (winner !== 'player') el.dealerCounter.classList.add('winner')
   renderRankChip(beforeRp)
@@ -774,6 +788,10 @@ const describe = (p) => {
 }
 
 el.openSettings.addEventListener('click', () => {
+  const prefs = getSettings()
+  el.settingSound.checked = prefs.sound
+  el.settingHaptics.checked = prefs.haptics
+  el.hapticsRow.hidden = !canVibrate()
   clearImport()
   disarmReset()
   setStatus('')
@@ -786,6 +804,15 @@ el.settingsDialog.addEventListener('click', (event) => {
 el.settingsDialog.addEventListener('close', () => {
   clearImport()
   disarmReset()
+})
+
+el.settingSound.addEventListener('change', () => {
+  setSetting('sound', el.settingSound.checked)
+  if (el.settingSound.checked) play('common')
+})
+el.settingHaptics.addEventListener('change', () => {
+  setSetting('haptics', el.settingHaptics.checked)
+  if (el.settingHaptics.checked) buzz('win')
 })
 
 el.exportSave.addEventListener('click', () => {

@@ -6,6 +6,7 @@
 // presses a key, which only counts once a short lock has passed, so it can't be
 // dismissed by a click or key press that was meant for the game.
 import { DIVISIONS } from './ranked.mjs'
+import { buzz, play } from './sound.mjs'
 
 // How long each celebration ignores clicks and keys, in ms: long enough to land
 // the animation's main beat.
@@ -37,21 +38,22 @@ export function emblemElement(rank) {
   return emblem
 }
 
-function enqueue(build, lock) {
+function enqueue(build, lock, sound, vibration) {
   return new Promise((resolve) => {
-    queue.push({ build, lock, resolve })
+    queue.push({ build, lock, sound, vibration, resolve })
     if (!showing) showNext()
   })
 }
 
 export function celebrate(badge) {
-  return enqueue(() => build(badge), LOCK[badge.rarity.toLowerCase()])
+  const rarity = badge.rarity.toLowerCase()
+  return enqueue(() => build(badge), LOCK[rarity], rarity, 'badge')
 }
 
 // `from` and `to` are rankOf() results for a promotion or a new Legend star.
 export function celebrateRank(from, to) {
-  if (from.tier === to.tier) return enqueue(() => buildDivisionStep(from, to), LOCK.division)
-  return enqueue(() => buildTierFlip(from, to), to.tier === 'Legend' ? LOCK.legend : LOCK.tier)
+  if (from.tier === to.tier) return enqueue(() => buildDivisionStep(from, to), LOCK.division, 'division', 'rankUp')
+  return enqueue(() => buildTierFlip(from, to), to.tier === 'Legend' ? LOCK.legend : LOCK.tier, 'tier', 'rankUp')
 }
 
 function node(tag, className, text) {
@@ -218,6 +220,8 @@ function showNext() {
   // An open modal <dialog> sits in the top layer, so celebrate inside it.
   ;(document.querySelector('dialog[open]') ?? document.body).append(overlay)
   overlay.focus()
+  play(item.sound)
+  buzz(item.vibration)
 
   // An open <dialog> would close on Escape underneath the celebration.
   const dialog = document.querySelector('dialog[open]')

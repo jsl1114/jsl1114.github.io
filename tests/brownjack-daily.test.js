@@ -23,11 +23,17 @@ test("the seeded random source is uniform enough to shuffle with", () => {
   for (const n of buckets) assert.ok(Math.abs(n - 10_000) < 500, `bucket ${n}`);
 });
 
-test("days are numbered on UTC", () => {
-  assert.equal(dailyKey(Date.UTC(2026, 8, 24, 23, 59)), "2026-09-24");
-  assert.equal(dailyKey(Date.UTC(2026, 8, 25, 0, 1)), "2026-09-25");
+test("days turn over at midnight Eastern, daylight saving included", () => {
+  // September: Eastern is UTC−4, so midnight is 04:00 UTC.
+  assert.equal(dailyKey(Date.UTC(2026, 8, 24, 3, 59)), "2026-09-23");
+  assert.equal(dailyKey(Date.UTC(2026, 8, 24, 4, 1)), "2026-09-24");
+  // December: UTC−5, so midnight is 05:00 UTC.
+  assert.equal(dailyKey(Date.UTC(2026, 11, 2, 4, 59)), "2026-12-01");
+  assert.equal(dailyKey(Date.UTC(2026, 11, 2, 5, 1)), "2026-12-02");
   assert.equal(dailyNumber("2026-09-23"), 1);
   assert.equal(dailyNumber("2026-10-23"), 31);
+  // Stepping back a day is calendar arithmetic, even across the November changeover.
+  assert.equal(dailyNumber("2026-11-02") - dailyNumber("2026-11-01"), 1);
 });
 
 test("rounds score wins, losses, doubles, naturals and splits", () => {

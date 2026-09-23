@@ -1,24 +1,27 @@
 // seasons.mjs — monthly ranked seasons with a soft reset. Pure: no DOM, no storage.
 //
-// A season is a UTC calendar month; September 2026 is Season 1. When a new one
+// A season is a calendar month on the game's clock (US Eastern); September 2026
+// is Season 1. When a new one
 // starts, everyone drops one tier from the start of their division, and the
 // season that ended is kept as a medal: its peak and final rank.
 import { DIVISIONS, POINTS_PER_DIVISION, rankOf } from './ranked.mjs'
 import { awardBadges } from './badges.mjs'
+import { gameClock, gameMidnight } from './gametime.mjs'
 
 const FIRST_YEAR = 2026
 const FIRST_MONTH = 8 // September, zero-based
 export const SEASON_DROP = DIVISIONS.length * POINTS_PER_DIVISION
 
 export function seasonId(now = Date.now()) {
-  const date = new Date(now)
-  return (date.getUTCFullYear() - FIRST_YEAR) * 12 + (date.getUTCMonth() - FIRST_MONTH) + 1
+  const { year, month } = gameClock(now)
+  return (year - FIRST_YEAR) * 12 + (month - FIRST_MONTH) + 1
 }
 
-const seasonStart = (id) => Date.UTC(FIRST_YEAR, FIRST_MONTH + id - 1, 1)
+// The instant a season begins: midnight Eastern on the 1st.
+const seasonStart = (id) => gameMidnight(FIRST_YEAR, FIRST_MONTH + id - 1, 1)
 
 export const seasonName = (id) =>
-  `Season ${id} · ${new Date(seasonStart(id)).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })}`
+  `Season ${id} · ${new Date(Date.UTC(FIRST_YEAR, FIRST_MONTH + id - 1, 15)).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })}`
 
 export const daysLeft = (id, now = Date.now()) => Math.max(0, Math.ceil((seasonStart(id + 1) - now) / 86_400_000))
 

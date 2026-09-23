@@ -6,12 +6,17 @@ import { checksum, exportSave, parseSave } from "../public/projects/brownjack/js
 
 const at = (rp, extra = {}) => ({ ...newProfile(), rp, peakRp: rp, ...extra });
 
-test("seasons are UTC months starting September 2026", () => {
+test("seasons are Eastern calendar months starting September 2026", () => {
   assert.equal(seasonId(Date.UTC(2026, 8, 23)), 1);
-  assert.equal(seasonId(Date.UTC(2026, 9, 1)), 2);
-  assert.equal(seasonId(Date.UTC(2027, 0, 15)), 5);
+  // 8 pm on Sept 30 in New York is already October in UTC, but still Season 1.
+  assert.equal(seasonId(Date.UTC(2026, 9, 1, 0, 30)), 1);
+  assert.equal(seasonId(Date.UTC(2026, 9, 1, 4, 1)), 2);
+  // New Year's in winter time (UTC−5).
+  assert.equal(seasonId(Date.UTC(2027, 0, 1, 4, 30)), 4);
+  assert.equal(seasonId(Date.UTC(2027, 0, 1, 5, 1)), 5);
   assert.equal(seasonName(1), "Season 1 · Sep 2026");
   assert.equal(daysLeft(1, Date.UTC(2026, 8, 23, 12)), 8);
+  assert.equal(daysLeft(1, Date.UTC(2026, 9, 1, 3, 0)), 1, "an hour before midnight Eastern");
 });
 
 test("a new season drops everyone one tier from the start of their division", () => {

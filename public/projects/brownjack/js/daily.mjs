@@ -1,16 +1,17 @@
 // daily.mjs — the daily challenge: five hands from a six-deck shoe shuffled
 // from the date, so everyone plays the same deal. Pure: no DOM, no storage.
 import { SHOE_DECKS, createShoe } from './blackjack.mjs'
+import { addDays, daysBetween, gameDate } from './gametime.mjs'
 
 export const DAILY_HANDS = 5
-// Daily #1 is the first UTC day the challenge existed.
-const FIRST_DAY = Date.UTC(2026, 8, 23)
-const DAY = 86_400_000
+// Daily #1 is the first day the challenge existed.
+const FIRST_DAY = '2026-09-23'
 
-// Days run on UTC so everyone, everywhere, is on the same challenge.
-export const dailyKey = (now = Date.now()) => new Date(now).toISOString().slice(0, 10)
-export const dailyNumber = (key) => Math.floor((Date.parse(`${key}T00:00:00Z`) - FIRST_DAY) / DAY) + 1
-export const previousKey = (key) => dailyKey(Date.parse(`${key}T00:00:00Z`) - DAY)
+// Days run on the game's clock (US Eastern), so everyone is on the same
+// challenge and it turns over at midnight in New York.
+export const dailyKey = (now = Date.now()) => gameDate(now)
+export const dailyNumber = (key) => daysBetween(FIRST_DAY, key) + 1
+export const previousKey = (key) => addDays(key, -1)
 
 // mulberry32, seeded with an FNV-1a hash of the text.
 export function seededRandom(text) {

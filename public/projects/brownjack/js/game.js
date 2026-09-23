@@ -622,32 +622,102 @@ function renderRoundScore(result, beforeRp) {
   el.roundScore.hidden = false
 }
 
-function renderBadgesDialog() {
-  const rank = rankOf(profile.rp)
-  const decided = profile.wins + profile.losses
-  const stats = [
-    ['Rank', rank.name],
-    ['Peak', rankOf(profile.peakRp).name],
-    ['Hands', profile.games],
-    ['Win rate', decided ? `${Math.round((100 * profile.wins) / decided)}%` : '—'],
-    ['Best streak', profile.bestStreak],
-    ['Season peak', rankOf(Math.max(profile.seasonPeakRp, profile.rp)).name],
-    ['Blackjacks', profile.blackjacks],
-    ['Strategy', profile.decisions ? `${Math.round((100 * profile.goodDecisions) / profile.decisions)}%` : '—'],
-    ['Best textbook run', profile.bestTextbookStreak],
-    ['Collection', `${collectionPoints(profile)} / ${TOTAL_POINTS} pts`],
-  ]
-  el.stats.replaceChildren(
-    ...stats.map(([label, value]) => {
-      const row = document.createElement('div')
-      const dt = document.createElement('dt')
-      dt.textContent = label
-      const dd = document.createElement('dd')
-      dd.textContent = value
-      row.append(dt, dd)
-      return row
-    }),
+// ---- Stats board -----------------------------------------------------------------
+// Pictures rather than a table of numbers: rank plates, a win-rate ring over the
+// record, a strategy gauge and a few icon tiles.
+
+const make = (tag, className, text) => {
+  const element = document.createElement(tag)
+  if (className) element.className = className
+  if (text !== undefined) element.textContent = text
+  return element
+}
+
+// A ring filled to `share` (0–1), with the big number in the middle.
+function ring(share, label, sub, { color = 'var(--bark)' } = {}) {
+  const box = make('div', 'stat-ring')
+  const r = 30
+  const length = 2 * Math.PI * r
+  box.innerHTML =
+    `<svg viewBox="0 0 72 72" aria-hidden="true"><circle cx="36" cy="36" r="${r}" fill="none" stroke="rgb(73 38 18 / 0.12)" stroke-width="8"/>` +
+    // Nothing to show yet: leave the track empty (a round cap would draw a dot).
+    (share > 0
+      ? `<circle cx="36" cy="36" r="${r}" fill="none" stroke="${color}" stroke-width="8" stroke-linecap="round" ` +
+        `stroke-dasharray="${(length * share).toFixed(1)} ${length.toFixed(1)}" transform="rotate(-90 36 36)"/>`
+      : '') +
+    '</svg>'
+  const centre = make('div', 'stat-ring-centre')
+  centre.append(make('strong', '', label), make('small', '', sub))
+  box.append(centre)
+  return box
+}
+
+function renderStats() {
+  const now = profile.rp
+  const seasonBest = Math.max(profile.seasonPeakRp ?? 0, now)
+  const plates = make('div', 'stat-card stat-ranks')
+  for (const [label, rp] of [['Now', now], [`Season ${profile.season}`, seasonBest], ['Best ever', profile.peakRp]]) {
+    const cell = make('button', 'stat-rank')
+    cell.type = 'button'
+    cell.title = 'Open the rank roadmap'
+    cell.append(emblemElement(rankOf(rp)), make('strong', '', rankOf(rp).name), make('small', '', label))
+    cell.addEventListener('click', () => {
+      el.badgesDialog.close()
+      el.openRoadmap.click()
+    })
+    plates.append(cell)
+  }
+
+  const { wins, losses, pushes, games } = profile
+  const decided = wins + losses
+  const record = make('div', 'stat-card stat-record')
+  record.append(ring(decided ? wins / decided : 0, decided ? `${Math.round((100 * wins) / decided)}%` : '—', 'win rate'))
+  const detail = make('div', 'record-detail')
+  const bar = make('div', 'record-bar')
+  const total = Math.max(1, wins + losses + pushes)
+  for (const [kind, count] of [['w', wins], ['p', pushes], ['l', losses]]) {
+    const part = make('span', `record-${kind}`)
+    part.style.flexGrow = count / total
+    bar.append(part)
+  }
+  const legend = make('div', 'record-legend')
+  for (const [kind, name, count] of [['w', 'Wins', wins], ['p', 'Pushes', pushes], ['l', 'Losses', losses]]) {
+    const item = make('span', '')
+    item.append(make('i', `record-${kind}`), `${count} ${name}`)
+    legend.append(item)
+  }
+  detail.append(make('strong', 'record-title', `${games} hands played`), bar, legend)
+  record.append(detail)
+
+  const accuracy = profile.decisions ? profile.goodDecisions / profile.decisions : 0
+  const strategy = make('div', 'stat-card stat-strategy')
+  strategy.append(
+    ring(accuracy, profile.decisions ? `${Math.round(accuracy * 100)}%` : '—', 'accuracy', { color: '#2e6b1f' }),
   )
+  const strategyText = make('div', 'record-detail')
+  strategyText.append(
+    make('strong', 'record-title', 'Strategy'),
+    make('small', '', `${profile.goodDecisions} of ${profile.decisions} moves matched basic strategy`),
+    make('small', '', `Best textbook run: ${profile.bestTextbookStreak} hands`),
+  )
+  strategy.append(strategyText)
+
+  const tiles = make('div', 'stat-tiles')
+  for (const [icon, value, label] of [
+    ['🔥', profile.bestStreak, 'best win streak'],
+    ['BJ', profile.blackjacks, 'blackjacks'],
+    ['▲', profile.streak, 'current streak'],
+  ]) {
+    const tile = make('div', 'stat-tile')
+    tile.append(make('span', 'stat-icon', icon), make('strong', '', value), make('small', '', label))
+    tiles.append(tile)
+  }
+
+  el.stats.replaceChildren(plates, record, strategy, tiles)
+}
+
+function renderBadgesDialog() {
+  renderStats()
 
   renderCollection(el.collection)
   const medals = [...(profile.seasons ?? [])].reverse()

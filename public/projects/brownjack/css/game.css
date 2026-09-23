@@ -61,6 +61,13 @@ body {
   color: var(--bark);
 }
 
+/* Nothing (a hidden tooltip, a celebration's rays) may widen the page: on a
+   phone that makes the browser zoom out and every tap lands off target. */
+html,
+body {
+  overflow-x: clip;
+}
+
 img {
   display: block;
   width: 100%;
@@ -184,6 +191,8 @@ kbd {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-height: 40px;
+  margin: -8px 0;
   cursor: pointer;
   list-style: none;
   font-size: 14px;
@@ -334,6 +343,16 @@ kbd {
   min-height: 28px;
   margin-bottom: 10px;
   color: var(--walnut);
+  font-size: 12px;
+}
+
+.picker-done {
+  margin-left: auto;
+  padding: 5px 12px;
+  border: none;
+  border-radius: 6px;
+  background: var(--bark);
+  color: var(--cream);
   font-size: 12px;
 }
 
@@ -1346,6 +1365,15 @@ kbd {
   display: none;
 }
 
+/* Phones: two rows of three instead of a strip that hides tabs off the edge. */
+@media (max-width: 480px) {
+  .badge-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    overflow: visible;
+  }
+}
+
 .badge-tab {
   flex: 1 0 auto;
   display: flex;
@@ -1474,6 +1502,28 @@ kbd {
 .showcase {
   margin-top: -4px;
   padding-left: 70px;
+  flex-wrap: wrap;
+}
+
+/* Phones: pinned badges centre under the rank instead of indenting past the
+   plate, and the card picker opens as a sheet pinned to the bottom of the
+   screen so it's never cut off below the fold. */
+@media (max-width: 480px) {
+  .showcase {
+    justify-content: center;
+    padding-left: 0;
+  }
+
+  .picker-menu {
+    position: fixed;
+    top: auto;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    left: 12px;
+    z-index: 30;
+    width: auto;
+    box-shadow: 0 -8px 40px rgb(0 0 0 / 0.45);
+  }
 }
 
 .showcase .badge-glyph {
@@ -1553,6 +1603,25 @@ kbd {
   opacity: 1;
   visibility: visible;
   translate: -50% 0;
+}
+
+/* The outer badges' tooltips open inwards so they stay on screen. */
+.showcase .showcase-item:first-child .tooltip {
+  left: 0;
+  translate: 0 -4px;
+}
+
+.showcase .showcase-item:last-child:not(:first-child) .tooltip {
+  left: auto;
+  right: 0;
+  translate: 0 -4px;
+}
+
+.showcase .showcase-item:first-child:hover .tooltip,
+.showcase .showcase-item:first-child:focus .tooltip,
+.showcase .showcase-item:last-child:not(:first-child):hover .tooltip,
+.showcase .showcase-item:last-child:not(:first-child):focus .tooltip {
+  translate: 0 0;
 }
 
 .chip-showcase .tooltip {
@@ -1897,6 +1966,81 @@ kbd {
 /* Overlap the cards so a long hand still fits on a phone. */
 .card + .card {
   margin-left: calc(var(--card-w) * -0.3);
+}
+
+/* Long hands fan tighter so they stay on screen: five cards and up, then seven. */
+.cards:has(> .card:nth-child(5)) .card + .card {
+  margin-left: calc(var(--card-w) * -0.5);
+}
+
+.cards:has(> .card:nth-child(7)) .card + .card {
+  margin-left: calc(var(--card-w) * -0.62);
+}
+
+/* After a split, two hands share the width: smaller cards keep them side by
+   side (and the dealer on screen) even on a small phone. */
+.player-hands.split {
+  --card-w: clamp(52px, min(13vw, 12svh), 120px);
+  flex-wrap: nowrap;
+  gap: 10px 16px;
+}
+
+.player-hands.split .card {
+  width: var(--card-w);
+}
+
+/* Each split hand takes half the row, and its counter shrinks to fit. */
+.player-hands.split .player-hand {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+@media (max-width: 480px) {
+  .player-hands.split .counter {
+    min-width: 0;
+    width: 100%;
+    padding: 5px 8px;
+  }
+}
+
+/* Short screens (phones held sideways): a compact table so the dealer, both
+   hands and the buttons fit without scrolling. */
+@media (max-height: 520px) {
+  :root {
+    --card-w: clamp(44px, 15svh, 90px);
+  }
+
+  .table {
+    padding: 8px 16px;
+  }
+
+  .game,
+  .hand {
+    gap: 6px;
+  }
+
+  .counter {
+    padding: 3px 16px;
+    font-size: 15px;
+  }
+
+  .rank-chip {
+    padding: 4px 12px 4px 8px;
+  }
+
+  .chip-next,
+  .coach {
+    display: none;
+  }
+
+  .result {
+    min-height: 1.4em;
+    font-size: 13px;
+  }
+
+  .action {
+    padding: 6px 18px;
+  }
 }
 
 /* The hole card turns over in 3D when the dealer reveals it. */

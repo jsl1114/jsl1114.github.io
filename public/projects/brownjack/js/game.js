@@ -304,6 +304,9 @@ function renderPicker(rank = null) {
     )
   }
 
+  // Done closes the picker; on a phone it's the only way to (no Escape key).
+  const done = pickerButton('picker-done', ['Done'], () => closePicker({ restoreFocus: true }))
+  head.append(done)
   el.pickerMenu.replaceChildren(head, grid)
   if (!el.pickerMenu.hidden) el.pickerMenu.querySelector('button:not(:disabled)')?.focus()
 }

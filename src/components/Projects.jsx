@@ -5,6 +5,7 @@ import ProjectCard from "./ProjectCard";
 import CompactProjectCard from "./CompactProjectCard";
 import { PROJECTS } from "@/constants/const";
 import SectionHero from "./SectionHero";
+import { useHomeEntrance } from "@/hooks/useHomeEntrance";
 import {
   Collapsible,
   CollapsibleTrigger,
@@ -30,14 +31,16 @@ const gridVariants = {
   visible: { transition: { staggerChildren: 0.12 } },
 };
 
-const Projects = () => {
-  const [open, setOpen] = useState(false);
-
+const Projects = ({ open, onOpenChange }) => {
+  const firstVisit = useHomeEntrance();
+  // Cards already open when you come back from a project page shouldn't fade
+  // in again; ones opened by the toggle still should.
+  const [restoringOpen, setRestoringOpen] = useState(!firstVisit && open);
   return (
     <motion.div
       className="border-b border-black/10 dark:border-white/[.08] pb-10"
       variants={containerVariants}
-      initial="hidden"
+      initial={firstVisit ? "hidden" : "visible"}
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
     >
@@ -55,7 +58,10 @@ const Projects = () => {
       {extended.length > 0 && (
         <Collapsible
           open={open}
-          onOpenChange={setOpen}
+          onOpenChange={(next) => {
+            setRestoringOpen(false);
+            onOpenChange(next);
+          }}
           className="max-w-5xl mx-auto mt-8"
         >
           <div className="flex justify-center">
@@ -72,7 +78,7 @@ const Projects = () => {
           <CollapsibleContent>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
               {extended.map((p, i) => (
-                <CompactProjectCard key={i} {...p} />
+                <CompactProjectCard key={i} {...p} skipEntrance={restoringOpen} />
               ))}
             </div>
           </CollapsibleContent>

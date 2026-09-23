@@ -1,9 +1,11 @@
 import { EXPERIENCE } from "@/constants/const";
 import ExperienceCard from "./ExperienceCard";
 import { motion } from "framer-motion";
+import { useHomeEntrance } from "@/hooks/useHomeEntrance";
 import SectionHero from "./SectionHero";
 
 const Experience = () => {
+  const firstVisit = useHomeEntrance();
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -19,7 +21,7 @@ const Experience = () => {
     <motion.div
       className="flex flex-wrap flex-col border-b border-black/10 dark:border-white/[.08]"
       variants={containerVariants}
-      initial="hidden"
+      initial={firstVisit ? "hidden" : "visible"}
       whileInView="visible"
       viewport={{ once: true, margin: "-100px" }}
     >

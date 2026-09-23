@@ -1,10 +1,12 @@
 import TechSlider from "../components/TechSlider";
 import { motion } from "framer-motion";
+import { useHomeEntrance } from "@/hooks/useHomeEntrance";
 
 const Technologies = () => {
+  const firstVisit = useHomeEntrance();
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={firstVisit ? { opacity: 0, y: 30 } : false}
       animate={{ opacity: 1, y: 0 }}
       transition={{
         duration: 0.8,

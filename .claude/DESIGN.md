@@ -218,9 +218,28 @@ chevron bob is dropped under `prefers-reduced-motion`.
 
 ## Routing
 
+Project cards link to `/work/:slug`, rendered by `src/pages/ProjectDetail.jsx`.
+The `/work` prefix keeps detail URLs separate from the static demos under
+`public/projects`. Project pages slide in from the right, with reduced-motion support;
+browser Back restores scroll and the expanded More Projects state.
+
+Project content lives in `PROJECTS` in `src/constants/const.js`. Each
+project's `image` is its logo, shown beside the title. `reflections` contains editable first-person `{ title, description }` drafts
+about what was interesting and what I learned. Screenshot
+filenames refer to `src/assets/projects`; an empty array omits the gallery.
+Only supplied `urls.live` and `urls.github` links are shown.
+
+Details use the existing serif/sans hierarchy, hairline section dividers,
+and neutral palette in both themes. The gallery supports thumbnails and a
+full-size dialog with arrow-key navigation and Escape to close. On devices
+with a fine pointer and hover, image halves also navigate with directional
+arrow cursors; touch devices retain the buttons and thumbnails. The detail
+header contains only the home logo; the projects return link is at the bottom. Card previews
+pause while hovered or focused; clicking a card opens its detail page.
+
 `src/pages/NotFound.jsx` is the `path="*"` catch-all. GitHub Pages serves
 `404.html` for unknown paths and `npm run deploy` copies `index.html` over it,
-so a deep link boots the SPA and falls through to that route.
+so a deep link boots the SPA; only unmatched URLs fall through to that route.
 
 ## Things deliberately not done
 

@@ -193,9 +193,23 @@ export const TECHNOLOGIES = [
   "tensorflow",
 ];
 
+// Project reflections are editable first-person drafts.
 export const PROJECTS = [
   {
     title: "Inky",
+    slug: "inky",
+    reflections: [
+      {
+        title: "Making coordination feel simple",
+        description:
+          "What interested me most was how much complexity hides inside a simple scheduling task. I learned to think about the decisions people need to make, then use explicit states in XState to keep those steps understandable.",
+      },
+      {
+        title: "Connecting the pieces",
+        description:
+          "Working with Drizzle, TipTap, and Vitest helped me see scheduling as more than a calendar interface. I learned to consider how stored data, editing interactions, and tests support the same user flow.",
+      },
+    ],
     desc: "A group scheduling tool designed to streamline coordination, minimize back-and-forth, and save time for teams",
     technologies: ["Next.JS", "Drizzle", "XState", "TipTap", "Vitest"],
     urls: {
@@ -214,6 +228,19 @@ export const PROJECTS = [
   },
   {
     title: "Lobster AI",
+    slug: "lobster-ai",
+    reflections: [
+      {
+        title: "One interface, different kinds of AI",
+        description:
+          "I found it interesting to bring text, image, video, code, and music generation into one product. It pushed me to think about what should feel consistent across tools and what needs to be specific to each medium.",
+      },
+      {
+        title: "Beyond the API call",
+        description:
+          "I learned that integrating a model is only one part of an AI application. Connecting the interface, persistence, and deployment helped me understand how the surrounding product shapes the experience.",
+      },
+    ],
     desc: "A Software-as-a-Service (SaaS) platform that provides all-in-one solutions for AI chatbot, image generation, video generation, code editing and music generation.",
     technologies: [
       "Next.JS",
@@ -239,6 +266,19 @@ export const PROJECTS = [
   },
   {
     title: "PATH LIVE",
+    slug: "path-live",
+    reflections: [
+      {
+        title: "Designing around a moment",
+        description:
+          "What interested me was the very practical question of when the next train arrives. I learned to prioritize information for someone making a quick decision, rather than treating every piece of data as equally important.",
+      },
+      {
+        title: "Following data through the system",
+        description:
+          "Connecting React with Spring Boot gave me a better understanding of how backend data becomes a useful interface. I also found geolocation interesting as a way to make the same information more relevant to the person viewing it.",
+      },
+    ],
     desc: "A full-stack real-time platform for tracking train departures in the Port Authority Trans-Hudson transit system",
     technologies: [
       "React",
@@ -255,6 +295,19 @@ export const PROJECTS = [
   },
   {
     title: "SHell",
+    slug: "shell",
+    reflections: [
+      {
+        title: "Looking underneath familiar commands",
+        description:
+          "Building a shell made everyday terminal commands much more interesting to me. I learned how process execution, pipes, and redirection work together beneath an interface I usually take for granted.",
+      },
+      {
+        title: "Thinking in lifecycles",
+        description:
+          "Working in C encouraged me to reason carefully about resources and the lifetime of a process. I learned to break complex command behavior into smaller steps, especially when background jobs and input/output interact.",
+      },
+    ],
     desc: "A simple Linux shell that supports piping, redirection, and background processes and many built-in commands.",
     technologies: ["C", "Unix", "Linux"],
     urls: {
@@ -266,6 +319,19 @@ export const PROJECTS = [
   },
   {
     title: "BrownJack",
+    slug: "brownjack",
+    reflections: [
+      {
+        title: "Turning rules into interactions",
+        description:
+          "I found it interesting to translate Blackjack rules into a sequence of player and dealer actions. I learned to think explicitly about the state of a round and which choices should be available at each point.",
+      },
+      {
+        title: "Keeping the interface honest",
+        description:
+          "Building the game with plain JavaScript helped me understand the relationship between application state and the DOM. I learned how important clear feedback is when a single action changes several things on screen.",
+      },
+    ],
     desc: "A client-side Blackjack game that allows users to play against an computer that behaves like a dealer with customizable functions.",
     technologies: ["HTML", "CSS", "JavaScript"],
     urls: {
@@ -278,6 +344,24 @@ export const PROJECTS = [
   },
   {
     title: "Terminal Portfolio",
+    slug: "terminal-portfolio",
+    reflections: [
+      {
+        title: "A different way to tell my story",
+        description:
+          "I enjoyed exploring how a terminal could become a personal portfolio. The interesting challenge was making a familiar developer interface approachable enough for someone who might never use a command line.",
+      },
+      {
+        title: "Helping people explore",
+        description:
+          "Working on commands and keyboard interactions taught me to think about discoverability. I learned that a playful interface still needs to help visitors understand what they can do and where to find the information they want.",
+      },
+      {
+        title: "Playing with color",
+        description:
+          "Adding switchable themes turned into a small design playground. I learned how to experiment with colors and design themes, and how the same text-only screen can feel completely different depending on the palette, contrast, and accent I give it.",
+      },
+    ],
     desc: "A terminal-based portfolio website for those of you who love the command line interface. It is a fun and interactive way to learn more about me and my projects.",
     technologies: ["HTML", "CSS", "JavaScript"],
     urls: {
@@ -286,10 +370,23 @@ export const PROJECTS = [
       live: "https://jsl1114.github.io/projects/terminal_website/index.html",
     },
     image: "term.webp",
-    screenshots: ["term1.webp"],
+    screenshots: ["term1.webp","term3.webp","term4.webp","term5.webp","term6.webp","term7.webp","term8.webp","term9.webp","term10.webp",],
   },
   {
-    title: "Portfolio Website (currently v2)",
+    title: "Portfolio Website (v2.3)",
+    slug: "portfolio",
+    reflections: [
+      {
+        title: "Designing for the work itself",
+        description:
+          "I found it interesting to build a place where the presentation supports the projects. I learned to think more carefully about typography, spacing, and hierarchy as part of communicating my work.",
+      },
+      {
+        title: "Refining across screens",
+        description:
+          "Building with React and Tailwind helped me connect reusable components with responsive design. I learned that a layout needs to be considered across screen sizes, themes, and navigation states—not just in a single screenshot.",
+      },
+    ],
     desc: "You are seeing it now! Crafted from scratch, built with love and passion. If you have made this far, thank you for visiting my website, I hope you enjoy it as much as I do! I am constantly updating it, so please check back often!",
     technologies: ["React", "Vite", "Tailwind CSS", "CI/CD"],
     urls: {
@@ -297,6 +394,6 @@ export const PROJECTS = [
       live: "https://jsl1114.github.io/",
     },
     image: "jl.png",
-    screenshots: ["jl1.webp"],
+    screenshots: ["jl1.webp", "jl2.webp"],
   },
 ];

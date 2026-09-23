@@ -8,14 +8,16 @@ import Contact from "../components/Contact";
 import Footer from "../components/Footer";
 import ScrollCue from "../components/ScrollCue";
 import { motion } from "framer-motion";
+import { useHomeEntrance } from "@/hooks/useHomeEntrance";
 
-const Home = () => {
+const Home = ({ projectsOpen, onProjectsOpenChange }) => {
+  const firstVisit = useHomeEntrance();
   return (
     <>
       <Navbar />
       <motion.div
-        className="container mx-auto px-5 sm:px-8"
-        initial={{ opacity: 0 }}
+        className={`container mx-auto px-5 sm:px-8 ${firstVisit ? "" : "skip-entrance"}`}
+        initial={firstVisit ? { opacity: 0 } : false}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.5 }}
       >
@@ -31,7 +33,7 @@ const Home = () => {
           <Experience />
         </section>
         <section id="projects">
-          <Projects />
+          <Projects open={projectsOpen} onOpenChange={onProjectsOpenChange} />
         </section>
         <section id="education">
           <Education />

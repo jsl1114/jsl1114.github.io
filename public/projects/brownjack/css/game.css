@@ -517,6 +517,69 @@ kbd {
   display: block;
 }
 
+.daily-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: -6px;
+  padding: 9px;
+  border: 1.5px solid var(--bark);
+  border-radius: 6px;
+  background: var(--mustard);
+  color: var(--bark);
+}
+
+.daily-btn strong {
+  font-size: 14px;
+}
+
+.daily-btn span {
+  font-size: 11px;
+}
+
+.daily-btn:hover {
+  filter: brightness(1.05);
+}
+
+.daily-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: var(--cream);
+  color: var(--bark);
+  text-align: center;
+}
+
+.game .daily-done {
+  box-shadow: 0 10px 28px rgb(0 0 0 / 0.35);
+}
+
+.daily-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.daily-share {
+  margin: 0;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  user-select: all;
+}
+
+.share-status {
+  min-height: 1em;
+  font-size: 11px;
+  color: var(--walnut);
+}
+
 .badges-btn {
   margin-top: -6px;
   padding: 8px;

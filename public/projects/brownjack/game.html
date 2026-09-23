@@ -37,6 +37,10 @@
         <div class="showcase" id="showcase" hidden></div>
         <p class="notice" id="notice" hidden></p>
         <button type="button" class="btn" id="play">Play <kbd>Enter</kbd></button>
+        <button type="button" class="daily-btn" id="play-daily">
+          <strong id="daily-label">Daily</strong>
+          <span id="daily-meta"></span>
+        </button>
         <button type="button" class="badges-btn" id="open-badges">
           Badges &amp; stats <span id="badge-count"></span>
         </button>
@@ -102,6 +106,13 @@
       <div class="round-score" id="round-score" hidden></div>
     </section>
   </main>
+
+  <div class="daily-done" id="daily-done" hidden>
+    <p class="daily-title">Today’s result</p>
+    <pre class="daily-share" id="daily-share"></pre>
+    <button type="button" class="setting-btn" id="share-daily">Share result</button>
+    <p class="share-status" id="share-status" role="status"></p>
+  </div>
 
   <dialog class="badges-dialog" id="badges-dialog" aria-labelledby="badges-title">
     <div class="dialog-head">

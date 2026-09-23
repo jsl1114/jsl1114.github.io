@@ -34,6 +34,18 @@ import { buzz, canVibrate, play } from './sound.mjs'
 import { getSettings, setSetting } from './prefs.mjs'
 import { bestMove, describeSpot } from './strategy.mjs'
 import { CARD_BACKS, TABLES, isUnlocked, selected, unlockTier, unlocksAt } from './cosmetics.mjs'
+import {
+  DAILY_HANDS,
+  cleanDay,
+  dailyKey,
+  dailyNumber,
+  dailyShoe,
+  dailyStreak,
+  formatScore,
+  roundScore,
+  shareText,
+  totalScore,
+} from './daily.mjs'
 
 const $ = (id) => document.getElementById(id)
 const el = {
@@ -50,6 +62,13 @@ const el = {
   dealerCount: $('dealer-count'),
   dealerCards: $('dealer-cards'),
   playerHands: $('player-hands'),
+  playDaily: $('play-daily'),
+  dailyLabel: $('daily-label'),
+  dailyMeta: $('daily-meta'),
+  dailyDone: $('daily-done'),
+  dailyShare: $('daily-share'),
+  shareDaily: $('share-daily'),
+  shareStatus: $('share-status'),
   result: $('result'),
   hit: $('hit'),
   stand: $('stand'),
@@ -118,6 +137,11 @@ const state = {
   active: 0,
   dealer: [],
   done: true,
+  // 'ranked' (the shoe, for RP), 'rigged' (a stacked practice deck) or 'daily'.
+  mode: 'ranked',
+  // Today's daily challenge: its date key and seeded shoe.
+  dailyKey: null,
+  dailyShoe: null,
   // The dealer's reveal is playing out; `skipping` fast-forwards it.
   revealing: false,
   skipping: false,
@@ -424,6 +448,14 @@ function animateChipBar(fromRp, toRp) {
 
 function renderRankChip(fromRp = null) {
   el.rankChip.classList.toggle('practice', !state.ranked)
+  if (state.mode === 'daily') {
+    const rounds = dailyDay(state.dailyKey).rounds
+    const hand = Math.min(rounds.length + (state.done ? 0 : 1), DAILY_HANDS)
+    el.chipName.textContent = `Daily #${dailyNumber(state.dailyKey)}`
+    el.chipRp.textContent = `Hand ${hand} of ${DAILY_HANDS}`
+    el.chipNext.textContent = `Score ${formatScore(totalScore(rounds))} · same deal for everyone today`
+    return
+  }
   if (!state.ranked) {
     el.chipName.textContent = 'Practice'
     el.chipRp.textContent = ''
@@ -453,6 +485,19 @@ function rankChangeText(before, after, beforeRp, afterRp) {
 }
 
 function renderRoundScore(result, beforeRp) {
+  if (result.daily) {
+    const { round, rounds } = result.daily
+    el.roundScore.replaceChildren(
+      ...[`Hand ${rounds.length} of ${DAILY_HANDS} ${formatScore(round.score)}`, `Total ${formatScore(totalScore(rounds))}`].map((text, i) => {
+        const span = document.createElement(i ? 'strong' : 'span')
+        span.className = i ? 'score-total' : 'score-line'
+        span.textContent = text
+        return span
+      }),
+    )
+    el.roundScore.hidden = false
+    return
+  }
   if (result.unranked) {
     const span = document.createElement('span')
     span.className = 'score-line'
@@ -735,20 +780,23 @@ function renderShoe() {
   el.shoeLeft.textContent = `${cards.length} cards left`
 }
 
-function startRound() {
+function startRound({ daily = false } = {}) {
   closePicker()
-  const ranked = state.stacked.length === 0
+  const mode = daily ? 'daily' : state.stacked.length ? 'rigged' : 'ranked'
+  const ranked = mode === 'ranked'
   // A rigged game deals its own stacked deck and leaves the shoe alone.
   const newShoe = ranked && needsShuffle(state.shoe)
   if (newShoe) state.shoe = createShoe()
+  if (daily) openDailyShoe()
   Object.assign(state, {
-    deck: ranked ? state.shoe.cards : buildDeck(state.stacked),
+    deck: daily ? state.dailyShoe.cards : ranked ? state.shoe.cards : buildDeck(state.stacked),
     firstInShoe: newShoe,
     decisions: [],
     hands: [newHand()],
     active: 0,
     dealer: [],
     done: false,
+    mode,
     ranked,
   })
   if (state.ranked) writeStorage(ROUND_KEY, '1')
@@ -779,6 +827,7 @@ function startRound() {
   renderShoe()
   updateCounts()
   updateActions()
+  saveDailyProgress()
   el.hit.focus()
 
   if (isBlackjack(hand.cards) || isBlackjack(state.dealer)) finish()
@@ -829,6 +878,7 @@ function double() {
   hand.doubled = true
   if (state.ranked) writeStorage(ROUND_KEY, String(stake()))
   drawTo(hand)
+  saveDailyProgress()
   el.result.textContent = ''
   endHand()
 }
@@ -848,6 +898,7 @@ function split() {
   play('deal')
   play('deal', { at: 0.08 })
   if (state.ranked) writeStorage(ROUND_KEY, String(stake()))
+  saveDailyProgress()
   el.result.textContent = ''
   buildHandViews()
   if (fromAces) {
@@ -875,6 +926,7 @@ function settleAutomaticHands() {
 }
 
 function afterMove() {
+  saveDailyProgress()
   renderShoe()
   updateCounts()
   updateActions()
@@ -926,6 +978,11 @@ function finish() {
   const winners = state.hands.map((hand) => outcome(hand.cards, state.dealer, { split }))
   const beforeRp = profile.rp
   beforePeak = profile.peakRp
+  if (state.mode === 'daily') {
+    const result = recordDailyRound(winners)
+    playDealerReveal().then(() => showResult(winners, result, beforeRp))
+    return
+  }
   if (state.ranked) sessionHands++
   const result = scoreRound(profile, {
     hands: state.hands.map((hand, i) => ({
@@ -972,9 +1029,16 @@ function showResult(winners, result, beforeRp) {
   renderRankChip(beforeRp)
   renderRoundScore(result, beforeRp)
 
-  el.again.hidden = el.toSetup.hidden = false
+  // A finished daily has no next hand: show the shareable result instead.
+  const dailyOver = result.daily && result.daily.rounds.length >= DAILY_HANDS
+  el.again.textContent = ''
+  el.again.append(result.daily ? 'Next hand ' : 'Play again ', Object.assign(document.createElement('kbd'), { textContent: 'Enter' }))
+  el.again.hidden = dailyOver
+  el.toSetup.hidden = false
+  if (dailyOver) showDailyShare(el.game)
   // Focus first: a celebration takes focus and hands it back when it closes.
-  el.again.focus()
+  ;(dailyOver ? el.shareDaily : el.again).focus()
+  if (result.daily) return
   // A promotion (or a new Legend star) plays first, then the hand's badges.
   const step = (rp) => Math.floor(rp / POINTS_PER_DIVISION)
   if (!result.unranked && step(result.profile.rp) > step(beforeRp)) {
@@ -985,8 +1049,132 @@ function showResult(winners, result, beforeRp) {
   for (const id of result.earned) celebrate(badgeById(id))
 }
 
+// ---- Daily challenge -------------------------------------------------------------
+// One attempt a day, saved after every hand. Leaving mid-hand counts that hand
+// as a loss, like ranked; the rest of the day's hands can still be played.
+
+const DAILY_KEY = 'brownjack.daily.v1'
+const DAILY_KEEP_DAYS = 60
+
+function loadDailyHistory() {
+  try {
+    const saved = JSON.parse(readStorage(DAILY_KEY)) ?? {}
+    return saved && typeof saved === 'object' ? saved : {}
+  } catch {
+    return {}
+  }
+}
+
+let dailyHistory = loadDailyHistory()
+
+function saveDailyHistory() {
+  const keys = Object.keys(dailyHistory).sort().slice(-DAILY_KEEP_DAYS)
+  dailyHistory = Object.fromEntries(keys.map((key) => [key, dailyHistory[key]]))
+  writeStorage(DAILY_KEY, JSON.stringify(dailyHistory))
+}
+
+const dailyDay = (key) => cleanDay(dailyHistory[key]) ?? { rounds: [], drawn: 0 }
+const dailyComplete = (key) => dailyDay(key).rounds.length >= DAILY_HANDS
+
+// Rebuild today's shoe and skip the cards already dealt, so a reload resumes.
+function openDailyShoe() {
+  const key = dailyKey()
+  if (state.dailyKey !== key || !state.dailyShoe) {
+    state.dailyKey = key
+    state.dailyShoe = dailyShoe(key)
+    state.dailyShoe.cards.splice(state.dailyShoe.cards.length - dailyDay(key).drawn)
+  }
+}
+
+// Mid-hand, remember what's at stake and how far into the shoe the deal is.
+function saveDailyProgress() {
+  if (state.mode !== 'daily' || state.done) return
+  const day = dailyDay(state.dailyKey)
+  dailyHistory[state.dailyKey] = {
+    ...day,
+    drawn: state.dailyShoe.size - state.dailyShoe.cards.length,
+    inHand: stake(),
+  }
+  saveDailyHistory()
+}
+
+function recordDailyRound(winners) {
+  const split = state.hands.length > 1
+  const hands = state.hands.map((hand, i) => ({
+    winner: winners[i],
+    doubled: hand.doubled,
+    natural: !split && isBlackjack(hand.cards),
+  }))
+  const round = { hands, score: roundScore(hands) }
+  const day = dailyDay(state.dailyKey)
+  const rounds = [...day.rounds, round]
+  dailyHistory[state.dailyKey] = { rounds, drawn: state.dailyShoe.size - state.dailyShoe.cards.length }
+  saveDailyHistory()
+  return { unranked: true, earned: [], daily: { round, rounds } }
+}
+
+function renderDailyButton() {
+  const key = dailyKey()
+  const { rounds } = dailyDay(key)
+  const streak = dailyStreak(dailyHistory, key)
+  el.dailyLabel.textContent = `Daily #${dailyNumber(key)}`
+  el.dailyMeta.textContent =
+    rounds.length >= DAILY_HANDS ? `Done · ${formatScore(totalScore(rounds))}`
+    : rounds.length ? `Resume · hand ${rounds.length + 1} of ${DAILY_HANDS}`
+    : `${DAILY_HANDS} hands · same deal for everyone`
+  if (streak > 1) el.dailyMeta.textContent += ` · 🔥 ${streak} days`
+}
+
+// The result card, on the table after the last hand or on the start screen.
+function showDailyShare(host) {
+  const key = dailyKey()
+  el.dailyShare.textContent = shareText(key, dailyDay(key).rounds)
+  el.shareStatus.textContent = ''
+  host.append(el.dailyDone)
+  el.dailyDone.hidden = false
+}
+
+el.playDaily.addEventListener('click', () => {
+  const key = dailyKey()
+  if (dailyComplete(key)) {
+    if (el.dailyDone.hidden || el.dailyDone.parentElement !== el.start.querySelector('.panel')) {
+      showDailyShare(el.start.querySelector('.panel'))
+    } else {
+      el.dailyDone.hidden = true
+    }
+    return
+  }
+  startRound({ daily: true })
+})
+
+el.shareDaily.addEventListener('click', async () => {
+  const text = el.dailyShare.textContent
+  try {
+    if (navigator.share && matchMedia('(hover: none)').matches) {
+      await navigator.share({ text })
+      return
+    }
+    await navigator.clipboard.writeText(text)
+    el.shareStatus.textContent = 'Copied to clipboard'
+  } catch (error) {
+    // A cancelled share sheet isn't a failure.
+    if (error?.name === 'AbortError') return
+    el.shareStatus.textContent = "Couldn't copy: select the text above instead"
+  }
+})
+
+function nextRound() {
+  if (state.mode === 'daily') {
+    if (!dailyComplete(state.dailyKey)) startRound({ daily: true })
+    return
+  }
+  startRound()
+}
+
 function showSetup() {
   state.done = true
+  el.dailyDone.hidden = true
+  renderDailyButton()
   el.game.hidden = true
   el.start.hidden = false
   renderRank()
@@ -996,7 +1184,7 @@ function showSetup() {
 // ---- Input -----------------------------------------------------------------
 
 el.play.addEventListener('click', startRound)
-el.again.addEventListener('click', startRound)
+el.again.addEventListener('click', nextRound)
 el.toSetup.addEventListener('click', showSetup)
 el.hit.addEventListener('click', hit)
 el.double.addEventListener('click', double)
@@ -1209,7 +1397,7 @@ window.addEventListener('keydown', (event) => {
     if (key === 'd') double()
     if (key === 'p') split()
   } else if (key === 'r' || (key === 'enter' && !onControl)) {
-    startRound()
+    nextRound()
   }
 })
 
@@ -1231,7 +1419,22 @@ if (caughtUp.earned.length) {
   saveProfile()
 }
 
+// A daily hand left unfinished counts as a loss of whatever was at stake.
+const today = dailyHistory[dailyKey()]
+if (today?.inHand) {
+  const day = dailyDay(dailyKey())
+  const atStake = Number.isInteger(today.inHand) && today.inHand >= 1 && today.inHand <= 4 ? today.inHand : 1
+  if (day.rounds.length < DAILY_HANDS) {
+    day.rounds.push({ hands: [{ winner: 'dealer', doubled: atStake > 1 }], score: -atStake, forfeit: true })
+  }
+  dailyHistory[dailyKey()] = { rounds: day.rounds, drawn: day.drawn }
+  saveDailyHistory()
+  el.notice.textContent = `Your daily hand was left unfinished and counted as a loss (${formatScore(-atStake)}).`
+  el.notice.hidden = false
+}
+
 renderStack()
 renderRank()
 applyTable()
+renderDailyButton()
 for (const id of caughtUp.earned) celebrate(badgeById(id))

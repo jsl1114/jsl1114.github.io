@@ -29,8 +29,11 @@ test("collection points weigh badges by rarity", () => {
   assert.equal(TOTAL_POINTS, BADGES.reduce((s, b) => s + RARITY_POINTS[b.rarity], 0));
 });
 
-test("tables unlock at rising point milestones, the last short of every badge", () => {
-  const milestones = TABLES.map((t) => t.unlock[1]);
+test("tables unlock by rank and at rising point milestones, the last short of every badge", () => {
+  assert.deepEqual(TABLES.filter((t) => t.unlock[0] === "tier").map((t) => t.unlock[1]), [0, 1, 2, 3, 4, 5]);
+  assert.ok(isUnlocked(item(TABLES, "rank-gold"), ctx({ peakRp: 650 })));
+  assert.ok(!isUnlocked(item(TABLES, "rank-platinum"), ctx({ peakRp: 650 })));
+  const milestones = TABLES.filter((t) => t.unlock[0] === "points").map((t) => t.unlock[1]);
   assert.deepEqual(milestones, [...milestones].sort((a, b) => a - b));
   assert.equal(milestones[0], 0);
   assert.ok(milestones.at(-1) < TOTAL_POINTS);
@@ -42,19 +45,24 @@ test("tables unlock at rising point milestones, the last short of every badge", 
 });
 
 test("a fresh player has only the defaults; locked choices fall back to them", () => {
-  assert.deepEqual(unlockedIds(ctx()), ["oak", "classic"]);
+  assert.deepEqual(unlockedIds(ctx()), ["oak", "rank-bronze", "classic"]);
   assert.equal(selected(TABLES, "royal", ctx()).id, "oak");
   assert.equal(selected(CARD_BACKS, "inferno", ctx()).id, "classic");
   assert.equal(selected(CARD_BACKS, "inferno", ctx({ badges: earned("inferno") })).id, "inferno");
-  assert.equal(unlocksAt(2), "the Gilded card back");
+  assert.equal(unlocksAt(2), "the Gold table and Gilded card back");
 });
 
-test("table layouts render as SVG at any size", () => {
+test("table layouts render as SVG at any size, with no printed words", () => {
   for (const id of Object.keys(TABLE_THEMES)) {
     const svg = tableSVG(id, 390, 844);
     assert.match(svg, /^<svg[^>]+viewBox="0 0 390 844"/);
-    assert.match(svg, /BLACKJACK PAYS 3 TO 2/);
-    assert.doesNotMatch(tableSVG(id, 120, 70, { detail: false }), /DEALER STANDS/);
+    assert.doesNotMatch(svg, /<text/);
+    assert.equal(/<polygon/.test(svg), Boolean(TABLE_THEMES[id].emblem), `${id} emblem`);
   }
   assert.equal(tableSVG("oak", 100, 100), "");
+});
+
+test("table and card back ids never collide (unlock announcements track them together)", () => {
+  const ids = [...TABLES, ...CARD_BACKS].map((i) => i.id);
+  assert.equal(new Set(ids).size, ids.length);
 });

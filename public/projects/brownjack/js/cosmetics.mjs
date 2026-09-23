@@ -1,9 +1,10 @@
 // cosmetics.mjs — tables and card backs, and what unlocks each. Pure: no DOM.
 //
-// Card backs: one for each tier (by best-ever rank, so dropping a tier never
-// takes one away) and one for each Legendary badge, themed on it. Tables: earned
-// with collection points, which every badge adds by rarity. Every check reads a
-// context: { profile }.
+// Each tier (by best-ever rank, so dropping a tier never takes one away)
+// unlocks a table and a card back in its metal. The other tables are earned
+// with collection points, which every badge adds by rarity, and each Legendary
+// badge unlocks a card back themed on it. Every check reads a context:
+// { profile }.
 import { BADGES } from './badges.mjs'
 import { TIERS, rankOf } from './ranked.mjs'
 
@@ -37,9 +38,15 @@ const CONDITIONS = {
 }
 
 // Tables: Oak is the plain wooden table; the rest are casino layouts
-// (tableart.mjs) earned with collection points.
+// (tableart.mjs), six by rank and ten by collection points.
 export const TABLES = [
   { id: 'oak', name: 'Oak', unlock: ['points', 0] },
+  { id: 'rank-bronze', name: 'Bronze', unlock: ['tier', 0] },
+  { id: 'rank-silver', name: 'Silver', unlock: ['tier', 1] },
+  { id: 'rank-gold', name: 'Gold', unlock: ['tier', 2] },
+  { id: 'rank-platinum', name: 'Platinum', unlock: ['tier', 3] },
+  { id: 'rank-diamond', name: 'Diamond', unlock: ['tier', 4] },
+  { id: 'rank-legend', name: 'Legend', unlock: ['tier', 5] },
   { id: 'coffeehouse', name: 'Coffeehouse', unlock: ['points', 10] },
   { id: 'saloon', name: 'Saloon', unlock: ['points', 25] },
   { id: 'harvest', name: 'Harvest', unlock: ['points', 45] },
@@ -99,11 +106,13 @@ export function selected(list, id, context) {
 export const unlockedIds = (context) =>
   [...TABLES, ...CARD_BACKS].filter((item) => isUnlocked(item, context)).map((item) => item.id)
 
-// The next table the player's points are working towards, if any.
-export const nextTable = (context) => TABLES.find((table) => !isUnlocked(table, context)) ?? null
+// The next table the player's collection points are working towards, if any.
+export const nextTable = (context) =>
+  TABLES.find((table) => table.unlock[0] === 'points' && !isUnlocked(table, context)) ?? null
 
-// What reaching `tierIndex` unlocks, e.g. "the Gilded card back".
+// What reaching `tierIndex` unlocks, e.g. "the Gold table and Gilded card back".
 export function unlocksAt(tierIndex) {
+  const table = TABLES.find((t) => byRank(t) && t.unlock[1] === tierIndex)
   const back = CARD_BACKS.find((b) => byRank(b) && b.unlock[1] === tierIndex)
-  return back ? `the ${back.name} card back` : ''
+  return table && back ? `the ${table.name} table and ${back.name} card back` : ''
 }

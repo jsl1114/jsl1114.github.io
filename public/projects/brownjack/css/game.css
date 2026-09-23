@@ -562,7 +562,7 @@ kbd {
   display: block;
 }
 
-/* Secondary to Play: a quiet outline, with a mustard mark for today's deal. */
+/* Secondary to Play: a quiet outline. */
 .daily-btn {
   display: flex;
   flex-direction: column;
@@ -571,7 +571,6 @@ kbd {
   margin-top: -6px;
   padding: 8px;
   border: 1px solid rgb(73 38 18 / 0.2);
-  border-left: 4px solid var(--mustard);
   border-radius: 6px;
   background: transparent;
   color: var(--bark);

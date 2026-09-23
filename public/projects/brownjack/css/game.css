@@ -402,7 +402,14 @@ kbd {
 
 .rank-card {
   /* Room for the settings cog in the corner. */
-  padding-right: 28px;
+  width: calc(100% - 28px);
+  margin: -6px;
+  padding: 6px;
+  border: none;
+  border-radius: 10px;
+  background: none;
+  color: inherit;
+  text-align: left;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -462,6 +469,204 @@ kbd {
 
 .emblem.mini[data-tier='legend'] {
   font-size: 7px;
+}
+
+.rank-card:hover {
+  background: rgb(176 129 104 / 0.12);
+}
+
+.rank-card .rank-name,
+.rank-card .rank-meta,
+.rank-card .rank-bar {
+  display: block;
+}
+
+.rank-more {
+  align-self: center;
+  color: rgb(73 38 18 / 0.4);
+  font-size: 22px;
+}
+
+/* ---- Rank roadmap ---------------------------------------------------------- */
+
+.roadmap-dialog {
+  width: min(460px, calc(100vw - 32px));
+}
+
+.ladder {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+}
+
+.ladder-tier {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.45);
+  opacity: 0.7;
+}
+
+.ladder-tier.reached {
+  opacity: 1;
+}
+
+.ladder-tier.current {
+  background: white;
+  box-shadow: 0 0 0 2px var(--mustard);
+}
+
+.ladder-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ladder-head .emblem.mini {
+  width: 30px;
+  font-size: 10px;
+}
+
+.ladder-tier:not(.reached) .ladder-head .emblem {
+  filter: grayscale(0.8);
+}
+
+.ladder-title {
+  flex: 1;
+  min-width: 0;
+}
+
+.ladder-title strong {
+  display: block;
+  font-size: 14px;
+}
+
+.ladder-title small {
+  color: var(--walnut);
+  font-size: 10px;
+}
+
+.ladder-unlocks {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ladder-thumb {
+  display: block;
+  overflow: hidden;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+}
+
+.ladder-thumb.felt {
+  width: 44px;
+  height: 29px;
+}
+
+.ladder-thumb.felt svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.ladder-thumb.back {
+  width: 20px;
+  height: 29px;
+  background: center / contain no-repeat;
+  box-shadow: none;
+}
+
+.ladder-tier:not(.reached) .ladder-thumb {
+  filter: grayscale(0.7);
+  opacity: 0.7;
+}
+
+.ladder-lock {
+  font-size: 12px;
+}
+
+.ladder-steps {
+  display: flex;
+  flex-direction: column;
+  margin: 8px 0 0 14px;
+  padding-left: 16px;
+  border-left: 2px solid rgb(73 38 18 / 0.15);
+  list-style: none;
+}
+
+.ladder-step {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-height: 26px;
+  font-size: 12px;
+  color: var(--walnut);
+}
+
+/* A dot on the line for each step: filled once reached. */
+.ladder-step::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgb(73 38 18 / 0.3);
+  border-radius: 50%;
+  background: var(--cream);
+}
+
+.ladder-step.done {
+  color: var(--bark);
+}
+
+.ladder-step.done::before {
+  border-color: var(--bark);
+  background: var(--bark);
+}
+
+.ladder-step.now {
+  font-weight: 700;
+}
+
+.ladder-step.now::before {
+  border-color: var(--mustard);
+  background: var(--mustard);
+  box-shadow: 0 0 0 3px rgb(255 219 88 / 0.35);
+}
+
+.ladder-name {
+  min-width: 96px;
+}
+
+.ladder-bar {
+  flex: 1;
+  min-width: 60px;
+  margin: 0;
+}
+
+.ladder-tag {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.ladder-tag.you {
+  background: var(--mustard);
+  color: var(--bark);
+}
+
+.ladder-tag.best {
+  background: var(--bark);
+  color: var(--cream);
+}
+
+.ladder-tag.season {
+  border: 1px solid var(--bark);
+  color: var(--bark);
 }
 
 .rank-info {

@@ -16,6 +16,8 @@ import {
   BADGES,
   BONUS,
   CATEGORIES,
+  DIVISIONS,
+  LEGEND_AT,
   LOSS_POINTS,
   POINTS_PER_DIVISION,
   SHOWCASE_SIZE,
@@ -27,7 +29,15 @@ import {
   rankOf,
   scoreRound,
 } from './ranked.mjs'
-import { celebrate, celebrateRank, celebrateUnlock, fillEmblem, glyphElement, isCelebrating } from './celebrate.mjs'
+import {
+  celebrate,
+  celebrateRank,
+  celebrateUnlock,
+  emblemElement,
+  fillEmblem,
+  glyphElement,
+  isCelebrating,
+} from './celebrate.mjs'
 import { MAX_SAVE_BYTES, exportSave, parseSave, saveFileName } from './save.mjs'
 import { buzz, canVibrate, play } from './sound.mjs'
 import { getSettings, setSetting } from './prefs.mjs'
@@ -95,6 +105,11 @@ const el = {
   rankSeason: $('rank-season'),
   seasonMedals: $('season-medals'),
   collectionHint: $('collection-hint'),
+  openRoadmap: $('open-roadmap'),
+  roadmapDialog: $('roadmap-dialog'),
+  closeRoadmap: $('close-roadmap'),
+  roadmapSummary: $('roadmap-summary'),
+  ladder: $('ladder'),
   notice: $('notice'),
   openBadges: $('open-badges'),
   badgeCount: $('badge-count'),
@@ -1316,6 +1331,122 @@ document.addEventListener('pointerdown', (event) => {
   if (!el.picker.contains(event.target)) closePicker()
 })
 
+// ---- Rank roadmap ----------------------------------------------------------------
+// Every tier and division from Legend down, marking where the player is, their
+// best this season and ever, and what each tier pays and unlocks.
+
+function statRows(container, rows) {
+  container.replaceChildren(
+    ...rows.map(([label, value]) => {
+      const row = document.createElement('div')
+      const dt = Object.assign(document.createElement('dt'), { textContent: label })
+      const dd = Object.assign(document.createElement('dd'), { textContent: value })
+      row.append(dt, dd)
+      return row
+    }),
+  )
+}
+
+function renderRoadmap() {
+  const now = profile.rp
+  const best = profile.peakRp
+  const seasonBest = Math.max(profile.seasonPeakRp ?? 0, now)
+  statRows(el.roadmapSummary, [
+    ['Now', rankOf(now).name],
+    [`Season ${profile.season} best`, rankOf(seasonBest).name],
+    ['All-time best', rankOf(best).name],
+  ])
+
+  const tag = (text, kind) => Object.assign(document.createElement('span'), { className: `ladder-tag ${kind}`, textContent: text })
+  const step = (rp) => Math.floor(rp / POINTS_PER_DIVISION)
+  const tiers = [...TIERS, 'Legend']
+  el.ladder.replaceChildren(
+    ...tiers.map((tier, tierIndex) => tierIndex).reverse().map((tierIndex) => {
+      const item = document.createElement('li')
+      const reachedTier = rankOf(best).tierIndex >= tierIndex
+      item.className = `ladder-tier${reachedTier ? ' reached' : ''}${rankOf(now).tierIndex === tierIndex ? ' current' : ''}`
+      item.dataset.tier = tiers[tierIndex].toLowerCase()
+
+      // The tier's header: plate, name, points, unlocks.
+      const head = document.createElement('div')
+      head.className = 'ladder-head'
+      const start = tierIndex * DIVISIONS.length * POINTS_PER_DIVISION
+      const plate = emblemElement(tierIndex === TIERS.length ? rankOf(LEGEND_AT) : rankOf(start))
+      plate.classList.add('mini')
+      const title = document.createElement('div')
+      title.className = 'ladder-title'
+      title.append(
+        Object.assign(document.createElement('strong'), { textContent: tiers[tierIndex] }),
+        Object.assign(document.createElement('small'), {
+          textContent: `Win +${WIN_POINTS[tierIndex]} · Loss −${LOSS_POINTS[tierIndex]} · from ${start} RP`,
+        }),
+      )
+      const unlocks = document.createElement('div')
+      unlocks.className = 'ladder-unlocks'
+      const table = TABLES.find((t) => byRank(t) && t.unlock[1] === tierIndex)
+      const back = CARD_BACKS.find((b) => byRank(b) && b.unlock[1] === tierIndex)
+      const tableThumb = document.createElement('span')
+      tableThumb.className = 'ladder-thumb felt'
+      tableThumb.innerHTML = tableSVG(table.id, 60, 40, { detail: false })
+      tableThumb.title = `${table.name} table`
+      const backThumb = document.createElement('span')
+      backThumb.className = 'ladder-thumb back'
+      backThumb.style.backgroundImage = `url('./assets/cards/${back.file}')`
+      backThumb.title = `${back.name} card back`
+      unlocks.append(tableThumb, backThumb)
+      if (!reachedTier) unlocks.append(Object.assign(document.createElement('span'), { className: 'ladder-lock', textContent: '🔒' }))
+      head.append(plate, title, unlocks)
+      item.append(head)
+
+      // Its steps: three divisions, or Legend's stars that matter (the next
+      // one, best ever, season best, now, and ★0).
+      const steps = document.createElement('ol')
+      steps.className = 'ladder-steps'
+      const stepList =
+        tierIndex < TIERS.length
+          ? DIVISIONS.map((_, i) => start + i * POINTS_PER_DIVISION).reverse()
+          : [
+              ...new Set([
+                LEGEND_AT + Math.max(step(Math.max(best, now) - LEGEND_AT) + 1, 0) * POINTS_PER_DIVISION,
+                LEGEND_AT + Math.max(step(best - LEGEND_AT), 0) * POINTS_PER_DIVISION,
+                LEGEND_AT + Math.max(step(seasonBest - LEGEND_AT), 0) * POINTS_PER_DIVISION,
+                LEGEND_AT + Math.max(step(now - LEGEND_AT), 0) * POINTS_PER_DIVISION,
+                LEGEND_AT,
+              ]),
+            ].sort((a, b) => b - a)
+      for (const from of stepList) {
+        const rank = rankOf(from)
+        const stepEl = document.createElement('li')
+        const isNow = step(now) === step(from)
+        const isBest = step(best) === step(from)
+        stepEl.className = `ladder-step${best >= from ? ' done' : ''}${isNow ? ' now' : ''}`
+        stepEl.append(Object.assign(document.createElement('span'), { className: 'ladder-name', textContent: rank.name }))
+        if (isNow) {
+          const bar = document.createElement('span')
+          bar.className = 'rank-bar ladder-bar'
+          bar.append(Object.assign(document.createElement('span'), { style: `width: ${rankOf(now).progress}%` }))
+          stepEl.append(bar, tag('You are here', 'you'))
+        }
+        if (isBest && !isNow) stepEl.append(tag('Best', 'best'))
+        if (step(seasonBest) === step(from) && !isNow && !isBest) stepEl.append(tag('Season best', 'season'))
+        steps.append(stepEl)
+      }
+      item.append(steps)
+      return item
+    }),
+  )
+}
+
+el.openRoadmap.addEventListener('click', () => {
+  renderRoadmap()
+  el.roadmapDialog.showModal()
+  el.ladder.querySelector('.ladder-step.now')?.scrollIntoView({ block: 'center' })
+})
+el.closeRoadmap.addEventListener('click', () => el.roadmapDialog.close())
+el.roadmapDialog.addEventListener('click', (event) => {
+  if (event.target === el.roadmapDialog) el.roadmapDialog.close()
+})
+
 el.openBadges.addEventListener('click', () => {
   renderBadgesDialog()
   el.badgesDialog.showModal()
@@ -1561,7 +1692,7 @@ window.addEventListener('keyup', blockMoveKeys)
 window.addEventListener('keydown', (event) => {
   blockMoveKeys(event)
   if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) return
-  if (el.badgesDialog.open || el.settingsDialog.open || isCelebrating()) return
+  if (el.badgesDialog.open || el.settingsDialog.open || el.roadmapDialog.open || isCelebrating()) return
   // During the dealer's reveal any key skips to the result.
   if (state.revealing) {
     if (!['Shift', 'Control', 'Alt', 'Meta', 'Tab'].includes(event.key)) skipReveal()

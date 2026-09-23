@@ -27,15 +27,16 @@
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
         </button>
-        <div class="rank-card">
-          <div class="emblem" id="emblem"></div>
-          <div class="rank-info">
-            <p class="rank-name" id="rank-name"></p>
-            <div class="rank-bar"><span id="rank-bar"></span></div>
-            <p class="rank-meta" id="rank-meta"></p>
-            <p class="rank-meta rank-season" id="rank-season"></p>
-          </div>
-        </div>
+        <button type="button" class="rank-card" id="open-roadmap" title="Rank roadmap">
+          <span class="emblem" id="emblem"></span>
+          <span class="rank-info">
+            <span class="rank-name" id="rank-name"></span>
+            <span class="rank-bar"><span id="rank-bar"></span></span>
+            <span class="rank-meta" id="rank-meta"></span>
+            <span class="rank-meta rank-season" id="rank-season"></span>
+          </span>
+          <span class="rank-more" aria-hidden="true">›</span>
+        </button>
         <div class="showcase" id="showcase" hidden></div>
         <p class="notice" id="notice" hidden></p>
         <button type="button" class="btn" id="play">Play <kbd>Enter</kbd></button>
@@ -137,6 +138,15 @@
         tables and card backs are never reset.
       </p>
     </details>
+  </dialog>
+
+  <dialog class="badges-dialog roadmap-dialog" id="roadmap-dialog" aria-labelledby="roadmap-title">
+    <div class="dialog-head">
+      <h2 id="roadmap-title">Rank roadmap</h2>
+      <button type="button" class="close" id="close-roadmap" aria-label="Close">×</button>
+    </div>
+    <dl class="stats" id="roadmap-summary"></dl>
+    <ol class="ladder" id="ladder"></ol>
   </dialog>
 
   <dialog class="badges-dialog settings-dialog" id="settings-dialog" aria-labelledby="settings-title">

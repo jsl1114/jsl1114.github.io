@@ -116,9 +116,10 @@
       <button type="button" class="close" id="close-badges" aria-label="Close">×</button>
     </div>
     <dl class="stats" id="stats"></dl>
-    <p class="showcase-hint" id="collection-hint"></p>
+    <div class="collection" id="collection"></div>
     <div class="season-medals" id="season-medals" hidden></div>
     <p class="showcase-hint" id="showcase-hint"></p>
+    <div class="badge-tabs" id="badge-tabs" role="tablist" aria-label="Badge types"></div>
     <div id="badge-sections"></div>
     <details class="how">
       <summary>How ranking works</summary>
@@ -175,6 +176,7 @@
         Each tier unlocks a table and card back in its metal. More tables are earned with collection points:
         every badge adds some (Common 1 · Rare 3 · Epic 8 · Legendary 20). Each Legendary badge has its own card back.
       </p>
+      <div class="collection" id="settings-collection"></div>
       <div class="swatches" id="table-picker" aria-label="Table"></div>
       <div class="swatches backs" id="back-picker" aria-label="Card back"></div>
     </section>

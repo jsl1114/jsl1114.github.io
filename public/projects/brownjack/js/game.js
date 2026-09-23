@@ -104,7 +104,9 @@ const el = {
   rankMeta: $('rank-meta'),
   rankSeason: $('rank-season'),
   seasonMedals: $('season-medals'),
-  collectionHint: $('collection-hint'),
+  collection: $('collection'),
+  settingsCollection: $('settings-collection'),
+  badgeTabs: $('badge-tabs'),
   openRoadmap: $('open-roadmap'),
   roadmapDialog: $('roadmap-dialog'),
   closeRoadmap: $('close-roadmap'),
@@ -443,6 +445,7 @@ function renderCosmetics() {
         return button
       }),
     )
+  renderCollection(el.settingsCollection)
   picker(el.tablePicker, TABLES, 'table', selected(TABLES, getSettings().table, context))
   picker(el.backPicker, CARD_BACKS, 'cardBack', currentBack())
 }
@@ -646,10 +649,7 @@ function renderBadgesDialog() {
     }),
   )
 
-  const upcoming = nextTable(collectionContext())
-  el.collectionHint.textContent = upcoming
-    ? `Badges earn collection points (Common 1 · Rare 3 · Epic 8 · Legendary 20). ${progress(upcoming, collectionContext()).current} of ${upcoming.unlock[1]} toward the ${upcoming.name} table.`
-    : 'Every table is unlocked.'
+  renderCollection(el.collection)
   const medals = [...(profile.seasons ?? [])].reverse()
   el.seasonMedals.hidden = medals.length === 0
   el.seasonMedals.replaceChildren(
@@ -668,8 +668,9 @@ function renderBadgesDialog() {
   )
   const showcase = profile.showcase ?? []
   el.showcaseHint.textContent = `Pin up to ${SHOWCASE_SIZE} earned badges to show beside your rank · ${showcase.length}/${SHOWCASE_SIZE} pinned`
+  renderBadgeTabs()
   el.badgeSections.replaceChildren(
-    ...CATEGORIES.map((category) => {
+    ...CATEGORIES.filter((category) => badgeTab === 'All' || badgeTab === category).map((category) => {
       const badges = BADGES.filter((badge) => badge.category === category)
       const section = document.createElement('section')
       section.className = 'badge-section'
@@ -701,6 +702,69 @@ function renderBadgesDialog() {
     `+${BONUS.daredevil}, five-card Charlie +${BONUS.charlie}, and +${BONUS.streakStep} per win ` +
     `past the second in a row (up to +${BONUS.streakCap}). Doubling down puts twice the RP at stake ` +
     'either way, and after a split each hand wins or loses on its own.'
+}
+
+// ---- Collection points and badge tabs ----------------------------------------------
+
+// Collection points so far, and a bar from the last table unlocked to the next.
+function renderCollection(container) {
+  const context = collectionContext()
+  const points = collectionPoints(profile)
+  const upcoming = nextTable(context)
+  const milestones = TABLES.filter((t) => t.unlock[0] === 'points').map((t) => t.unlock[1])
+  const from = Math.max(0, ...milestones.filter((m) => m <= points))
+  const to = upcoming ? upcoming.unlock[1] : TOTAL_POINTS
+  const share = to > from ? Math.min(1, (points - from) / (to - from)) : 1
+
+  const head = document.createElement('div')
+  head.className = 'collection-head'
+  head.append(
+    Object.assign(document.createElement('strong'), { textContent: `${points} collection points` }),
+    Object.assign(document.createElement('span'), { textContent: `of ${TOTAL_POINTS}` }),
+  )
+  const bar = document.createElement('div')
+  bar.className = 'rank-bar collection-bar'
+  bar.append(Object.assign(document.createElement('span'), { style: `width: ${Math.round(share * 100)}%` }))
+  const next = document.createElement('div')
+  next.className = 'collection-next'
+  if (upcoming) {
+    const thumb = document.createElement('span')
+    thumb.className = 'collection-thumb'
+    thumb.innerHTML = tableSVG(upcoming.id, 44, 28, { detail: false })
+    next.append(thumb, `${to - points} more for the ${upcoming.name} table`)
+  } else {
+    next.append('Every table is unlocked')
+  }
+  const key = Object.assign(document.createElement('small'), {
+    textContent: 'Each badge adds points: Common 1 · Rare 3 · Epic 8 · Legendary 20',
+  })
+  container.replaceChildren(head, bar, next, key)
+}
+
+// Badge types as tabs, with an All view; the choice holds while the page is open.
+let badgeTab = 'All'
+
+function renderBadgeTabs() {
+  const tabs = ['All', ...CATEGORIES]
+  el.badgeTabs.replaceChildren(
+    ...tabs.map((tab) => {
+      const badges = BADGES.filter((b) => tab === 'All' || b.category === tab)
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.className = 'badge-tab'
+      button.setAttribute('role', 'tab')
+      button.setAttribute('aria-selected', String(tab === badgeTab))
+      button.append(tab, Object.assign(document.createElement('small'), {
+        textContent: `${badges.filter((b) => profile.badges[b.id]).length}/${badges.length}`,
+      }))
+      button.addEventListener('click', () => {
+        badgeTab = tab
+        renderBadgesDialog()
+        el.badgeTabs.querySelector('[aria-selected="true"]')?.focus()
+      })
+      return button
+    }),
+  )
 }
 
 function badgeItem(badge) {

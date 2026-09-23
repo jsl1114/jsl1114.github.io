@@ -3,6 +3,8 @@ import assert from "node:assert/strict";
 import {
   buildDeck,
   createDeck,
+  createShoe,
+  needsShuffle,
   dealerShouldHit,
   handValue,
   isBlackjack,
@@ -68,4 +70,19 @@ test("outcomes follow blackjack rules", () => {
   assert.equal(outcome(hand("K", "8"), hand("9", "9")), "push");
   assert.equal(outcome(hand("K", "8"), hand("10", "9")), "dealer");
   assert.equal(isBlackjack(hand("A", "5", "5")), false);
+});
+
+test("the shoe holds six decks and reshuffles at the cut card", () => {
+  const shoe = createShoe();
+  assert.equal(shoe.size, 312);
+  const counts = new Map();
+  for (const card of shoe.cards) counts.set(key(card), (counts.get(key(card)) ?? 0) + 1);
+  assert.equal(counts.size, 52);
+  assert.ok([...counts.values()].every((n) => n === 6));
+  assert.equal(needsShuffle(null), true);
+  assert.equal(needsShuffle(shoe), false);
+  shoe.cards.splice(0, 233); // 79 left: just above the 25% that remains at the cut
+  assert.equal(needsShuffle(shoe), false);
+  shoe.cards.pop();
+  assert.equal(needsShuffle(shoe), true);
 });

@@ -19,6 +19,18 @@ export function shuffle(deck, random = Math.random) {
   return result
 }
 
+// Ranked play deals from a six-deck shoe that carries over between hands. Once
+// the cut card is reached (75% dealt), the next hand starts a fresh shoe.
+export const SHOE_DECKS = 6
+export const CUT_CARD = 0.75
+
+export function createShoe(decks = SHOE_DECKS, random = Math.random) {
+  const cards = shuffle(Array.from({ length: decks }, createDeck).flat(), random)
+  return { cards, size: cards.length }
+}
+
+export const needsShuffle = (shoe) => !shoe || shoe.cards.length <= shoe.size * (1 - CUT_CARD)
+
 // A shuffled 52-card deck with `stacked` on top, so stacked[0] is drawn first.
 // Stacked cards are taken out of the rest of the deck, so nothing is duplicated.
 export function buildDeck(stacked = [], random = Math.random) {

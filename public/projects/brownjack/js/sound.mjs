@@ -82,6 +82,10 @@ const C5 = 523.25, E5 = 659.25, G5 = 783.99, C6 = 1046.5, E6 = 1318.5, G6 = 1568
 const SOUNDS = {
   deal: (ctx, at) => snap(ctx, { at }),
   flip: (ctx) => snap(ctx, { length: 0.12, freq: 1200, gain: 0.7 }),
+  // A riffle: a quick run of soft snaps.
+  shuffle: (ctx) => {
+    for (let i = 0; i < 14; i++) snap(ctx, { at: i * 0.028, length: 0.03, freq: 1800 + Math.random() * 1400, gain: 0.45 })
+  },
   win: (ctx) => arpeggio(ctx, [C5, G5], { step: 0.1 }),
   blackjack: (ctx) => arpeggio(ctx, [C5, E5, G5, C6], { step: 0.08, length: 0.4 }),
   push: (ctx) => tone(ctx, { freq: 440, length: 0.25, gain: 0.6 }),

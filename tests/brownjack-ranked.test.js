@@ -108,6 +108,9 @@ test("badges unlock from hands, streaks and milestones, once where they should",
   assert.ok(unlocks(at(0), { ...loss, at: new Date(2026, 1, 13, 20).getTime() }, "friday-13"));
   assert.ok(unlocks(at(0), { ...loss, at: new Date(2026, 8, 23, 3).getTime() }, "night-owl"));
   assert.ok(unlocks(at(0), { ...loss, sessionHands: 50 }, "marathon"));
+  assert.ok(unlocks(at(0), { ...win, lastInShoe: true }, "last-call"));
+  assert.ok(!unlocks(at(0), { ...loss, lastInShoe: true }, "last-call"));
+  assert.ok(unlocks(at(0), { ...win, player: hand(["A"], ["K"]), firstInShoe: true }, "fresh-start"));
 
   // Event badges count repeats; milestones unlock once.
   const once = scoreRound(at(0), { ...win, needle: true }).profile;

@@ -137,6 +137,10 @@ export const BADGES = [
       const day = new Date(x.round.at ?? Date.now())
       return day.getDay() === 5 && day.getDate() === 13
     } },
+  { id: 'last-call', category: 'Special', rarity: 'Rare', glyph: '✂', name: 'Last Call', desc: 'Win the last hand before the shoe is reshuffled.',
+    check: (x) => x.won && Boolean(x.round.lastInShoe) },
+  { id: 'fresh-start', category: 'Special', rarity: 'Epic', glyph: 'new', name: 'Fresh Start', desc: 'Get a blackjack on the first hand of a new shoe.',
+    check: (x) => isBlackjack(x.player) && Boolean(x.round.firstInShoe) },
   { id: 'marathon', category: 'Special', rarity: 'Rare', glyph: '50', name: 'Marathon', desc: 'Play 50 ranked hands in one sitting.', once: true,
     check: (x) => (x.round.sessionHands ?? 0) >= 50 },
   { id: 'show-off', category: 'Special', rarity: 'Common', glyph: '☆', name: 'Show-Off', desc: 'Put a badge in your showcase.', once: true },

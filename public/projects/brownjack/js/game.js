@@ -2,10 +2,13 @@
 import {
   RANKS,
   SUITS,
+  CUT_CARD,
   buildDeck,
+  createShoe,
   dealerShouldHit,
   handValue,
   isBlackjack,
+  needsShuffle,
   outcome,
   sameCard,
 } from './blackjack.mjs'
@@ -58,6 +61,10 @@ const el = {
   openBadges: $('open-badges'),
   badgeCount: $('badge-count'),
   rankChip: $('rank-chip'),
+  shoe: $('shoe'),
+  shoeFill: $('shoe-fill'),
+  shoeCut: $('shoe-cut'),
+  shoeLeft: $('shoe-left'),
   chipEmblem: $('chip-emblem'),
   chipName: $('chip-name'),
   chipRp: $('chip-rp'),
@@ -106,6 +113,10 @@ const state = {
   ranked: false,
   riskyHit: false,
   needle: false,
+  // The six-deck shoe ranked hands deal from. Kept in memory only: a reload is
+  // a new table, and storing it would let anyone read the upcoming cards.
+  shoe: null,
+  firstInShoe: false,
 }
 
 const cardPath = ({ rank, suit }) =>
@@ -597,19 +608,34 @@ async function playDealerReveal() {
     if (!state.skipping) play('deal')
     showDealerTotal(i + 1)
   }
+  renderShoe()
   await pause(PACE.settle)
   el.result.classList.remove('pending')
   state.revealing = false
 }
 
+function renderShoe() {
+  el.shoe.hidden = !state.ranked
+  if (!state.ranked) return
+  const { cards, size } = state.shoe
+  el.shoeFill.style.width = `${(100 * cards.length) / size}%`
+  el.shoeCut.style.left = `${100 * (1 - CUT_CARD)}%`
+  el.shoeLeft.textContent = `${cards.length} cards left`
+}
+
 function startRound() {
   closePicker()
+  const ranked = state.stacked.length === 0
+  // A rigged game deals its own stacked deck and leaves the shoe alone.
+  const newShoe = ranked && needsShuffle(state.shoe)
+  if (newShoe) state.shoe = createShoe()
   Object.assign(state, {
-    deck: buildDeck(state.stacked),
+    deck: ranked ? state.shoe.cards : buildDeck(state.stacked),
+    firstInShoe: newShoe,
     player: [],
     dealer: [],
     done: false,
-    ranked: state.stacked.length === 0,
+    ranked,
     riskyHit: false,
     needle: false,
   })
@@ -633,7 +659,12 @@ function startRound() {
   draw(state.dealer, el.dealerCards)
   draw(state.player, el.playerCards)
   draw(state.dealer, el.dealerCards, true)
-  for (let i = 0; i < 4; i++) play('deal', { at: i * 0.08 })
+  if (newShoe) {
+    play('shuffle')
+    el.result.textContent = 'New shoe shuffled'
+  }
+  for (let i = 0; i < 4; i++) play('deal', { at: newShoe ? 0.5 + i * 0.08 : i * 0.08 })
+  renderShoe()
   updateCounts()
   el.hit.focus()
 
@@ -645,6 +676,8 @@ function hit() {
   const before = handValue(state.player)
   draw(state.player, el.playerCards)
   play('deal')
+  el.result.textContent = ''
+  renderShoe()
   updateCounts()
   const { total } = handValue(state.player)
   if (!before.soft && before.total >= 17) {
@@ -692,6 +725,9 @@ function finish() {
     stacked: !state.ranked,
     at: Date.now(),
     sessionHands,
+    firstInShoe: state.firstInShoe,
+    // The shoe has reached the cut card, so the next hand starts a new one.
+    lastInShoe: state.ranked && needsShuffle(state.shoe),
   })
   if (!result.unranked) {
     profile = result.profile

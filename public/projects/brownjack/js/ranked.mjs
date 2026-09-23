@@ -72,6 +72,7 @@ export function rankOf(rp) {
 //     at, sessionHands }
 // riskyHit: the player hit on a hard 17+; needle: that hit was on 18+ and landed on 21.
 // at: when the hand finished (for time-based badges); sessionHands: ranked hands this sitting.
+// firstInShoe / lastInShoe: the hand opened a new shoe / was the last before a reshuffle.
 export function scoreRound(profile, round) {
   const before = rankOf(profile.rp)
   // Hard rule: a hand dealt from a deck the player arranged never moves rank

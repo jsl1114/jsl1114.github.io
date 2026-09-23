@@ -4,7 +4,7 @@ import { buzz, canVibrate, getSettings, play, setSetting } from "../public/proje
 
 test("sound and vibration are safe no-ops where they aren't available", () => {
   assert.equal(canVibrate(), false);
-  for (const name of ["deal", "flip", "win", "blackjack", "push", "lose", "bust", "common", "rare", "epic", "legendary", "division", "tier", "no-such-sound"]) {
+  for (const name of ["deal", "flip", "shuffle", "win", "blackjack", "push", "lose", "bust", "common", "rare", "epic", "legendary", "division", "tier", "no-such-sound"]) {
     assert.doesNotThrow(() => play(name));
   }
   assert.doesNotThrow(() => buzz("bust"));

@@ -11,63 +11,74 @@
   <link rel="stylesheet" href="css/game.css" />
   <link rel="stylesheet" href="css/celebrate.css" />
   <style>
-    .dev { width: min(100%, 560px); }
-    .dev h1 { font-size: 20px; }
-    .dev p { font-size: 12px; line-height: 1.5; color: var(--walnut); }
-    .dev h2 { margin-top: 8px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; }
-    .dev-row { display: flex; flex-wrap: wrap; gap: 8px; }
-    .dev-row .badge-glyph { width: 28px; height: 28px; border-width: 2px; font-size: 9px; }
-    .dev-row .badge-glyph.long { font-size: 6px; }
-    .dev h3 { margin: 10px 0 6px; font-size: 11px; color: var(--walnut); }
-    .dev-btn {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 6px 12px 6px 6px; border: 1px solid rgb(73 38 18 / 0.2); border-radius: 999px;
-      background: white; color: var(--bark); font-size: 12px;
+    /* Laid out like the iPhone Settings app: grouped, rounded lists per tab,
+       and a tab bar pinned to the bottom. */
+    body { padding-bottom: 84px; }
+    .dev { width: min(100%, 560px); margin: 0 auto; padding: 28px 16px 24px; }
+    .dev-title { margin: 0 4px 4px; color: var(--cream); font-size: 26px; text-shadow: 0 1px 3px rgb(0 0 0 / 0.5); }
+    .dev-sub { margin: 0 4px 18px; color: var(--cream); opacity: 0.8; font-size: 12px; line-height: 1.5; }
+    .dev-tab[hidden] { display: none; }
+    .group-label { margin: 22px 16px 6px; color: var(--cream); opacity: 0.75; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; }
+    .group-note { margin: 6px 16px 0; color: var(--cream); opacity: 0.6; font-size: 11px; line-height: 1.5; }
+    .group { overflow: hidden; border-radius: 12px; background: var(--cream); }
+    .row {
+      display: flex; align-items: center; gap: 12px; width: 100%; min-height: 48px; padding: 8px 14px;
+      border: none; background: none; color: var(--bark); font-size: 13px; text-align: left;
     }
-    .dev-btn.plain { padding: 8px 14px; }
-    .lab { display: grid; grid-template-columns: auto 1fr 64px; gap: 6px 10px; align-items: center; font-size: 12px; }
+    .row + .row { box-shadow: inset 52px 1px 0 -51px rgb(73 38 18 / 0.14); }
+    .row:hover { background: rgb(176 129 104 / 0.14); }
+    .row:active { background: rgb(176 129 104 / 0.24); }
+    .row-icon { flex: none; width: 30px; height: 30px; display: grid; place-items: center; }
+    .row-icon .badge-glyph { width: 30px; height: 30px; border-width: 2px; font-size: 9px; }
+    .row-icon .badge-glyph.long { font-size: 6px; }
+    .row-icon .emblem { width: 26px; font-size: 9px; }
+    .row-icon .thumb { width: 30px; height: 30px; overflow: hidden; border-radius: 7px; background: center / cover; }
+    .row-icon .thumb.back { width: 22px; height: 31px; border-radius: 3px; background: center / contain no-repeat; }
+    .row-icon .thumb svg { display: block; width: 100%; height: 100%; }
+    .row-icon .symbol { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 7px; background: var(--bark); color: var(--mustard); font-size: 15px; }
+    .row-label { flex: 1; min-width: 0; }
+    .row-label small { display: block; margin-top: 1px; color: var(--walnut); font-size: 11px; }
+    .row-detail { color: var(--walnut); font-size: 11px; }
+    .row-chevron { color: rgb(73 38 18 / 0.35); font-size: 18px; line-height: 1; }
+    .lab { display: grid; grid-template-columns: auto 1fr 52px; gap: 10px; align-items: center; padding: 12px 14px; font-size: 12px; color: var(--bark); }
     .lab input { width: 100%; accent-color: var(--bark); }
     .lab output { font-variant-numeric: tabular-nums; text-align: right; }
-    .dev-row .emblem { width: 22px; font-size: 8px; }
-    .dev-swatch { width: 22px; height: 22px; overflow: hidden; border-radius: 50%; background: center / cover; }
-    .dev-swatch svg { display: block; width: 100%; height: 100%; }
-    .dev-btn:hover { background: var(--mustard); }
+    .lab-status { margin: 6px 16px 0; min-height: 1.2em; color: var(--cream); font-size: 11px; }
+    .back-link { display: block; margin: 26px 16px 0; color: var(--cream); font-size: 12px; }
+
+    .tabbar {
+      position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      padding: 6px max(8px, calc(50% - 280px)) calc(6px + env(safe-area-inset-bottom));
+      border-top: 1px solid rgb(73 38 18 / 0.18); background: rgb(250 235 215 / 0.92); backdrop-filter: blur(12px);
+    }
+    .tab {
+      display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0;
+      border: none; background: none; color: rgb(73 38 18 / 0.5); font-size: 10px;
+    }
+    .tab span { font-size: 20px; line-height: 1.1; }
+    .tab[aria-selected='true'] { color: var(--bark); font-weight: 700; }
   </style>
   <script type="module" src="js/dev-test.js"></script>
 </head>
 
 <body>
-  <main class="table">
-    <section class="panel dev">
-      <h1>BrownJack · dev test</h1>
-      <p>Click to play the exact animation the game shows. Click the overlay or press Esc to skip.</p>
-      <h2>Sound lab · dealing a card</h2>
-      <p>Move the sliders, play a card or a whole deal, and when it sounds right press <strong>Copy settings</strong> and paste them to Claude.</p>
-      <div class="dev-row" id="sound-presets"></div>
-      <div class="lab" id="sound-lab"></div>
-      <div class="dev-row">
-        <button type="button" class="dev-btn plain" id="lab-one">Play one card</button>
-        <button type="button" class="dev-btn plain" id="lab-deal">Play a deal (4 cards)</button>
-        <button type="button" class="dev-btn plain" id="lab-copy">Copy settings</button>
-      </div>
-      <p id="lab-status" role="status"></p>
-      <h2>Rank-ups · within a tier</h2>
-      <div class="dev-row" id="division-steps"></div>
-      <h2>Rank-ups · new tier</h2>
-      <div class="dev-row" id="tier-flips"></div>
-      <h2>Unlocks · tables &amp; card backs</h2>
-      <div class="dev-row" id="unlocks"></div>
-      <h2>Badges by rarity</h2>
-      <div class="dev-row" id="by-rarity"></div>
-      <h2>Every badge</h2>
-      <div id="by-badge"></div>
-      <h2>Queue</h2>
-      <div class="dev-row">
-        <button type="button" class="dev-btn plain" id="play-all">A lucky hand: promotion + four badges</button>
-      </div>
-      <p><a href="game.html">← Back to the game</a></p>
-    </section>
+  <main class="dev">
+    <h1 class="dev-title" id="dev-title">Rank-ups</h1>
+    <p class="dev-sub">Tap a row to play exactly what the game shows. Celebrations close with a click or any key once their short lock passes.</p>
+    <section class="dev-tab" id="tab-rank" role="tabpanel" aria-labelledby="tabbtn-rank"></section>
+    <section class="dev-tab" id="tab-badges" role="tabpanel" aria-labelledby="tabbtn-badges" hidden></section>
+    <section class="dev-tab" id="tab-unlocks" role="tabpanel" aria-labelledby="tabbtn-unlocks" hidden></section>
+    <section class="dev-tab" id="tab-sound" role="tabpanel" aria-labelledby="tabbtn-sound" hidden></section>
+    <a class="back-link" href="game.html">← Back to the game</a>
   </main>
+
+  <nav class="tabbar" role="tablist" aria-label="Categories">
+    <button type="button" class="tab" role="tab" id="tabbtn-rank" data-tab="rank" aria-selected="true"><span>▲</span>Rank-ups</button>
+    <button type="button" class="tab" role="tab" id="tabbtn-badges" data-tab="badges" aria-selected="false"><span>✦</span>Badges</button>
+    <button type="button" class="tab" role="tab" id="tabbtn-unlocks" data-tab="unlocks" aria-selected="false"><span>▣</span>Unlocks</button>
+    <button type="button" class="tab" role="tab" id="tabbtn-sound" data-tab="sound" aria-selected="false"><span>♪</span>Sound</button>
+  </nav>
 </body>
 
 </html>

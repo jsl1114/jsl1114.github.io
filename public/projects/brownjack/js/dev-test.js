@@ -1,80 +1,109 @@
-// dev-test.js — buttons that replay every celebration: rank-ups and badges (dev only).
+// dev-test.js — replays everything the game can celebrate or sound (dev only).
+// Four tabs, each a set of grouped lists: rank-ups, badges, unlocks and sound.
 import { BADGES, CATEGORIES, LEGEND_AT, POINTS_PER_DIVISION, rankOf } from './ranked.mjs'
 import { celebrate, celebrateRank, celebrateUnlock, emblemElement, glyphElement } from './celebrate.mjs'
-import { CARD_SOUND, audioContext, cardSound } from './sound.mjs'
-import { CARD_BACKS, TABLES, byRank, progress } from './cosmetics.mjs'
-import { tableSVG } from './tableart.mjs'
+import { CARD_BACKS, TABLES, byRank, progress, unlocksAt } from './cosmetics.mjs'
 import { newProfile } from './ranked.mjs'
+import { tableSVG } from './tableart.mjs'
+import { CARD_SOUND, audioContext, cardSound, play } from './sound.mjs'
 
-function devButton(icon, label, onClick) {
-  const button = document.createElement('button')
+const $ = (id) => document.getElementById(id)
+const node = (tag, className, text) => {
+  const element = document.createElement(tag)
+  if (className) element.className = className
+  if (text !== undefined) element.textContent = text
+  return element
+}
+
+// ---- Settings-style building blocks -------------------------------------------
+
+function group(tab, label, rows, note) {
+  const heading = label ? [node('h2', 'group-label', label)] : []
+  const list = node('div', 'group')
+  list.append(...rows)
+  $(`tab-${tab}`).append(...heading, list, ...(note ? [node('p', 'group-note', note)] : []))
+}
+
+function row(icon, label, { sub, detail, onClick }) {
+  const button = node('button', 'row')
   button.type = 'button'
-  button.className = 'dev-btn'
-  button.append(icon, label)
+  const iconBox = node('span', 'row-icon')
+  iconBox.append(icon)
+  const text = node('span', 'row-label', label)
+  if (sub) text.append(node('small', '', sub))
+  button.append(iconBox, text)
+  if (detail) button.append(node('span', 'row-detail', detail))
+  button.append(node('span', 'row-chevron', '›'))
   button.addEventListener('click', onClick)
   return button
 }
 
-const badgeButton = (badge, label) => {
-  const button = devButton(glyphElement(badge), label, () => celebrate(badge))
-  button.classList.add(badge.rarity.toLowerCase())
-  return button
-}
+const symbol = (text) => node('span', 'symbol', text)
 
-// Every promotion on the ladder, one division at a time, plus a Legend star.
+// ---- Rank-ups -------------------------------------------------------------------
+
 const promotions = []
 for (let rp = 50; rp < LEGEND_AT; rp += POINTS_PER_DIVISION) {
   promotions.push([rankOf(rp), rankOf(rp + POINTS_PER_DIVISION)])
 }
-promotions.push([rankOf(LEGEND_AT + 350), rankOf(LEGEND_AT + 450)])
-const rankButton = ([from, to]) =>
-  devButton(emblemElement(to), `${from.name} → ${to.name}`, () => celebrateRank(from, to))
-document.getElementById('division-steps').append(
-  ...promotions.filter(([from, to]) => from.tier === to.tier).map(rankButton),
-)
-document.getElementById('tier-flips').append(
-  ...promotions.filter(([from, to]) => from.tier !== to.tier).map(rankButton),
-)
-
-// Achievement unlocks (rank ones are named on the tier-up celebration instead).
-const empty = { profile: newProfile() }
-const unlockButton = (item, kind) => {
-  const icon = document.createElement('span')
-  icon.className = 'dev-swatch'
-  if (kind === 'table') icon.innerHTML = tableSVG(item.id, 44, 44, { detail: false })
-  else icon.style.backgroundImage = `url('./assets/cards/${item.file}')`
-  return devButton(icon, `${item.name} · ${kind}`, () => celebrateUnlock(item, kind, progress(item, empty).text))
+const rankRow = ([from, to]) => {
+  const newTier = from.tier !== to.tier
+  const note = newTier ? `Unlocked: ${unlocksAt(to.tierIndex)}` : ''
+  return row(emblemElement(to), `${from.name} → ${to.name}`, {
+    sub: newTier ? note.replace('Unlocked: ', '') : undefined,
+    onClick: () => celebrateRank(from, to, { note }),
+  })
 }
-document.getElementById('unlocks').append(
-  ...TABLES.filter((t) => t.unlock[1] > 0).map((t) => unlockButton(t, 'table')),
-  ...CARD_BACKS.filter((b) => !byRank(b)).map((b) => unlockButton(b, 'back')),
-)
-
-const rarities = ['Common', 'Rare', 'Epic', 'Legendary']
-document.getElementById('by-rarity').append(
-  ...rarities.map((rarity) => badgeButton(BADGES.find((b) => b.rarity === rarity), rarity)),
-)
-document.getElementById('by-badge').append(
-  ...CATEGORIES.flatMap((category) => {
-    const heading = document.createElement('h3')
-    heading.textContent = category
-    const row = document.createElement('div')
-    row.className = 'dev-row'
-    row.append(
-      ...BADGES.filter((b) => b.category === category).map((badge) =>
-        badgeButton(badge, `${badge.name} · ${badge.rarity}`),
-      ),
-    )
-    return [heading, row]
+group('rank', 'New tier · coin flip', promotions.filter(([f, t]) => f.tier !== t.tier).map(rankRow),
+  'Shown the first time a tier is reached, with what it unlocks.')
+group('rank', 'Within a tier · division step', promotions.filter(([f, t]) => f.tier === t.tier).map(rankRow))
+group('rank', 'Legend stars', [1, 4, 9, 12].map((stars) =>
+  rankRow([rankOf(LEGEND_AT + (stars - 1) * 100 + 50), rankOf(LEGEND_AT + stars * 100 + 50)])),
+'Plates draw each star up to nine, then switch to a count.')
+group('rank', 'Queue', [
+  row(symbol('⚡'), 'A lucky hand', {
+    sub: 'A promotion, then four badges in turn',
+    onClick: () => {
+      celebrateRank(rankOf(850), rankOf(905), { note: `Unlocked: ${unlocksAt(3)}` })
+      for (const id of ['hat-trick', 'heater', 'original', 'inferno']) celebrate(BADGES.find((b) => b.id === id))
+    },
   }),
-)
-// What a lucky hand looks like: a promotion, then several badges, in turn.
-document.getElementById('play-all').addEventListener('click', () => {
-  celebrateRank(rankOf(850), rankOf(905))
-  for (const id of ['hat-trick', 'heater', 'original', 'inferno']) celebrate(BADGES.find((b) => b.id === id))
-})
+])
 
-// ---- Sound lab ------------------------------------------------------------------
+// ---- Badges ---------------------------------------------------------------------
+
+group('badges', 'By rarity', ['Common', 'Rare', 'Epic', 'Legendary'].map((rarity) => {
+  const badge = BADGES.find((b) => b.rarity === rarity)
+  const count = BADGES.filter((b) => b.rarity === rarity).length
+  return row(glyphElement(badge), rarity, { detail: `${count} badges`, onClick: () => celebrate(badge) })
+}))
+for (const category of CATEGORIES) {
+  group('badges', category, BADGES.filter((b) => b.category === category).map((badge) =>
+    row(glyphElement(badge), badge.name, { sub: badge.desc, detail: badge.rarity, onClick: () => celebrate(badge) })))
+}
+
+// ---- Unlocks --------------------------------------------------------------------
+
+const empty = { profile: newProfile() }
+function thumb(item, kind) {
+  const box = node('span', `thumb${kind === 'back' ? ' back' : ''}`)
+  if (kind === 'table') box.innerHTML = tableSVG(item.id, 60, 60, { detail: false })
+  else box.style.backgroundImage = `url('./assets/cards/${item.file}')`
+  return box
+}
+const unlockRow = (item, kind) => {
+  const how = progress(item, empty).text
+  return row(thumb(item, kind), item.name, { sub: how, onClick: () => celebrateUnlock(item, kind, how) })
+}
+const tables = TABLES.filter((t) => t.id !== 'oak')
+const backs = CARD_BACKS.filter((b) => b.id !== 'classic')
+group('unlocks', 'Rank tables', tables.filter(byRank).map((t) => unlockRow(t, 'table')),
+  'In the game these are named on the tier-up coin flip rather than shown on their own.')
+group('unlocks', 'Collection tables', tables.filter((t) => !byRank(t)).map((t) => unlockRow(t, 'table')))
+group('unlocks', 'Rank card backs', backs.filter(byRank).map((b) => unlockRow(b, 'back')))
+group('unlocks', 'Legendary card backs', backs.filter((b) => !byRank(b)).map((b) => unlockRow(b, 'back')))
+
+// ---- Sound ----------------------------------------------------------------------
 
 const SLIDERS = [
   ['clickMs', 'Click length (ms)', 2, 40, 1],
@@ -92,15 +121,16 @@ const PRESETS = {
   'Old (burner)': { clickMs: 60, clickHz: 8000, clickDecay: 1, clickLevel: 0.9, thudHz: 150, thudMs: 10, thudLevel: 0, vary: 0 },
 }
 const lab = { ...CARD_SOUND }
-const labEl = document.getElementById('sound-lab')
-const status = document.getElementById('lab-status')
+const labBox = node('div', 'lab')
+const status = node('p', 'lab-status')
+status.setAttribute('role', 'status')
 
 function renderLab() {
-  labEl.replaceChildren(
+  labBox.replaceChildren(
     ...SLIDERS.flatMap(([key, label, min, max, step]) => {
-      const name = Object.assign(document.createElement('label'), { textContent: label, htmlFor: `lab-${key}` })
-      const input = Object.assign(document.createElement('input'), { type: 'range', id: `lab-${key}`, min, max, step, value: lab[key] })
-      const value = Object.assign(document.createElement('output'), { textContent: lab[key] })
+      const name = Object.assign(node('label', '', label), { htmlFor: `lab-${key}` })
+      const input = Object.assign(node('input'), { type: 'range', id: `lab-${key}`, min, max, step, value: lab[key] })
+      const value = node('output', '', lab[key])
       input.addEventListener('input', () => {
         lab[key] = Number(input.value)
         value.textContent = input.value
@@ -120,20 +150,7 @@ function playLab(cards) {
   for (let i = 0; i < cards; i++) cardSound(ctx, i * 0.16, lab)
 }
 
-document.getElementById('sound-presets').append(
-  ...Object.entries(PRESETS).map(([name, preset]) => {
-    const button = Object.assign(document.createElement('button'), { type: 'button', className: 'dev-btn plain', textContent: name })
-    button.addEventListener('click', () => {
-      Object.assign(lab, preset)
-      renderLab()
-      playLab(4)
-    })
-    return button
-  }),
-)
-document.getElementById('lab-one').addEventListener('click', () => playLab(1))
-document.getElementById('lab-deal').addEventListener('click', () => playLab(4))
-document.getElementById('lab-copy').addEventListener('click', async () => {
+async function copyLab() {
   const text = `BrownJack card sound: ${JSON.stringify(lab)}`
   try {
     await navigator.clipboard.writeText(text)
@@ -141,5 +158,58 @@ document.getElementById('lab-copy').addEventListener('click', async () => {
   } catch {
     status.textContent = text
   }
-})
+}
+
+group('sound', 'Card sound · presets', Object.entries(PRESETS).map(([name, preset]) =>
+  row(symbol('♠'), name, {
+    onClick: () => {
+      Object.assign(lab, preset)
+      renderLab()
+      playLab(4)
+    },
+  })))
 renderLab()
+group('sound', 'Card sound · tune it', [labBox])
+group('sound', '', [
+  row(symbol('▶'), 'Play one card', { onClick: () => playLab(1) }),
+  row(symbol('▶▶'), 'Play a deal', { sub: 'Four cards', onClick: () => playLab(4) }),
+  row(symbol('⧉'), 'Copy settings', { sub: 'Paste them to Claude to make them the default', onClick: copyLab }),
+])
+$('tab-sound').append(status)
+
+const SOUND_ROWS = [
+  ['Table', [['deal', 'Card dealt'], ['flip', 'Hole card turned over'], ['shuffle', 'New shoe shuffled']]],
+  ['Results', [['win', 'Win'], ['blackjack', 'Blackjack'], ['push', 'Push'], ['lose', 'Loss'], ['bust', 'Bust']]],
+  ['Badges', [['common', 'Common'], ['rare', 'Rare'], ['epic', 'Epic · also table and card-back unlocks'], ['legendary', 'Legendary']]],
+  ['Rank-ups', [['division', 'Division step'], ['tier', 'New tier']]],
+]
+for (const [label, sounds] of SOUND_ROWS) {
+  group('sound', `Every sound · ${label}`, sounds.map(([id, name]) =>
+    row(symbol('♪'), name, { detail: id, onClick: () => play(id) })))
+}
+
+// ---- Tab bar --------------------------------------------------------------------
+
+const TITLES = { rank: 'Rank-ups', badges: 'Badges', unlocks: 'Unlocks', sound: 'Sound' }
+const TAB_KEY = 'brownjack.dev-tab'
+
+function showTab(name) {
+  for (const button of document.querySelectorAll('.tab')) button.setAttribute('aria-selected', String(button.dataset.tab === name))
+  for (const panel of document.querySelectorAll('.dev-tab')) panel.hidden = panel.id !== `tab-${name}`
+  $('dev-title').textContent = TITLES[name]
+  try {
+    sessionStorage.setItem(TAB_KEY, name)
+  } catch {
+    // Remembering the tab is a convenience.
+  }
+  scrollTo({ top: 0 })
+}
+
+for (const button of document.querySelectorAll('.tab')) button.addEventListener('click', () => showTab(button.dataset.tab))
+let saved = null
+try {
+  saved = sessionStorage.getItem(TAB_KEY)
+} catch {
+  // Start on the first tab.
+}
+showTab(TITLES[saved] ? saved : 'rank')

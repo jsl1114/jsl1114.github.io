@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {
   buildDeck,
+  canSplit,
   createDeck,
   createShoe,
   needsShuffle,
@@ -85,4 +86,12 @@ test("the shoe holds six decks and reshuffles at the cut card", () => {
   assert.equal(needsShuffle(shoe), false);
   shoe.cards.pop();
   assert.equal(needsShuffle(shoe), true);
+});
+
+test("splitting: pairs only, and a split 21 is just 21", () => {
+  assert.equal(canSplit(hand("8", "8")), true);
+  assert.equal(canSplit(hand("K", "Q")), false);
+  assert.equal(canSplit(hand("8", "8", "2")), false);
+  assert.equal(outcome(hand("A", "K"), hand("7", "7", "7"), { split: true }), "push");
+  assert.equal(outcome(hand("A", "K"), hand("7", "7", "7")), "player");
 });

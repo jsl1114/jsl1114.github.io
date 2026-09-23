@@ -88,14 +88,13 @@
 
       <p class="result" id="result" aria-live="polite"></p>
 
-      <div class="hand">
-        <h2 class="counter" id="player-counter">You <strong class="count" id="player-count"></strong></h2>
-        <div class="cards" id="player-cards"></div>
-      </div>
+      <div class="player-hands" id="player-hands"></div>
 
       <div class="actions">
         <button type="button" class="action" id="stand">Stand <kbd>S</kbd></button>
         <button type="button" class="action primary" id="hit">Hit <kbd>H</kbd></button>
+        <button type="button" class="action" id="double" hidden>Double <kbd>D</kbd></button>
+        <button type="button" class="action" id="split" hidden>Split <kbd>P</kbd></button>
         <button type="button" class="action primary" id="again" hidden>Play again <kbd>Enter</kbd></button>
         <button type="button" class="action" id="to-setup" hidden>Menu</button>
       </div>

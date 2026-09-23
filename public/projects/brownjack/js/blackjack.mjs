@@ -55,13 +55,17 @@ export const isBlackjack = (hand) => hand.length === 2 && handValue(hand).total 
 // The dealer never looks at the player's cards: hit below 17, stand on all 17s.
 export const dealerShouldHit = (hand) => handValue(hand).total < 17
 
-// 'player' | 'dealer' | 'push'
-export function outcome(player, dealer) {
+// A pair can be split once, into two hands.
+export const canSplit = (hand) => hand.length === 2 && hand[0].rank === hand[1].rank
+
+// 'player' | 'dealer' | 'push'. After a split, a two-card 21 isn't a blackjack.
+export function outcome(player, dealer, { split = false } = {}) {
   const p = handValue(player).total
   const d = handValue(dealer).total
+  const natural = !split && isBlackjack(player)
   if (p > 21) return 'dealer'
   if (d > 21) return 'player'
-  if (isBlackjack(player) !== isBlackjack(dealer)) return isBlackjack(player) ? 'player' : 'dealer'
+  if (natural !== isBlackjack(dealer)) return natural ? 'player' : 'dealer'
   if (p === d) return 'push'
   return p > d ? 'player' : 'dealer'
 }

@@ -199,3 +199,45 @@ test("strategy stats count decisions, and only mistakes break the textbook run",
   p = scoreRound(p, { ...loss, decisions: [true, false] }).profile;
   assert.deepEqual([p.decisions, p.goodDecisions, p.textbookStreak, p.bestTextbookStreak], [4, 3, 0, 1]);
 });
+
+test("doubles stake twice the RP both ways", () => {
+  const cards = [card("5"), card("6"), card("10")];
+  const doubleWin = scoreRound(at(350), { hands: [{ cards, winner: "player", doubled: true }], dealer: [card("10"), card("8")] });
+  assert.deepEqual(doubleWin.lines, [{ label: "Double win", points: WIN_POINTS[1] * 2 }]);
+  const doubleLoss = scoreRound(at(350), { hands: [{ cards, winner: "dealer", doubled: true }], dealer: [card("10"), card("A")] });
+  assert.equal(doubleLoss.delta, -LOSS_POINTS[1] * 2);
+  assert.ok(doubleWin.earned.includes("doubled-up"));
+});
+
+test("split hands score separately and add up", () => {
+  const hands = [
+    { cards: [card("8"), card("10")], winner: "player" },
+    { cards: [card("8", "clubs"), card("9")], winner: "dealer", doubled: true },
+  ];
+  const result = scoreRound(at(350), { hands, dealer: [card("10"), card("7"), card("2")] });
+  assert.deepEqual(result.lines.map((l) => l.label), ["Hand 1 win", "Hand 2 double loss"]);
+  assert.equal(result.delta, WIN_POINTS[1] - 2 * LOSS_POINTS[1]);
+  // One win, one loss: a push for stats and streaks.
+  assert.equal(result.profile.pushes, 1);
+  assert.equal(result.profile.games, 1);
+});
+
+test("a split 21 isn't a blackjack, and both-hands badges need both hands", () => {
+  const aces = [
+    { cards: [card("A"), card("K")], winner: "player" },
+    { cards: [card("A", "clubs"), card("Q")], winner: "player" },
+  ];
+  const result = scoreRound(at(0), { hands: aces, dealer: [card("10"), card("9")] });
+  assert.ok(!result.lines.some((l) => l.label === "Blackjack"));
+  assert.equal(result.profile.blackjacks, 0);
+  assert.ok(!result.earned.includes("natural"));
+  assert.ok(result.earned.includes("split-decision"));
+  assert.ok(result.earned.includes("aces-high"));
+  assert.ok(result.earned.includes("snake-eyes"), "the dealt pair counts");
+  const oneEach = scoreRound(at(0), { hands: [aces[0], { ...aces[1], winner: "dealer" }], dealer: [card("10"), card("9")] });
+  assert.ok(!oneEach.earned.includes("split-decision"));
+});
+
+test("abandoning a doubled or split hand costs what was at stake", () => {
+  assert.equal(scoreRound(at(500), { winner: "dealer", forfeit: true, stake: 3 }).delta, -LOSS_POINTS[1] * 3);
+});

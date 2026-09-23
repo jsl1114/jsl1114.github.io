@@ -1139,6 +1139,35 @@ kbd {
   color: purple;
 }
 
+.player-hands {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px 28px;
+}
+
+/* After a split, two narrower hands sit side by side. */
+.player-hands.split .counter {
+  width: auto;
+  min-width: 150px;
+  padding: 6px 16px;
+  font-size: clamp(15px, 3.8vw, 20px);
+}
+
+.player-hand.active .counter {
+  box-shadow: 0 0 0 3px var(--mustard);
+}
+
+.hand-tag:not(:empty) {
+  margin-left: 8px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--bark);
+  color: var(--cream);
+  font-size: 0.6em;
+  vertical-align: middle;
+}
+
 .counter.winner {
   background: greenyellow;
 }

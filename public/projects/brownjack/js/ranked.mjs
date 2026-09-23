@@ -74,9 +74,11 @@ export function rankOf(rp) {
 }
 
 // `round` describes a finished hand:
-//   { winner: 'player' | 'dealer' | 'push', player, dealer, riskyHit, needle, forfeit, stacked,
-//     at, sessionHands }
+//   { hands: [{ cards, winner, doubled, riskyHit, needle }], dealer, forfeit, stake, stacked,
+//     at, sessionHands, firstInShoe, lastInShoe, decisions }
+// (or a single hand as { player, winner, riskyHit, needle }). winner is 'player' | 'dealer' | 'push'.
 // riskyHit: the player hit on a hard 17+; needle: that hit was on 18+ and landed on 21.
+// stake: bets at risk when a hand is abandoned (a double counts two).
 // at: when the hand finished (for time-based badges); sessionHands: ranked hands this sitting.
 // firstInShoe / lastInShoe: the hand opened a new shoe / was the last before a reshuffle.
 // decisions: one boolean per hit/stand choice, true when it matched basic strategy.
@@ -98,11 +100,20 @@ export function scoreRound(profile, round) {
 
   const next = { ...profile, badges: { ...profile.badges } }
   const lines = []
-  const player = round.player ?? []
   const dealer = round.dealer ?? []
+  // A hand is one or two player hands (after a split). Older callers pass a
+  // single `player` hand with its `winner`.
+  const hands = round.hands ?? (round.player ? [{ cards: round.player, winner: round.winner, riskyHit: round.riskyHit, needle: round.needle }] : [])
+  const split = hands.length > 1
+  const dealt = hands.length ? (split ? [hands[0].cards[0], hands[1].cards[0]] : hands[0].cards.slice(0, 2)) : []
+  const natural = !split && hands.length === 1 && isBlackjack(hands[0].cards)
+  const handsWon = hands.filter((h) => h.winner === 'player').length
+  const handsLost = hands.filter((h) => h.winner === 'dealer').length
+  // The hand's overall result, for stats and streaks: more hands won than lost is a win.
+  const overall = round.forfeit ? 'dealer' : handsWon > handsLost ? 'player' : handsLost > handsWon ? 'dealer' : 'push'
 
   next.games++
-  if (isBlackjack(player)) next.blackjacks++
+  if (natural) next.blackjacks++
   // Hands with no choice to make (a natural, say) neither extend nor break the run.
   const decisions = round.decisions ?? []
   if (decisions.length) {
@@ -111,25 +122,45 @@ export function scoreRound(profile, round) {
     next.textbookStreak = decisions.every(Boolean) ? next.textbookStreak + 1 : 0
     next.bestTextbookStreak = Math.max(next.bestTextbookStreak, next.textbookStreak)
   }
-  if (round.winner === 'player') {
+
+  if (overall === 'player') {
     next.wins++
     next.streak++
     next.lossStreak = 0
-    if (round.riskyHit) next.daredevilWins++
-    lines.push({ label: 'Win', points: WIN_POINTS[before.tierIndex] })
-    if (isBlackjack(player)) lines.push({ label: 'Blackjack', points: BONUS.blackjack })
-    if (round.riskyHit) lines.push({ label: 'Daredevil', points: BONUS.daredevil })
-    if (player.length >= 5) lines.push({ label: 'Five-card Charlie', points: BONUS.charlie })
-    const streakBonus = Math.min(BONUS.streakCap, BONUS.streakStep * (next.streak - 2))
-    if (streakBonus > 0) lines.push({ label: `${next.streak} in a row`, points: streakBonus })
-  } else if (round.winner === 'dealer') {
+  } else if (overall === 'dealer') {
     next.losses++
     next.streak = 0
     next.lossStreak++
-    lines.push({ label: round.forfeit ? 'Abandoned hand' : 'Loss', points: -LOSS_POINTS[before.tierIndex] })
   } else {
     next.pushes++
-    lines.push({ label: 'Push', points: 0 })
+  }
+
+  if (round.forfeit) {
+    // Leaving mid-hand costs whatever was at stake, doubles and splits included.
+    lines.push({ label: 'Abandoned hand', points: -LOSS_POINTS[before.tierIndex] * (round.stake ?? 1) })
+  }
+  hands.forEach((hand, i) => {
+    const stake = hand.doubled ? 2 : 1
+    const name = split ? `Hand ${i + 1} ` : ''
+    const kind = hand.doubled ? 'double ' : ''
+    const label = (result) => `${name}${kind}${result}`.replace(/^./, (c) => c.toUpperCase())
+    if (hand.winner === 'player') {
+      lines.push({ label: label('win'), points: WIN_POINTS[before.tierIndex] * stake })
+      if (hand.riskyHit) {
+        next.daredevilWins++
+        lines.push({ label: 'Daredevil', points: BONUS.daredevil })
+      }
+      if (hand.cards.length >= 5) lines.push({ label: 'Five-card Charlie', points: BONUS.charlie })
+    } else if (hand.winner === 'dealer') {
+      lines.push({ label: label('loss'), points: -LOSS_POINTS[before.tierIndex] * stake })
+    } else {
+      lines.push({ label: label('push'), points: 0 })
+    }
+  })
+  if (overall === 'player') {
+    if (natural) lines.splice(1, 0, { label: 'Blackjack', points: BONUS.blackjack })
+    const streakBonus = Math.min(BONUS.streakCap, BONUS.streakStep * (next.streak - 2))
+    if (streakBonus > 0) lines.push({ label: `${next.streak} in a row`, points: streakBonus })
   }
 
   const delta = lines.reduce((sum, line) => sum + line.points, 0)
@@ -138,18 +169,23 @@ export function scoreRound(profile, round) {
   next.bestStreak = Math.max(profile.bestStreak, next.streak)
 
   const after = rankOf(next.rp)
-  const earned = awardBadges(next, {
-    won: round.winner === 'player',
-    lost: round.winner === 'dealer',
-    player,
-    dealer,
-    pv: handValue(player).total,
-    dv: handValue(dealer).total,
-    round,
-    profile,
-    after,
-    peak: rankOf(next.peakRp),
-  }, round.at)
+  const dv = handValue(dealer).total
+  // Badges are checked against each of the player's hands; one that passes for
+  // either hand is awarded once.
+  const base = { overall, natural, dealt, split, handsWon, dealer, dv, round, profile, after, peak: rankOf(next.peakRp) }
+  const contexts = hands.length
+    ? hands.map((hand) => ({
+        ...base,
+        player: hand.cards,
+        pv: handValue(hand.cards).total,
+        won: hand.winner === 'player',
+        lost: hand.winner === 'dealer',
+        doubled: Boolean(hand.doubled),
+        riskyHit: Boolean(hand.riskyHit),
+        needle: Boolean(hand.needle),
+      }))
+    : [{ ...base, player: [], pv: 0, won: false, lost: overall === 'dealer' }]
+  const earned = awardBadges(next, contexts, round.at)
 
   return { profile: next, delta: next.rp - profile.rp, lines, earned, before, after }
 }
@@ -163,7 +199,7 @@ const PROFILE_MILESTONES = BADGES.filter(
 export function catchUpBadges(profile, now = Date.now()) {
   const next = { ...profile, badges: { ...profile.badges } }
   const context = { profile, after: rankOf(profile.rp), peak: rankOf(profile.peakRp) }
-  const earned = awardBadges(next, context, now, PROFILE_MILESTONES)
+  const earned = awardBadges(next, [context], now, PROFILE_MILESTONES)
   return { profile: earned.length ? next : profile, earned }
 }
 
@@ -183,7 +219,7 @@ export function pinBadge(profile, id, now = Date.now()) {
     next.badges['show-off'] = { count: 1, first: now }
     earned.push('show-off')
     // Outside a hand, only the collection badges can follow from a new badge.
-    earned.push(...awardBadges(next, {}, now, ['collector', 'completionist']))
+    earned.push(...awardBadges(next, [{}], now, ['collector', 'completionist']))
   }
   return { profile: next, earned }
 }

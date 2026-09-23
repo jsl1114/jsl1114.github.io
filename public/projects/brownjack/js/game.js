@@ -4,6 +4,7 @@ import {
   SUITS,
   CUT_CARD,
   buildDeck,
+  canSplit,
   createShoe,
   dealerShouldHit,
   handValue,
@@ -47,12 +48,12 @@ const el = {
   dealerCounter: $('dealer-counter'),
   dealerCount: $('dealer-count'),
   dealerCards: $('dealer-cards'),
-  playerCounter: $('player-counter'),
-  playerCount: $('player-count'),
-  playerCards: $('player-cards'),
+  playerHands: $('player-hands'),
   result: $('result'),
   hit: $('hit'),
   stand: $('stand'),
+  double: $('double'),
+  split: $('split'),
   again: $('again'),
   toSetup: $('to-setup'),
   emblem: $('emblem'),
@@ -108,15 +109,16 @@ const DEAL_LABELS = ['You', 'Dealer', 'You', 'Dealer ↓']
 const state = {
   stacked: [],
   deck: [],
-  player: [],
+  // The player's hands: one, or two after a split. Each is
+  // { cards, doubled, done, fromAces, riskyHit, needle, view }.
+  hands: [],
+  active: 0,
   dealer: [],
   done: true,
   // The dealer's reveal is playing out; `skipping` fast-forwards it.
   revealing: false,
   skipping: false,
   ranked: false,
-  riskyHit: false,
-  needle: false,
   // The six-deck shoe ranked hands deal from. Kept in memory only: a reload is
   // a new table, and storing it would let anyone read the upcoming cards.
   shoe: null,
@@ -493,7 +495,8 @@ function renderBadgesDialog() {
   el.bonusList.textContent =
     `Bonuses on a win: blackjack +${BONUS.blackjack}, daredevil (you hit on a hard 17 or more) ` +
     `+${BONUS.daredevil}, five-card Charlie +${BONUS.charlie}, and +${BONUS.streakStep} per win ` +
-    `past the second in a row (up to +${BONUS.streakCap}).`
+    `past the second in a row (up to +${BONUS.streakCap}). Doubling down puts twice the RP at stake ` +
+    'either way, and after a split each hand wins or loses on its own.'
 }
 
 function badgeItem(badge) {
@@ -546,14 +549,69 @@ function togglePin(id) {
 
 // ---- The round -------------------------------------------------------------
 
-function draw(hand, container, faceDown = false) {
+const activeHand = () => state.hands[state.active]
+const newHand = (cards = []) => ({ cards, doubled: false, done: false, fromAces: false, riskyHit: false, needle: false, view: null })
+const isBust = (hand) => handValue(hand.cards).total > 21
+// Bets at risk: a doubled hand counts two. Stored so leaving mid-hand costs it all.
+const stake = () => state.hands.reduce((sum, hand) => sum + (hand.doubled ? 2 : 1), 0)
+
+function dealDealer(faceDown = false) {
   const card = state.deck.pop()
-  hand.push(card)
-  container.append(cardElement(card, faceDown))
+  state.dealer.push(card)
+  el.dealerCards.append(cardElement(card, faceDown))
+}
+
+function drawTo(hand, { sound = true } = {}) {
+  const card = state.deck.pop()
+  hand.cards.push(card)
+  hand.view?.cards.append(cardElement(card))
+  if (sound) play('deal')
+}
+
+// Build a view (counter + cards) for each hand. Rebuilt only when a split
+// changes the hands, so cards already on the table don't re-deal.
+function buildHandViews() {
+  const split = state.hands.length > 1
+  el.playerHands.classList.toggle('split', split)
+  el.playerHands.replaceChildren(
+    ...state.hands.map((hand, i) => {
+      const block = document.createElement('div')
+      block.className = 'hand player-hand'
+      const counter = document.createElement('h2')
+      counter.className = 'counter'
+      const count = document.createElement('strong')
+      count.className = 'count'
+      const tag = document.createElement('span')
+      tag.className = 'hand-tag'
+      counter.append(split ? `Hand ${i + 1} ` : 'You ', count, tag)
+      const cards = document.createElement('div')
+      cards.className = 'cards'
+      cards.append(...hand.cards.map((card) => cardElement(card)))
+      block.append(counter, cards)
+      hand.view = { block, counter, count, tag, cards }
+      return block
+    }),
+  )
 }
 
 function updateCounts() {
-  el.playerCount.textContent = handValue(state.player).total
+  state.hands.forEach((hand, i) => {
+    hand.view.count.textContent = handValue(hand.cards).total
+    hand.view.tag.textContent = hand.doubled ? '2×' : ''
+    hand.view.block.classList.toggle('active', !state.done && state.hands.length > 1 && i === state.active)
+  })
+}
+
+const canDoubleNow = () => {
+  const hand = activeHand()
+  return !state.done && hand.cards.length === 2 && !hand.fromAces
+}
+const canSplitNow = () => !state.done && state.hands.length === 1 && canSplit(activeHand().cards)
+
+function updateActions() {
+  el.hit.hidden = el.stand.hidden = state.done
+  el.double.hidden = !canDoubleNow()
+  el.split.hidden = !canSplitNow()
 }
 
 // ---- Dealer reveal pacing ----------------------------------------------------
@@ -605,7 +663,7 @@ async function revealHoleCard() {
 async function playDealerReveal() {
   state.revealing = true
   state.skipping = false
-  el.result.textContent = handValue(state.player).total > 21 ? 'Bust…' : 'Dealer’s turn…'
+  el.result.textContent = state.hands.every(isBust) ? 'Bust…' : 'Dealer’s turn…'
   el.result.classList.add('pending')
   await pause(PACE.flip)
   await revealHoleCard()
@@ -641,34 +699,32 @@ function startRound() {
     deck: ranked ? state.shoe.cards : buildDeck(state.stacked),
     firstInShoe: newShoe,
     decisions: [],
-    player: [],
+    hands: [newHand()],
+    active: 0,
     dealer: [],
     done: false,
     ranked,
-    riskyHit: false,
-    needle: false,
   })
   if (state.ranked) writeStorage(ROUND_KEY, '1')
   el.notice.hidden = true
   el.roundScore.hidden = true
   renderRankChip()
-  el.playerCards.replaceChildren()
   el.dealerCards.replaceChildren()
   el.result.textContent = ''
   el.dealerCount.textContent = '?'
   el.coach.hidden = true
-  el.playerCounter.classList.remove('winner')
   el.dealerCounter.classList.remove('winner')
-  el.hit.hidden = el.stand.hidden = false
   el.again.hidden = el.toSetup.hidden = true
 
   el.start.hidden = true
   el.game.hidden = false
 
-  draw(state.player, el.playerCards)
-  draw(state.dealer, el.dealerCards)
-  draw(state.player, el.playerCards)
-  draw(state.dealer, el.dealerCards, true)
+  const [hand] = state.hands
+  buildHandViews()
+  drawTo(hand, { sound: false })
+  dealDealer()
+  drawTo(hand, { sound: false })
+  dealDealer(true)
   if (newShoe) {
     play('shuffle')
     el.result.textContent = 'New shoe shuffled'
@@ -676,18 +732,21 @@ function startRound() {
   for (let i = 0; i < 4; i++) play('deal', { at: newShoe ? 0.5 + i * 0.08 : i * 0.08 })
   renderShoe()
   updateCounts()
+  updateActions()
   el.hit.focus()
 
-  if (isBlackjack(state.player) || isBlackjack(state.dealer)) finish()
+  if (isBlackjack(hand.cards) || isBlackjack(state.dealer)) finish()
 }
 
 // Check a choice against basic strategy, and have the coach say so if it's on.
 function recordDecision(move) {
-  const best = bestMove(state.player, state.dealer[0])
+  const { cards } = activeHand()
+  const options = { canDouble: canDoubleNow(), canSplit: canSplitNow() }
+  const best = bestMove(cards, state.dealer[0], options)
   const correct = move === best
   state.decisions.push(correct)
   if (!getSettings().coach) return
-  const spot = describeSpot(state.player, state.dealer[0])
+  const spot = describeSpot(cards, state.dealer[0], { pair: options.canSplit })
   el.coach.textContent = correct ? `✓ Textbook: ${move} on ${spot}` : `✗ Basic strategy says ${best} on ${spot}`
   el.coach.dataset.correct = String(correct)
   el.coach.hidden = false
@@ -695,57 +754,141 @@ function recordDecision(move) {
 
 function hit() {
   if (state.done) return
+  const hand = activeHand()
   recordDecision('hit')
-  const before = handValue(state.player)
-  draw(state.player, el.playerCards)
-  play('deal')
+  const before = handValue(hand.cards)
+  drawTo(hand)
   el.result.textContent = ''
+  const { total } = handValue(hand.cards)
+  if (!before.soft && before.total >= 17) {
+    hand.riskyHit = true
+    if (before.total >= 18 && total === 21) hand.needle = true
+  }
+  // A bust ends the hand; so does 21, which can only be stood on.
+  if (total >= 21) endHand()
+  else afterMove()
+}
+
+function stand() {
+  if (state.done) return
+  recordDecision('stand')
+  endHand()
+}
+
+// Double the bet, take exactly one more card, and stand.
+function double() {
+  if (!canDoubleNow()) return
+  const hand = activeHand()
+  recordDecision('double')
+  hand.doubled = true
+  if (state.ranked) writeStorage(ROUND_KEY, String(stake()))
+  drawTo(hand)
+  el.result.textContent = ''
+  endHand()
+}
+
+// Split a pair into two hands, each dealt a second card. Split aces get one
+// card each and stand.
+function split() {
+  if (!canSplitNow()) return
+  recordDecision('split')
+  const [first, second] = activeHand().cards
+  const fromAces = first.rank === 'A'
+  state.hands = [newHand([first]), newHand([second])]
+  for (const hand of state.hands) {
+    hand.fromAces = fromAces
+    drawTo(hand, { sound: false })
+  }
+  play('deal')
+  play('deal', { at: 0.08 })
+  if (state.ranked) writeStorage(ROUND_KEY, String(stake()))
+  el.result.textContent = ''
+  buildHandViews()
+  if (fromAces) {
+    for (const hand of state.hands) hand.done = true
+    return dealerTurn()
+  }
+  settleAutomaticHands()
+}
+
+// Finish the active hand and move to the next one, or to the dealer.
+function endHand() {
+  activeHand().done = true
+  if (state.active + 1 < state.hands.length) {
+    state.active++
+    settleAutomaticHands()
+  } else {
+    dealerTurn()
+  }
+}
+
+// A hand sitting on 21 has no decision left, so it stands by itself.
+function settleAutomaticHands() {
+  if (handValue(activeHand().cards).total === 21) return endHand()
+  afterMove()
+}
+
+function afterMove() {
   renderShoe()
   updateCounts()
-  const { total } = handValue(state.player)
-  if (!before.soft && before.total >= 17) {
-    state.riskyHit = true
-    if (before.total >= 18 && total === 21) state.needle = true
-  }
-  if (total > 21) finish()
-  else if (total === 21) stand({ auto: true })
+  updateActions()
+  ;(el.hit.hidden ? el.again : el.hit).focus()
 }
 
 // The dealer plays out in state now; the table shows it card by card after.
-function stand({ auto = false } = {}) {
-  if (state.done) return
-  if (!auto) recordDecision('stand')
-  while (dealerShouldHit(state.dealer)) state.dealer.push(state.deck.pop())
+// If every hand has busted, the dealer has nothing to beat and doesn't draw.
+function dealerTurn() {
+  if (!state.hands.every(isBust)) {
+    while (dealerShouldHit(state.dealer)) state.dealer.push(state.deck.pop())
+  }
   finish()
 }
 
-function resultText(winner) {
-  const player = handValue(state.player).total
+const RESULT_TAGS = { player: 'Win', dealer: 'Loss', push: 'Push' }
+
+function resultText(winners) {
   const dealer = handValue(state.dealer).total
-  if (winner === 'push') return 'Push — nobody wins'
-  if (winner === 'player') {
-    if (isBlackjack(state.player)) return 'Blackjack! You win'
-    return dealer > 21 ? 'Dealer busts — you win!' : 'You win!'
+  if (winners.length > 1) {
+    const count = (w) => winners.filter((x) => x === w).length
+    const parts = [
+      count('player') && `${count('player')} win${count('player') > 1 ? 's' : ''}`,
+      count('dealer') && `${count('dealer')} loss${count('dealer') > 1 ? 'es' : ''}`,
+      count('push') && `${count('push')} push${count('push') > 1 ? 'es' : ''}`,
+    ].filter(Boolean)
+    return `Split: ${parts.join(', ')}`
   }
-  if (player > 21) return 'Bust — dealer wins'
-  return isBlackjack(state.dealer) ? 'Dealer has blackjack' : 'Dealer wins'
+  const [winner] = winners
+  const [hand] = state.hands
+  const doubled = hand.doubled ? 'Double down: ' : ''
+  if (winner === 'push') return `${doubled}Push — nobody wins`
+  if (winner === 'player') {
+    if (isBlackjack(hand.cards)) return 'Blackjack! You win'
+    return `${doubled}${dealer > 21 ? 'Dealer busts — you win!' : 'You win!'}`
+  }
+  if (isBust(hand)) return `${doubled}Bust — dealer wins`
+  return isBlackjack(state.dealer) ? 'Dealer has blackjack' : `${doubled}Dealer wins`
 }
 
 // Settle and save the hand straight away, then play the dealer's reveal.
 function finish() {
   state.done = true
-  el.hit.hidden = el.stand.hidden = true
+  updateActions()
   updateCounts()
+  renderShoe()
 
-  const winner = outcome(state.player, state.dealer)
+  const split = state.hands.length > 1
+  const winners = state.hands.map((hand) => outcome(hand.cards, state.dealer, { split }))
   const beforeRp = profile.rp
   if (state.ranked) sessionHands++
   const result = scoreRound(profile, {
-    winner,
-    player: state.player,
+    hands: state.hands.map((hand, i) => ({
+      cards: hand.cards,
+      winner: winners[i],
+      doubled: hand.doubled,
+      riskyHit: hand.riskyHit,
+      needle: hand.needle,
+    })),
     dealer: state.dealer,
-    riskyHit: state.riskyHit,
-    needle: state.needle,
     stacked: !state.ranked,
     at: Date.now(),
     sessionHands,
@@ -759,19 +902,26 @@ function finish() {
     saveProfile()
     writeStorage(ROUND_KEY, null)
   }
-  playDealerReveal().then(() => showResult(winner, result, beforeRp))
+  playDealerReveal().then(() => showResult(winners, result, beforeRp))
 }
 
-function showResult(winner, result, beforeRp) {
-  el.result.textContent = resultText(winner)
+function showResult(winners, result, beforeRp) {
+  el.result.textContent = resultText(winners)
+  const won = winners.filter((w) => w === 'player').length
+  const lost = winners.filter((w) => w === 'dealer').length
+  const overall = won > lost ? 'player' : lost > won ? 'dealer' : 'push'
+  const natural = state.hands.length === 1 && isBlackjack(state.hands[0].cards)
   const sting =
-    winner === 'push' ? 'push'
-    : winner === 'player' ? (isBlackjack(state.player) ? 'blackjack' : 'win')
-    : handValue(state.player).total > 21 ? 'bust' : 'lose'
+    overall === 'push' ? 'push'
+    : overall === 'player' ? (natural ? 'blackjack' : 'win')
+    : state.hands.every(isBust) ? 'bust' : 'lose'
   play(sting)
   if (sting === 'bust' || sting === 'blackjack' || sting === 'win') buzz(sting)
-  if (winner !== 'dealer') el.playerCounter.classList.add('winner')
-  if (winner !== 'player') el.dealerCounter.classList.add('winner')
+  state.hands.forEach((hand, i) => {
+    if (winners[i] !== 'dealer') hand.view.counter.classList.add('winner')
+    if (state.hands.length > 1) hand.view.tag.textContent = `${hand.doubled ? '2× · ' : ''}${RESULT_TAGS[winners[i]]}`
+  })
+  if (overall !== 'player') el.dealerCounter.classList.add('winner')
   renderRankChip(beforeRp)
   renderRoundScore(result, beforeRp)
 
@@ -798,6 +948,8 @@ el.play.addEventListener('click', startRound)
 el.again.addEventListener('click', startRound)
 el.toSetup.addEventListener('click', showSetup)
 el.hit.addEventListener('click', hit)
+el.double.addEventListener('click', double)
+el.split.addEventListener('click', split)
 el.stand.addEventListener('click', () => stand())
 // pointerdown, not click: the click on Stand that starts a reveal mustn't skip it.
 el.game.addEventListener('pointerdown', skipReveal)
@@ -998,13 +1150,18 @@ window.addEventListener('keydown', (event) => {
   } else if (!state.done) {
     if (key === 'h') hit()
     if (key === 's') stand()
+    if (key === 'd') double()
+    if (key === 'p') split()
   } else if (key === 'r' || (key === 'enter' && !onControl)) {
     startRound()
   }
 })
 
 if (readStorage(ROUND_KEY)) {
-  const result = scoreRound(profile, { winner: 'dealer', forfeit: true })
+  // The flag holds the bets at risk (a double or split raises it); anything odd counts as one.
+  const saved = Number(readStorage(ROUND_KEY))
+  const atStake = Number.isInteger(saved) && saved >= 1 && saved <= 4 ? saved : 1
+  const result = scoreRound(profile, { winner: 'dealer', forfeit: true, stake: atStake })
   profile = result.profile
   saveProfile()
   writeStorage(ROUND_KEY, null)

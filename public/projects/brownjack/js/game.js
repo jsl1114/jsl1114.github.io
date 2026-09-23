@@ -96,6 +96,9 @@ const state = {
   player: [],
   dealer: [],
   done: true,
+  // The dealer's reveal is playing out; `skipping` fast-forwards it.
+  revealing: false,
+  skipping: false,
   ranked: false,
   riskyHit: false,
   needle: false,
@@ -107,11 +110,27 @@ const cardName = ({ rank, suit }) => `${RANK_NAMES[rank] ?? rank} of ${suit}`
 
 function cardElement(card, faceDown = false) {
   const wrapper = document.createElement('div')
-  wrapper.className = faceDown ? 'card down' : 'card'
   const img = document.createElement('img')
-  img.src = faceDown ? './assets/cards/back.svg' : cardPath(card)
-  img.alt = faceDown ? 'Face-down card' : cardName(card)
-  wrapper.append(img)
+  if (!faceDown) {
+    wrapper.className = 'card'
+    img.src = cardPath(card)
+    img.alt = cardName(card)
+    wrapper.append(img)
+    return wrapper
+  }
+  // Face down: a back and a blank face that turns over when revealed. The face
+  // image is only set at the reveal, so the page never holds the hole card early.
+  wrapper.className = 'card down'
+  const inner = document.createElement('div')
+  inner.className = 'card-inner'
+  img.className = 'card-back'
+  img.src = './assets/cards/back.svg'
+  img.alt = 'Face-down card'
+  const face = document.createElement('img')
+  face.className = 'card-face'
+  face.alt = ''
+  inner.append(img, face)
+  wrapper.append(inner)
   return wrapper
 }
 
@@ -512,7 +531,69 @@ function draw(hand, container, faceDown = false) {
 
 function updateCounts() {
   el.playerCount.textContent = handValue(state.player).total
-  el.dealerCount.textContent = state.done ? handValue(state.dealer).total : '?'
+}
+
+// ---- Dealer reveal pacing ----------------------------------------------------
+// A hand is settled (and saved) the moment it ends; the reveal only plays out
+// what already happened, so leaving mid-reveal can't dodge or forfeit a result.
+
+const PACE = { flip: 450, draw: 650, settle: 350 }
+let endPause = null
+
+// Wait `ms`, unless the player skips ahead.
+function pause(ms) {
+  if (state.skipping) return Promise.resolve()
+  return new Promise((resolve) => {
+    const timer = setTimeout(done, ms)
+    function done() {
+      clearTimeout(timer)
+      endPause = null
+      resolve()
+    }
+    endPause = done
+  })
+}
+
+function skipReveal() {
+  if (!state.revealing) return
+  state.skipping = true
+  endPause?.()
+}
+
+const showDealerTotal = (cards) => {
+  el.dealerCount.textContent = handValue(state.dealer.slice(0, cards)).total
+}
+
+// Turn the dealer's hole card (always the second card) face up.
+async function revealHoleCard() {
+  const hole = el.dealerCards.querySelector('.card.down:not(.flipped)')
+  if (!hole) return
+  const face = hole.querySelector('.card-face')
+  face.src = cardPath(state.dealer[1])
+  face.alt = cardName(state.dealer[1])
+  hole.querySelector('.card-back').alt = ''
+  // Flip onto a loaded image rather than a blank one.
+  await face.decode().catch(() => {})
+  if (state.skipping) hole.classList.add('instant')
+  hole.classList.add('flipped')
+}
+
+async function playDealerReveal() {
+  state.revealing = true
+  state.skipping = false
+  el.result.textContent = handValue(state.player).total > 21 ? 'Bust…' : 'Dealer’s turn…'
+  el.result.classList.add('pending')
+  await pause(PACE.flip)
+  await revealHoleCard()
+  showDealerTotal(2)
+  for (let i = el.dealerCards.children.length; i < state.dealer.length; i++) {
+    await pause(PACE.draw)
+    el.dealerCards.append(cardElement(state.dealer[i]))
+    showDealerTotal(i + 1)
+  }
+  await pause(PACE.settle)
+  el.result.classList.remove('pending')
+  state.revealing = false
 }
 
 function startRound() {
@@ -533,6 +614,7 @@ function startRound() {
   el.playerCards.replaceChildren()
   el.dealerCards.replaceChildren()
   el.result.textContent = ''
+  el.dealerCount.textContent = '?'
   el.playerCounter.classList.remove('winner')
   el.dealerCounter.classList.remove('winner')
   el.hit.hidden = el.stand.hidden = false
@@ -565,15 +647,10 @@ function hit() {
   else if (total === 21) stand()
 }
 
-// The hole card is always the dealer's second card.
-function revealHoleCard() {
-  el.dealerCards.querySelector('.down')?.replaceWith(cardElement(state.dealer[1]))
-}
-
+// The dealer plays out in state now; the table shows it card by card after.
 function stand() {
   if (state.done) return
-  revealHoleCard()
-  while (dealerShouldHit(state.dealer)) draw(state.dealer, el.dealerCards)
+  while (dealerShouldHit(state.dealer)) state.dealer.push(state.deck.pop())
   finish()
 }
 
@@ -589,16 +666,13 @@ function resultText(winner) {
   return isBlackjack(state.dealer) ? 'Dealer has blackjack' : 'Dealer wins'
 }
 
+// Settle and save the hand straight away, then play the dealer's reveal.
 function finish() {
   state.done = true
-  revealHoleCard()
+  el.hit.hidden = el.stand.hidden = true
   updateCounts()
 
   const winner = outcome(state.player, state.dealer)
-  el.result.textContent = resultText(winner)
-  if (winner !== 'dealer') el.playerCounter.classList.add('winner')
-  if (winner !== 'player') el.dealerCounter.classList.add('winner')
-
   const beforeRp = profile.rp
   if (state.ranked) sessionHands++
   const result = scoreRound(profile, {
@@ -616,10 +690,16 @@ function finish() {
     saveProfile()
     writeStorage(ROUND_KEY, null)
   }
+  playDealerReveal().then(() => showResult(winner, result, beforeRp))
+}
+
+function showResult(winner, result, beforeRp) {
+  el.result.textContent = resultText(winner)
+  if (winner !== 'dealer') el.playerCounter.classList.add('winner')
+  if (winner !== 'player') el.dealerCounter.classList.add('winner')
   renderRankChip(beforeRp)
   renderRoundScore(result, beforeRp)
 
-  el.hit.hidden = el.stand.hidden = true
   el.again.hidden = el.toSetup.hidden = false
   // Focus first: a celebration takes focus and hands it back when it closes.
   el.again.focus()
@@ -644,6 +724,8 @@ el.again.addEventListener('click', startRound)
 el.toSetup.addEventListener('click', showSetup)
 el.hit.addEventListener('click', hit)
 el.stand.addEventListener('click', stand)
+// pointerdown, not click: the click on Stand that starts a reveal mustn't skip it.
+el.game.addEventListener('pointerdown', skipReveal)
 el.clearStack.addEventListener('click', () => {
   state.stacked = []
   renderStack()
@@ -802,6 +884,11 @@ el.resetProgress.addEventListener('click', () => {
 window.addEventListener('keydown', (event) => {
   if (event.metaKey || event.ctrlKey || event.altKey || event.repeat) return
   if (el.badgesDialog.open || el.settingsDialog.open || isCelebrating()) return
+  // During the dealer's reveal any key skips to the result.
+  if (state.revealing) {
+    if (!['Shift', 'Control', 'Alt', 'Meta', 'Tab'].includes(event.key)) skipReveal()
+    return
+  }
 
   if (!el.pickerMenu.hidden) {
     if (event.key !== 'Escape') return

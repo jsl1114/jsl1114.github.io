@@ -1054,6 +1054,37 @@ kbd {
   margin-left: calc(var(--card-w) * -0.3);
 }
 
+/* The hole card turns over in 3D when the dealer reveals it. */
+.card.down {
+  perspective: 900px;
+}
+
+.card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.55s cubic-bezier(0.3, 0.7, 0.3, 1);
+}
+
+.card-inner img {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+}
+
+.card-inner .card-face {
+  transform: rotateY(180deg);
+}
+
+.card.flipped .card-inner {
+  transform: rotateY(180deg);
+}
+
+.card.instant .card-inner {
+  transition: none;
+}
+
 @keyframes deal {
   from {
     opacity: 0;
@@ -1073,6 +1104,20 @@ kbd {
   padding: 2px 18px;
   border-radius: 999px;
   background: var(--mustard);
+}
+
+/* While the dealer plays: a quieter pill that breathes. */
+.result.pending {
+  background: rgb(0 0 0 / 0.5);
+  color: var(--cream);
+  font-weight: 500;
+  animation: pending 1.2s ease-in-out infinite;
+}
+
+@keyframes pending {
+  50% {
+    opacity: 0.6;
+  }
 }
 
 .actions {
@@ -1102,7 +1147,12 @@ kbd {
 
 @media (prefers-reduced-motion: reduce) {
   .card,
-  .picker-menu {
+  .picker-menu,
+  .result.pending {
     animation: none;
+  }
+
+  .card-inner {
+    transition: none;
   }
 }

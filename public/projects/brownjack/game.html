@@ -99,6 +99,7 @@
         <button type="button" class="action primary" id="again" hidden>Play again <kbd>Enter</kbd></button>
         <button type="button" class="action" id="to-setup" hidden>Menu</button>
       </div>
+      <p class="coach" id="coach" aria-live="polite" hidden></p>
       <div class="round-score" id="round-score" hidden></div>
     </section>
   </main>
@@ -143,6 +144,16 @@
         <input type="checkbox" id="setting-haptics" />
         <span class="switch" aria-hidden="true"></span>
         Vibration
+      </label>
+    </section>
+
+    <section class="setting">
+      <h3>Strategy coach</h3>
+      <p>After each hit or stand, say whether it matched basic strategy. Your accuracy is tracked either way.</p>
+      <label class="toggle">
+        <input type="checkbox" id="setting-coach" />
+        <span class="switch" aria-hidden="true"></span>
+        Coach me
       </label>
     </section>
 

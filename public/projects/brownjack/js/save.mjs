@@ -9,7 +9,12 @@ export const SAVE_GAME = 'brownjack'
 export const SAVE_VERSION = 1
 export const MAX_SAVE_BYTES = 100_000
 
-const COUNTERS = ['rp', 'peakRp', 'games', 'wins', 'losses', 'pushes', 'streak', 'bestStreak', 'lossStreak', 'blackjacks', 'daredevilWins']
+// New counters go at the end: the checksum covers only the counters a save
+// actually has, so saves exported before a counter existed still verify.
+const COUNTERS = [
+  'rp', 'peakRp', 'games', 'wins', 'losses', 'pushes', 'streak', 'bestStreak', 'lossStreak', 'blackjacks', 'daredevilWins',
+  'decisions', 'goodDecisions', 'textbookStreak', 'bestTextbookStreak',
+]
 const BADGE_IDS = new Set(BADGES.map((badge) => badge.id))
 
 // FNV-1a over the profile's canonical JSON.
@@ -28,7 +33,8 @@ function canonical(profile) {
   const badges = Object.keys(profile.badges ?? {})
     .sort()
     .map((id) => [id, profile.badges[id]?.count, profile.badges[id]?.first])
-  return [...COUNTERS.map((key) => profile[key] ?? 0), badges, profile.showcase ?? []]
+  const counters = COUNTERS.filter((key) => key in profile).map((key) => profile[key])
+  return [...counters, badges, profile.showcase ?? []]
 }
 
 export function exportSave(profile, now = new Date()) {
@@ -77,6 +83,7 @@ export function parseSave(text) {
     }
     if (profile.peakRp < profile.rp) fail('The save’s rank points don’t add up.')
     if (profile.wins + profile.losses + profile.pushes > profile.games) fail('The save’s hand counts don’t add up.')
+    if (profile.goodDecisions > profile.decisions) fail('The save’s strategy stats don’t add up.')
 
     // Badges this version doesn't know about are dropped rather than failing the import.
     profile.badges = {}

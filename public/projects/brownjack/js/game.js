@@ -29,7 +29,9 @@ import {
 } from './ranked.mjs'
 import { celebrate, celebrateRank, glyphElement, isCelebrating } from './celebrate.mjs'
 import { MAX_SAVE_BYTES, exportSave, parseSave, saveFileName } from './save.mjs'
-import { buzz, canVibrate, getSettings, play, setSetting } from './sound.mjs'
+import { buzz, canVibrate, play } from './sound.mjs'
+import { getSettings, setSetting } from './prefs.mjs'
+import { bestMove, describeSpot } from './strategy.mjs'
 
 const $ = (id) => document.getElementById(id)
 const el = {
@@ -95,6 +97,8 @@ const el = {
   settingSound: $('setting-sound'),
   settingHaptics: $('setting-haptics'),
   hapticsRow: $('haptics-row'),
+  settingCoach: $('setting-coach'),
+  coach: $('coach'),
 }
 
 const SUIT_SYMBOLS = { spades: '♠', hearts: '♥', clubs: '♣', diamonds: '♦' }
@@ -117,6 +121,8 @@ const state = {
   // a new table, and storing it would let anyone read the upcoming cards.
   shoe: null,
   firstInShoe: false,
+  // One entry per hit/stand choice: did it match basic strategy?
+  decisions: [],
 }
 
 const cardPath = ({ rank, suit }) =>
@@ -439,6 +445,8 @@ function renderBadgesDialog() {
     ['Win rate', decided ? `${Math.round((100 * profile.wins) / decided)}%` : '—'],
     ['Best streak', profile.bestStreak],
     ['Blackjacks', profile.blackjacks],
+    ['Strategy', profile.decisions ? `${Math.round((100 * profile.goodDecisions) / profile.decisions)}%` : '—'],
+    ['Best textbook run', profile.bestTextbookStreak],
   ]
   el.stats.replaceChildren(
     ...stats.map(([label, value]) => {
@@ -632,6 +640,7 @@ function startRound() {
   Object.assign(state, {
     deck: ranked ? state.shoe.cards : buildDeck(state.stacked),
     firstInShoe: newShoe,
+    decisions: [],
     player: [],
     dealer: [],
     done: false,
@@ -647,6 +656,7 @@ function startRound() {
   el.dealerCards.replaceChildren()
   el.result.textContent = ''
   el.dealerCount.textContent = '?'
+  el.coach.hidden = true
   el.playerCounter.classList.remove('winner')
   el.dealerCounter.classList.remove('winner')
   el.hit.hidden = el.stand.hidden = false
@@ -671,8 +681,21 @@ function startRound() {
   if (isBlackjack(state.player) || isBlackjack(state.dealer)) finish()
 }
 
+// Check a choice against basic strategy, and have the coach say so if it's on.
+function recordDecision(move) {
+  const best = bestMove(state.player, state.dealer[0])
+  const correct = move === best
+  state.decisions.push(correct)
+  if (!getSettings().coach) return
+  const spot = describeSpot(state.player, state.dealer[0])
+  el.coach.textContent = correct ? `✓ Textbook: ${move} on ${spot}` : `✗ Basic strategy says ${best} on ${spot}`
+  el.coach.dataset.correct = String(correct)
+  el.coach.hidden = false
+}
+
 function hit() {
   if (state.done) return
+  recordDecision('hit')
   const before = handValue(state.player)
   draw(state.player, el.playerCards)
   play('deal')
@@ -685,12 +708,13 @@ function hit() {
     if (before.total >= 18 && total === 21) state.needle = true
   }
   if (total > 21) finish()
-  else if (total === 21) stand()
+  else if (total === 21) stand({ auto: true })
 }
 
 // The dealer plays out in state now; the table shows it card by card after.
-function stand() {
+function stand({ auto = false } = {}) {
   if (state.done) return
+  if (!auto) recordDecision('stand')
   while (dealerShouldHit(state.dealer)) state.dealer.push(state.deck.pop())
   finish()
 }
@@ -726,6 +750,7 @@ function finish() {
     at: Date.now(),
     sessionHands,
     firstInShoe: state.firstInShoe,
+    decisions: state.decisions,
     // The shoe has reached the cut card, so the next hand starts a new one.
     lastInShoe: state.ranked && needsShuffle(state.shoe),
   })
@@ -773,7 +798,7 @@ el.play.addEventListener('click', startRound)
 el.again.addEventListener('click', startRound)
 el.toSetup.addEventListener('click', showSetup)
 el.hit.addEventListener('click', hit)
-el.stand.addEventListener('click', stand)
+el.stand.addEventListener('click', () => stand())
 // pointerdown, not click: the click on Stand that starts a reveal mustn't skip it.
 el.game.addEventListener('pointerdown', skipReveal)
 el.clearStack.addEventListener('click', () => {
@@ -827,6 +852,7 @@ el.openSettings.addEventListener('click', () => {
   const prefs = getSettings()
   el.settingSound.checked = prefs.sound
   el.settingHaptics.checked = prefs.haptics
+  el.settingCoach.checked = prefs.coach
   el.hapticsRow.hidden = !canVibrate()
   clearImport()
   disarmReset()
@@ -846,6 +872,7 @@ el.settingSound.addEventListener('change', () => {
   setSetting('sound', el.settingSound.checked)
   if (el.settingSound.checked) play('common')
 })
+el.settingCoach.addEventListener('change', () => setSetting('coach', el.settingCoach.checked))
 el.settingHaptics.addEventListener('change', () => {
   setSetting('haptics', el.settingHaptics.checked)
   if (el.settingHaptics.checked) buzz('win')

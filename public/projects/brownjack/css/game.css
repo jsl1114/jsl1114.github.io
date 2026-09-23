@@ -582,6 +582,31 @@ kbd {
   background: var(--red);
 }
 
+.coach {
+  max-width: 92vw;
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.55);
+  font-size: 12px;
+  text-align: center;
+  animation: coach-in 0.25s ease-out;
+}
+
+.coach[data-correct='true'] {
+  color: greenyellow;
+}
+
+.coach[data-correct='false'] {
+  color: #ffb3a8;
+}
+
+@keyframes coach-in {
+  from {
+    opacity: 0;
+    translate: 0 4px;
+  }
+}
+
 .round-score {
   display: flex;
   flex-wrap: wrap;
@@ -1235,7 +1260,8 @@ kbd {
 @media (prefers-reduced-motion: reduce) {
   .card,
   .picker-menu,
-  .result.pending {
+  .result.pending,
+  .coach {
     animation: none;
   }
 

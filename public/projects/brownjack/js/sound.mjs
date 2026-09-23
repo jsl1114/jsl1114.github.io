@@ -1,39 +1,17 @@
-// sound.mjs — synthesized sound effects and vibration, with the player's
-// on/off preferences. Everything is generated with the Web Audio API, so there
-// are no audio files; outside a browser (or with no audio) every call is a no-op.
+// sound.mjs — synthesized sound effects and vibration, honouring the player's
+// preferences. Everything is generated with the Web Audio API, so there are no
+// audio files; outside a browser (or with no audio) every call is a no-op.
+import { getSettings } from './prefs.mjs'
 
-const SETTINGS_KEY = 'brownjack.settings.v1'
-const DEFAULTS = { sound: true, haptics: true }
 const VOLUME = 0.22
 
-let settings = loadSettings()
 let audio = null
-
-function loadSettings() {
-  try {
-    return { ...DEFAULTS, ...JSON.parse(globalThis.localStorage?.getItem(SETTINGS_KEY) ?? '{}') }
-  } catch {
-    return { ...DEFAULTS }
-  }
-}
-
-export const getSettings = () => ({ ...settings })
-
-export function setSetting(key, value) {
-  settings = { ...settings, [key]: value }
-  try {
-    globalThis.localStorage?.setItem(SETTINGS_KEY, JSON.stringify(settings))
-  } catch {
-    // Not persisted, but the choice still holds for this visit.
-  }
-  return getSettings()
-}
 
 export const canVibrate = () => typeof globalThis.navigator?.vibrate === 'function'
 
 // Browsers only allow audio after a user gesture; every sound here follows one.
 function context() {
-  if (!settings.sound) return null
+  if (!getSettings().sound) return null
   const AudioContext = globalThis.AudioContext ?? globalThis.webkitAudioContext
   if (!AudioContext) return null
   audio ??= new AudioContext()
@@ -128,7 +106,7 @@ const PATTERNS = {
 }
 
 export function buzz(name) {
-  if (!settings.haptics || !canVibrate()) return
+  if (!getSettings().haptics || !canVibrate()) return
   try {
     globalThis.navigator.vibrate(PATTERNS[name])
   } catch {

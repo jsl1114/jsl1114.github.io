@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { newProfile } from "../public/projects/brownjack/js/ranked.mjs";
+import { readFileSync } from "node:fs";
 import { checksum, exportSave, parseSave, saveFileName } from "../public/projects/brownjack/js/save.mjs";
 
 const played = {
@@ -71,4 +72,18 @@ test("saves from before a field existed still import with defaults", () => {
   assert.equal(result.error, undefined);
   assert.equal(result.profile.lossStreak, 0);
   assert.deepEqual(result.profile.showcase, []);
+});
+
+test("a save exported by an earlier version still imports", () => {
+  // Exported before the strategy counters existed; its checksum was computed then.
+  const text = readFileSync(new URL("./fixtures/brownjack-save-v1.json", import.meta.url), "utf8");
+  const result = parseSave(text);
+  assert.equal(result.error, undefined);
+  assert.equal(result.profile.rp, 640);
+  assert.equal(result.profile.decisions, 0);
+  assert.deepEqual(result.profile.showcase, ["heater"]);
+});
+
+test("strategy stats must add up", () => {
+  assert.match(parseSave(resigned((p) => { p.decisions = 3; p.goodDecisions = 5; })).error, /strategy stats/);
 });

@@ -111,6 +111,8 @@ test("badges unlock from hands, streaks and milestones, once where they should",
   assert.ok(unlocks(at(0), { ...win, lastInShoe: true }, "last-call"));
   assert.ok(!unlocks(at(0), { ...loss, lastInShoe: true }, "last-call"));
   assert.ok(unlocks(at(0), { ...win, player: hand(["A"], ["K"]), firstInShoe: true }, "fresh-start"));
+  assert.ok(unlocks(at(0, { textbookStreak: 9 }), { ...loss, decisions: [true, true] }, "quick-study"));
+  assert.ok(unlocks(at(0, { textbookStreak: 49 }), { ...win, decisions: [true] }, "textbook"));
 
   // Event badges count repeats; milestones unlock once.
   const once = scoreRound(at(0), { ...win, needle: true }).profile;
@@ -121,7 +123,7 @@ test("badges unlock from hands, streaks and milestones, once where they should",
 });
 
 test("there are about fifty badges, each fully described", () => {
-  assert.ok(BADGES.length >= 48 && BADGES.length <= 55, `${BADGES.length} badges`);
+  assert.ok(BADGES.length >= 48 && BADGES.length <= 60, `${BADGES.length} badges`);
   assert.equal(new Set(BADGES.map((b) => b.id)).size, BADGES.length);
   for (const badge of BADGES) {
     assert.ok(badge.name && badge.desc && badge.glyph, badge.id);
@@ -187,4 +189,13 @@ test("milestones a returning player already qualifies for are awarded on load", 
   assert.equal(profile.rp, 640, "no points change");
   assert.deepEqual(catchUpBadges(profile).earned, [], "nothing twice");
   assert.equal(catchUpBadges(at(0)).profile.badges["night-owl"], undefined);
+});
+
+test("strategy stats count decisions, and only mistakes break the textbook run", () => {
+  let p = scoreRound(at(0), { ...win, decisions: [true, true] }).profile;
+  assert.deepEqual([p.decisions, p.goodDecisions, p.textbookStreak], [2, 2, 1]);
+  p = scoreRound(p, { ...win, player: [card("A"), card("K")] }).profile; // a natural: no choice made
+  assert.equal(p.textbookStreak, 1);
+  p = scoreRound(p, { ...loss, decisions: [true, false] }).profile;
+  assert.deepEqual([p.decisions, p.goodDecisions, p.textbookStreak, p.bestTextbookStreak], [4, 3, 0, 1]);
 });

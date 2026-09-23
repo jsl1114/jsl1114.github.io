@@ -38,6 +38,12 @@ export const newProfile = () => ({
   lossStreak: 0,
   blackjacks: 0,
   daredevilWins: 0,
+  // Hit/stand decisions checked against basic strategy, and the run of hands
+  // played without a single mistake.
+  decisions: 0,
+  goodDecisions: 0,
+  textbookStreak: 0,
+  bestTextbookStreak: 0,
   badges: {},
   showcase: [],
 })
@@ -73,6 +79,7 @@ export function rankOf(rp) {
 // riskyHit: the player hit on a hard 17+; needle: that hit was on 18+ and landed on 21.
 // at: when the hand finished (for time-based badges); sessionHands: ranked hands this sitting.
 // firstInShoe / lastInShoe: the hand opened a new shoe / was the last before a reshuffle.
+// decisions: one boolean per hit/stand choice, true when it matched basic strategy.
 export function scoreRound(profile, round) {
   const before = rankOf(profile.rp)
   // Hard rule: a hand dealt from a deck the player arranged never moves rank
@@ -96,6 +103,14 @@ export function scoreRound(profile, round) {
 
   next.games++
   if (isBlackjack(player)) next.blackjacks++
+  // Hands with no choice to make (a natural, say) neither extend nor break the run.
+  const decisions = round.decisions ?? []
+  if (decisions.length) {
+    next.decisions += decisions.length
+    next.goodDecisions += decisions.filter(Boolean).length
+    next.textbookStreak = decisions.every(Boolean) ? next.textbookStreak + 1 : 0
+    next.bestTextbookStreak = Math.max(next.bestTextbookStreak, next.textbookStreak)
+  }
   if (round.winner === 'player') {
     next.wins++
     next.streak++

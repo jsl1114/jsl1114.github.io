@@ -1,0 +1,741 @@
+/* Badge unlock celebrations — one gesture per rarity, each building on the last:
+   Common fades in with a single ring, Rare pops in with rings and sparks, Epic
+   flips in over rotating rays, Legendary rises through a golden flash with rays,
+   a big spark burst and falling suits. */
+
+.celebration {
+  --accent: #4a90e2;
+  --dim: 0.5;
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  /* A dark pool behind the medal and text keeps them legible over any page. */
+  background:
+    radial-gradient(circle at 50% 50%, rgb(0 0 0 / 0.55), transparent 55%),
+    rgb(0 0 0 / var(--dim));
+  backdrop-filter: blur(3px);
+  color: var(--cream, antiquewhite);
+  text-shadow: 0 2px 8px rgb(0 0 0 / 0.6);
+  cursor: default;
+  outline: none;
+  user-select: none;
+  animation: celebration-in 0.3s ease-out both;
+}
+
+.celebration.unlocked {
+  cursor: pointer;
+}
+
+.celebration.common {
+  --accent: #6aa84f;
+  --dim: 0.45;
+}
+
+.celebration.epic {
+  --accent: #a45cff;
+  --dim: 0.6;
+}
+
+.celebration.legendary {
+  --accent: #ffb800;
+  --dim: 0.72;
+}
+
+.celebration.leaving {
+  animation: celebration-out 0.3s ease-in both;
+}
+
+@keyframes celebration-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes celebration-out {
+  to {
+    opacity: 0;
+  }
+}
+
+.celebration-card {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.celebration-kicker {
+  margin-top: 28px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  animation: celebration-rise 0.5s 0.35s ease-out both;
+}
+
+.celebration-name {
+  margin-top: 6px;
+  font-size: clamp(30px, 8vw, 46px);
+  line-height: 1.1;
+  animation: celebration-rise 0.5s 0.45s ease-out both;
+}
+
+.celebration-desc {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.5;
+  opacity: 0.85;
+  animation: celebration-rise 0.5s 0.55s ease-out both;
+}
+
+.celebration-note {
+  margin-top: 4px;
+  color: var(--accent);
+}
+
+.rank-up.tier .celebration-note {
+  animation-delay: 2.85s;
+}
+
+/* The hint appears once the lock has passed and the celebration can be closed. */
+.celebration-hint {
+  margin-top: 32px;
+  font-size: 11px;
+  opacity: 0;
+  transition: opacity 0.4s ease-out;
+}
+
+.celebration.unlocked .celebration-hint {
+  opacity: 0.6;
+  animation: hint-pulse 2s ease-in-out 0.4s infinite;
+}
+
+@keyframes hint-pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes celebration-rise {
+  from {
+    opacity: 0;
+    translate: 0 12px;
+  }
+}
+
+/* ---- The medal and the effects centered on it ------------------------------ */
+
+.medal {
+  position: relative;
+  width: 128px;
+  height: 128px;
+  display: grid;
+  place-items: center;
+}
+
+.celebration .badge-glyph {
+  position: relative;
+  z-index: 1;
+  width: 128px;
+  height: 128px;
+  border-width: 6px;
+  font-size: 34px;
+  box-shadow: 0 0 40px var(--accent);
+}
+
+.celebration .badge-glyph.long {
+  font-size: 24px;
+}
+
+.celebration.common .badge-glyph {
+  animation: medal-rise 0.5s ease-out both;
+}
+
+.celebration.rare .badge-glyph {
+  animation: medal-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.celebration.epic .badge-glyph {
+  animation: medal-flip 1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.celebration.legendary .badge-glyph {
+  animation:
+    medal-ascend 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s both,
+    medal-glow 1.6s ease-in-out 1.6s infinite;
+}
+
+@keyframes medal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.8);
+  }
+}
+
+@keyframes medal-pop {
+  from {
+    transform: scale(0);
+  }
+}
+
+@keyframes medal-flip {
+  from {
+    opacity: 0;
+    transform: perspective(600px) rotateY(540deg) scale(0.3);
+  }
+}
+
+@keyframes medal-ascend {
+  from {
+    opacity: 0;
+    transform: translateY(80px) scale(0.5);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-10px) scale(1.1);
+  }
+}
+
+@keyframes medal-glow {
+  50% {
+    box-shadow: 0 0 80px 10px var(--accent);
+  }
+}
+
+.ring {
+  position: absolute;
+  inset: 0;
+  border: 3px solid var(--accent);
+  border-radius: 50%;
+  opacity: 0;
+  animation: ring 1.3s ease-out var(--delay) both;
+}
+
+/* Rings and sparks stay invisible until their delay ends, then burst. */
+@keyframes ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  1% {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0;
+    transform: scale(3.2);
+  }
+}
+
+.spark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: var(--size);
+  height: var(--size);
+  margin: calc(var(--size) / -2);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  opacity: 0;
+  animation: spark 1.2s cubic-bezier(0.1, 0.8, 0.3, 1) var(--delay) both;
+}
+
+.legendary .spark:nth-child(3n) {
+  background: white;
+}
+
+@keyframes spark {
+  0% {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateX(0) scale(1);
+  }
+  1% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: rotate(var(--angle)) translateX(var(--distance)) scale(0.2);
+  }
+}
+
+.rays {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 620px;
+  height: 620px;
+  margin: -310px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    color-mix(in srgb, var(--accent) 50%, transparent) 0deg 7deg,
+    transparent 7deg 22deg
+  );
+  mask: radial-gradient(circle, black 12%, transparent 68%);
+  animation:
+    rays-in 0.9s ease-out both,
+    rays-spin 16s linear infinite;
+}
+
+.rays.reverse {
+  width: 460px;
+  height: 460px;
+  margin: -230px;
+  opacity: 0.7;
+  animation:
+    rays-in 0.9s ease-out 0.2s both,
+    rays-spin 24s linear infinite reverse;
+}
+
+@keyframes rays-in {
+  from {
+    opacity: 0;
+    scale: 0.3;
+  }
+}
+
+@keyframes rays-spin {
+  to {
+    rotate: 360deg;
+  }
+}
+
+/* ---- Screen-wide Legendary effects ----------------------------------------- */
+
+.celebration-fx {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.flash {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle, #fff6d0 0%, rgb(255 184 0 / 0.5) 30%, transparent 70%);
+  animation: flash 1s ease-out both;
+}
+
+@keyframes flash {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.suit-fall {
+  position: absolute;
+  top: -60px;
+  left: var(--x);
+  color: var(--color);
+  font-size: var(--size);
+  opacity: 0;
+  animation: suit-fall var(--duration) linear var(--delay) both;
+}
+
+@keyframes suit-fall {
+  10% {
+    opacity: 0.9;
+  }
+  to {
+    opacity: 0.9;
+    transform: translateY(calc(100svh + 120px)) rotate(var(--spin));
+  }
+}
+
+.celebration.legendary .celebration-name {
+  background: linear-gradient(90deg, #ffe27a, #fff, #ffb800, #fff, #ffe27a) 0 0 / 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  /* A text-shadow would bleed through the transparent fill; glow instead. */
+  text-shadow: none;
+  filter: drop-shadow(0 2px 10px rgb(255 184 0 / 0.45));
+  animation:
+    celebration-rise 0.5s 0.45s ease-out both,
+    shimmer 2.4s linear 1s infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---- Rank-ups ----------------------------------------------------------------
+   Division step: the tier's three divisions in a row; the link fills and the next
+   emblem lights up with a burst. Tier change: a coin with the old emblem on the
+   front and the new one on the back is tossed, spins and lands on the new face. */
+
+.rank-up {
+  --dim: 0.6;
+}
+
+.tier-bronze { --accent: #e3a36b; }
+.tier-silver { --accent: #dfe5ea; }
+.tier-gold { --accent: #ffd24a; }
+.tier-platinum { --accent: #5fe0cf; }
+.tier-diamond { --accent: #8cc6ff; }
+.tier-legend { --accent: #d68bff; }
+
+.rank-up.division { --burst-at: 1.25s; }
+.rank-up.tier { --burst-at: 2.5s; }
+
+.rank-up.division .celebration-kicker { animation-delay: 1.35s; }
+.rank-up.division .celebration-name { animation-delay: 1.45s; }
+.rank-up.division .celebration-desc { animation-delay: 1.55s; }
+.rank-up.tier .celebration-kicker { animation-delay: 2.55s; }
+.rank-up.tier .celebration-name { animation-delay: 2.65s; }
+.rank-up.tier .celebration-desc { animation-delay: 2.75s; }
+
+.division-row {
+  display: flex;
+  align-items: center;
+}
+
+.division-slot {
+  position: relative;
+  width: 88px;
+  height: 96px;
+  display: grid;
+  place-items: center;
+}
+
+.division-slot .emblem {
+  position: relative;
+  z-index: 1;
+  width: 72px;
+  font-size: 22px;
+}
+
+/* Base styles are each slot's final state; the animations supply the start. */
+.division-slot.is-passed .emblem { opacity: 0.85; }
+.division-slot.is-ahead .emblem { filter: grayscale(1); opacity: 0.3; }
+
+.division-slot.is-from .emblem {
+  opacity: 0.85;
+  animation: division-release 0.5s ease-out 1.1s both;
+}
+
+.division-slot.is-to .emblem {
+  scale: 1.25;
+  filter: drop-shadow(0 0 16px var(--accent));
+  animation: division-light 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) var(--burst-at) both;
+}
+
+@keyframes division-release {
+  from {
+    opacity: 1;
+    scale: 1.15;
+    filter: drop-shadow(0 0 14px var(--accent));
+  }
+}
+
+@keyframes division-light {
+  from {
+    opacity: 0.3;
+    scale: 1;
+    filter: grayscale(1);
+  }
+}
+
+.division-link {
+  position: relative;
+  width: 36px;
+  height: 4px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.2);
+}
+
+.division-link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  width: 0;
+  background: var(--accent);
+}
+
+.division-link.filled::after {
+  width: 100%;
+}
+
+.division-link.filling::after {
+  width: 100%;
+  animation: link-fill 0.55s ease-in-out 0.6s both;
+}
+
+@keyframes link-fill {
+  from {
+    width: 0;
+  }
+}
+
+.coin-stage {
+  width: 150px;
+  height: 165px;
+  perspective: 900px;
+}
+
+.coin {
+  position: relative;
+  z-index: 1;
+  width: 150px;
+  height: 165px;
+  transform-style: preserve-3d;
+  /* Final state: showing the back face, the new tier. No filter here: a filter
+     would flatten the 3D context and both faces would show at once. */
+  transform: rotateY(1980deg);
+  animation: coin-toss 2.2s 0.3s both;
+}
+
+/* Up with the spin fast, then falling and slowing to land on the new face. */
+@keyframes coin-toss {
+  0% {
+    transform: translateY(0) rotateY(0deg);
+    animation-timing-function: cubic-bezier(0.3, 0.6, 0.5, 1);
+  }
+  45% {
+    transform: translateY(-140px) rotateY(1080deg);
+    animation-timing-function: cubic-bezier(0.5, 0, 0.7, 0.4);
+  }
+  88% {
+    transform: translateY(6px) rotateY(1940deg);
+  }
+  100% {
+    transform: translateY(0) rotateY(1980deg);
+  }
+}
+
+.coin-face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  backface-visibility: hidden;
+}
+
+.coin-face.coin-back {
+  transform: rotateY(180deg);
+  filter: drop-shadow(0 0 24px var(--accent));
+}
+
+.coin-face .emblem {
+  width: 150px;
+  font-size: 44px;
+}
+
+.rank-up.tier .rays {
+  animation:
+    rays-in 0.9s ease-out var(--burst-at) both,
+    rays-spin 16s linear infinite;
+}
+
+.rank-up.tier .rays.reverse {
+  animation:
+    rays-in 0.9s ease-out calc(var(--burst-at) + 0.2s) both,
+    rays-spin 24s linear infinite reverse;
+}
+
+.to-legend .flash {
+  animation: flash-late 1.2s ease-out var(--burst-at) both;
+}
+
+@keyframes flash-late {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+.to-legend .celebration-name {
+  background: linear-gradient(90deg, #ffe27a, #fff, #d68bff, #fff, #ffe27a) 0 0 / 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 10px rgb(214 139 255 / 0.5));
+  animation:
+    celebration-rise 0.5s 2.65s ease-out both,
+    shimmer 2.4s linear 3s infinite;
+}
+
+/* ---- Unlocked tables and card backs --------------------------------------------
+   The reveal lands at --burst-at, when the rings, sparks and captions arrive. */
+
+.celebration.unlock {
+  --accent: #ffdb58;
+  --burst-at: 1.05s;
+}
+
+.unlock-stage .ring {
+  inset: 0 auto auto 50%;
+  width: 170px;
+  height: 170px;
+  margin-left: -85px;
+}
+
+.unlock .celebration-kicker { animation-delay: 1.1s; }
+.unlock .celebration-name { animation-delay: 1.2s; }
+.unlock .celebration-desc { animation-delay: 1.3s; }
+
+.unlock-stage {
+  position: relative;
+  width: 240px;
+  height: 170px;
+  display: grid;
+  place-items: center;
+  perspective: 900px;
+}
+
+.unlock-stage .rays {
+  animation:
+    rays-in 0.9s ease-out var(--burst-at) both,
+    rays-spin 16s linear infinite;
+}
+
+/* Card back: rise in face down (the wrapper), then turn over (the card). */
+.unlock-rise {
+  position: relative;
+  z-index: 1;
+  perspective: 900px;
+  animation: unlock-rise 1.3s cubic-bezier(0.3, 0.7, 0.3, 1) both;
+}
+
+@keyframes unlock-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(60px) scale(0.8);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  55% {
+    transform: translateY(-14px) scale(1.04);
+  }
+}
+
+.unlock-card {
+  position: relative;
+  width: 104px;
+  height: 151px;
+  transform-style: preserve-3d;
+  transform: rotateY(180deg);
+  animation: unlock-turn 1.3s cubic-bezier(0.3, 0.7, 0.3, 1) both;
+}
+
+@keyframes unlock-turn {
+  0%,
+  55% {
+    transform: rotateY(0deg);
+  }
+}
+
+.unlock-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.5);
+}
+
+.unlock-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.unlock-face.new {
+  transform: rotateY(180deg);
+  box-shadow: 0 0 36px var(--accent), 0 12px 30px rgb(0 0 0 / 0.5);
+}
+
+/* The Legendary back keeps its shimmer here too. */
+.unlock-face.new.shimmer {
+  -webkit-mask: linear-gradient(115deg, #000 40%, rgb(0 0 0 / 0.75) 50%, #000 60%) -150% 0 / 250% 100%;
+  mask: linear-gradient(115deg, #000 40%, rgb(0 0 0 / 0.75) 50%, #000 60%) -150% 0 / 250% 100%;
+  animation: shimmer-mask 2.6s ease-in-out 1.4s infinite;
+}
+
+@keyframes shimmer-mask {
+  60%,
+  100% {
+    -webkit-mask-position: 150% 0;
+    mask-position: 150% 0;
+  }
+}
+
+/* Table: a tabletop in a bark-brown rail that opens from the centre. */
+.unlock-table {
+  position: relative;
+  z-index: 1;
+  width: 220px;
+  height: 132px;
+  overflow: hidden;
+  border: 7px solid #492612;
+  border-radius: 18px;
+  box-shadow: 0 0 36px var(--accent), inset 0 0 18px rgb(0 0 0 / 0.55), 0 12px 30px rgb(0 0 0 / 0.5);
+  animation: unlock-table-in 0.5s ease-out both;
+}
+
+@keyframes unlock-table-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+.unlock-felt {
+  position: absolute;
+  inset: 0;
+  animation: unlock-felt 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both;
+}
+
+@keyframes unlock-felt {
+  from {
+    clip-path: inset(0 50% 0 50%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.unlock-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 35%, rgb(255 244 210 / 0.55) 50%, transparent 65%) -150% 0 / 250% 100% no-repeat;
+  animation: sheen 1s ease-in-out 1.05s both;
+}
+
+@keyframes sheen {
+  to {
+    background-position: 150% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .celebration *,
+  .celebration .badge-glyph {
+    animation: none !important;
+  }
+
+  .coin,
+  .unlock-card {
+    transform: rotateY(180deg);
+  }
+
+  .celebration-fx,
+  .ring,
+  .spark {
+    display: none;
+  }
+}

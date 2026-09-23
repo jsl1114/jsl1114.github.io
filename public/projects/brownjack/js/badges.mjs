@@ -139,6 +139,13 @@ export const BADGES = [
   { id: 'constellation', category: 'Rank', rarity: 'Legendary', glyph: '★5', name: 'Constellation', desc: 'Reach Legend ★5.', once: true,
     check: (x) => x.peak.tierIndex === 5 && x.peak.stars >= 5, goal: peakGoal(2000) },
 
+  // Checked when a season ends (see seasons.mjs), not after a hand.
+  { id: 'seasoned', category: 'Rank', rarity: 'Rare', glyph: 'S3', name: 'Seasoned', desc: 'Play ranked hands in three different seasons.', once: true,
+    check: (x) => Boolean(x.endedSeason) && x.next.seasons.length + (x.next.seasonGames > 0 ? 1 : 0) >= 3,
+    goal: (p) => [Math.min((p.seasons?.length ?? 0) + (p.seasonGames > 0 ? 1 : 0), 3), 3] },
+  { id: 'season-legend', category: 'Rank', rarity: 'Legendary', glyph: '★S', name: 'Season Legend', desc: 'Finish a season at Legend.',
+    check: (x) => Boolean(x.endedSeason) && x.endedRank.tierIndex === 5 },
+
   // ---- Special --------------------------------------------------------------
   { id: 'night-owl', category: 'Special', rarity: 'Rare', glyph: '☾', name: 'Night Owl', desc: 'Play a ranked hand between 2 and 5 a.m.', once: true,
     check: (x) => {

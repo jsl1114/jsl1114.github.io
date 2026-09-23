@@ -46,6 +46,7 @@ import {
   shareText,
   totalScore,
 } from './daily.mjs'
+import { daysLeft, rollSeason, seasonId, seasonName } from './seasons.mjs'
 
 const $ = (id) => document.getElementById(id)
 const el = {
@@ -80,6 +81,8 @@ const el = {
   rankName: $('rank-name'),
   rankBar: $('rank-bar'),
   rankMeta: $('rank-meta'),
+  rankSeason: $('rank-season'),
+  seasonMedals: $('season-medals'),
   notice: $('notice'),
   openBadges: $('open-badges'),
   badgeCount: $('badge-count'),
@@ -386,8 +389,26 @@ function renderRank() {
   el.rankMeta.textContent = `${rank.progress} / ${POINTS_PER_DIVISION} RP${
     rank.tier === 'Legend' ? ' to next star' : ''
   } · ${profile.wins}W ${profile.losses}L ${profile.pushes}P`
+  const days = daysLeft(profile.season)
+  el.rankSeason.textContent = `Season ${profile.season} · ${days} day${days === 1 ? '' : 's'} left`
   el.badgeCount.textContent = `${Object.keys(profile.badges).length}/${BADGES.length}`
   renderShowcase(el.showcase)
+}
+
+// Move into the current season if a new one has started: soft-reset the rank,
+// keep the old season as a medal, and say what happened.
+function applySeason() {
+  const rolled = rollSeason(profile, seasonId())
+  if (rolled.profile === profile) return null
+  profile = rolled.profile
+  saveProfile()
+  for (const id of rolled.earned) celebrate(badgeById(id))
+  if (!rolled.ended) return null
+  const { id, peakRp, finalRp } = rolled.ended
+  return (
+    `Season ${id} is over: you finished ${rankOf(finalRp).name} (peak ${rankOf(peakRp).name}). ` +
+    `${seasonName(profile.season).split(' · ')[0]} starts you at ${rankOf(profile.rp).name}.`
+  )
 }
 
 // The badges a player pinned, shown beside their rank.
@@ -537,6 +558,7 @@ function renderBadgesDialog() {
     ['Hands', profile.games],
     ['Win rate', decided ? `${Math.round((100 * profile.wins) / decided)}%` : '—'],
     ['Best streak', profile.bestStreak],
+    ['Season peak', rankOf(Math.max(profile.seasonPeakRp, profile.rp)).name],
     ['Blackjacks', profile.blackjacks],
     ['Strategy', profile.decisions ? `${Math.round((100 * profile.goodDecisions) / profile.decisions)}%` : '—'],
     ['Best textbook run', profile.bestTextbookStreak],
@@ -553,6 +575,22 @@ function renderBadgesDialog() {
     }),
   )
 
+  const medals = [...(profile.seasons ?? [])].reverse()
+  el.seasonMedals.hidden = medals.length === 0
+  el.seasonMedals.replaceChildren(
+    ...(medals.length ? [Object.assign(document.createElement('h3'), { textContent: 'Season medals' })] : []),
+    ...medals.map((season) => {
+      const item = document.createElement('div')
+      item.className = 'medal-row'
+      const emblem = document.createElement('span')
+      emblem.className = 'emblem mini'
+      renderEmblem(emblem, rankOf(season.peakRp))
+      const text = document.createElement('span')
+      text.textContent = `${seasonName(season.id)}: peak ${rankOf(season.peakRp).name}, finished ${rankOf(season.finalRp).name}`
+      item.append(emblem, text)
+      return item
+    }),
+  )
   const showcase = profile.showcase ?? []
   el.showcaseHint.textContent = `Pin up to ${SHOWCASE_SIZE} earned badges to show beside your rank · ${showcase.length}/${SHOWCASE_SIZE} pinned`
   el.badgeSections.replaceChildren(
@@ -785,6 +823,8 @@ function startRound({ daily = false } = {}) {
   const mode = daily ? 'daily' : state.stacked.length ? 'rigged' : 'ranked'
   const ranked = mode === 'ranked'
   // A rigged game deals its own stacked deck and leaves the shoe alone.
+  // A season can turn over mid-visit; the next ranked hand starts it.
+  const seasonNote = ranked ? applySeason() : null
   const newShoe = ranked && needsShuffle(state.shoe)
   if (newShoe) state.shoe = createShoe()
   if (daily) openDailyShoe()
@@ -823,6 +863,7 @@ function startRound({ daily = false } = {}) {
     play('shuffle')
     el.result.textContent = 'New shoe shuffled'
   }
+  if (seasonNote) el.result.textContent = `${seasonName(profile.season).split(' · ')[0]} has begun`
   for (let i = 0; i < 4; i++) play('deal', { at: newShoe ? 0.5 + i * 0.08 : i * 0.08 })
   renderShoe()
   updateCounts()
@@ -1334,6 +1375,13 @@ el.confirmImport.addEventListener('click', () => {
   if (!pendingImport) return
   const caughtUp = catchUpBadges(pendingImport.profile)
   profile = caughtUp.profile
+  // An imported save from an earlier season rolls into this one.
+  const importNote = applySeason()
+  if (importNote) {
+    el.notice.classList.add('info')
+    el.notice.textContent = importNote
+    el.notice.hidden = false
+  }
   // A save from another device can't have a hand in progress here.
   writeStorage(ROUND_KEY, null)
   const stored = saveProfile()
@@ -1360,6 +1408,7 @@ el.resetProgress.addEventListener('click', () => {
   }
   profile = newProfile()
   saveProfile()
+  applySeason()
   renderRank()
   applyTable()
   renderCosmetics()
@@ -1413,6 +1462,14 @@ if (readStorage(ROUND_KEY)) {
   el.notice.hidden = false
 }
 
+const seasonNote = applySeason()
+if (seasonNote) {
+  // Keep an abandoned-hand notice alongside it (and its warning colour).
+  el.notice.classList.toggle('info', el.notice.hidden)
+  el.notice.textContent = el.notice.hidden ? seasonNote : `${el.notice.textContent} ${seasonNote}`
+  el.notice.hidden = false
+}
+
 const caughtUp = catchUpBadges(profile)
 if (caughtUp.earned.length) {
   profile = caughtUp.profile
@@ -1429,6 +1486,7 @@ if (today?.inHand) {
   }
   dailyHistory[dailyKey()] = { rounds: day.rounds, drawn: day.drawn }
   saveDailyHistory()
+  el.notice.classList.remove('info')
   el.notice.textContent = `Your daily hand was left unfinished and counted as a loss (${formatScore(-atStake)}).`
   el.notice.hidden = false
 }

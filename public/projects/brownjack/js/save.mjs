@@ -14,6 +14,7 @@ export const MAX_SAVE_BYTES = 100_000
 const COUNTERS = [
   'rp', 'peakRp', 'games', 'wins', 'losses', 'pushes', 'streak', 'bestStreak', 'lossStreak', 'blackjacks', 'daredevilWins',
   'decisions', 'goodDecisions', 'textbookStreak', 'bestTextbookStreak',
+  'season', 'seasonPeakRp', 'seasonGames',
 ]
 const BADGE_IDS = new Set(BADGES.map((badge) => badge.id))
 
@@ -34,7 +35,8 @@ function canonical(profile) {
     .sort()
     .map((id) => [id, profile.badges[id]?.count, profile.badges[id]?.first])
   const counters = COUNTERS.filter((key) => key in profile).map((key) => profile[key])
-  return [...counters, badges, profile.showcase ?? []]
+  const seasons = 'seasons' in profile ? [(profile.seasons ?? []).map((s) => [s?.id, s?.peakRp, s?.finalRp])] : []
+  return [...counters, badges, profile.showcase ?? [], ...seasons]
 }
 
 export function exportSave(profile, now = new Date()) {
@@ -84,6 +86,13 @@ export function parseSave(text) {
     if (profile.peakRp < profile.rp) fail('The save’s rank points don’t add up.')
     if (profile.wins + profile.losses + profile.pushes > profile.games) fail('The save’s hand counts don’t add up.')
     if (profile.goodDecisions > profile.decisions) fail('The save’s strategy stats don’t add up.')
+    if (profile.seasonGames > profile.games) fail('The save’s season stats don’t add up.')
+    const seasons = saved.seasons ?? []
+    if (!Array.isArray(seasons)) fail('The save’s seasons are invalid.')
+    profile.seasons = seasons.map((s) => {
+      if (![s?.id, s?.peakRp, s?.finalRp].every(isCount) || s.finalRp > s.peakRp) fail('The save’s seasons are invalid.')
+      return { id: s.id, peakRp: s.peakRp, finalRp: s.finalRp }
+    })
 
     // Badges this version doesn't know about are dropped rather than failing the import.
     profile.badges = {}

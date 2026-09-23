@@ -484,6 +484,40 @@ kbd {
   font-size: 11px;
 }
 
+.rank-season {
+  margin-top: 1px;
+  opacity: 0.8;
+}
+
+.notice.info {
+  background: rgb(73 38 18 / 0.08);
+  color: var(--bark);
+}
+
+.season-medals {
+  margin-bottom: 16px;
+}
+
+.season-medals h3 {
+  margin-bottom: 8px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.medal-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 12px;
+}
+
+.medal-row .emblem.mini {
+  width: 26px;
+  font-size: 9px;
+}
+
 .notice {
   padding: 8px 10px;
   border-radius: 6px;

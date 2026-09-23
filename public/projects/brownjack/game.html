@@ -32,6 +32,7 @@
             <p class="rank-name" id="rank-name"></p>
             <div class="rank-bar"><span id="rank-bar"></span></div>
             <p class="rank-meta" id="rank-meta"></p>
+            <p class="rank-meta rank-season" id="rank-season"></p>
           </div>
         </div>
         <div class="showcase" id="showcase" hidden></div>
@@ -120,6 +121,7 @@
       <button type="button" class="close" id="close-badges" aria-label="Close">×</button>
     </div>
     <dl class="stats" id="stats"></dl>
+    <div class="season-medals" id="season-medals" hidden></div>
     <p class="showcase-hint" id="showcase-hint"></p>
     <div id="badge-sections"></div>
     <details class="how">
@@ -134,6 +136,11 @@
       </table>
       <p id="bonus-list"></p>
       <p>Closing the page mid-hand counts as a loss.</p>
+      <p>
+        Each calendar month (UTC) is a season. When a new one starts you drop one tier from the start
+        of your division, and the season you finished is kept as a medal. Badges, stats and unlocked
+        tables and card backs are never reset.
+      </p>
     </details>
   </dialog>
 

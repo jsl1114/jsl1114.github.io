@@ -44,6 +44,12 @@ export const newProfile = () => ({
   goodDecisions: 0,
   textbookStreak: 0,
   bestTextbookStreak: 0,
+  // The current season (0 until the first one is joined), its best RP and hands,
+  // and a medal for every finished season: { id, peakRp, finalRp }.
+  season: 0,
+  seasonPeakRp: 0,
+  seasonGames: 0,
+  seasons: [],
   badges: {},
   showcase: [],
 })
@@ -113,6 +119,7 @@ export function scoreRound(profile, round) {
   const overall = round.forfeit ? 'dealer' : handsWon > handsLost ? 'player' : handsLost > handsWon ? 'dealer' : 'push'
 
   next.games++
+  next.seasonGames = (next.seasonGames ?? 0) + 1
   if (natural) next.blackjacks++
   // Hands with no choice to make (a natural, say) neither extend nor break the run.
   const decisions = round.decisions ?? []
@@ -166,6 +173,7 @@ export function scoreRound(profile, round) {
   const delta = lines.reduce((sum, line) => sum + line.points, 0)
   next.rp = Math.max(0, profile.rp + delta)
   next.peakRp = Math.max(profile.peakRp, next.rp)
+  next.seasonPeakRp = Math.max(profile.seasonPeakRp ?? 0, next.rp)
   next.bestStreak = Math.max(profile.bestStreak, next.streak)
 
   const after = rankOf(next.rp)

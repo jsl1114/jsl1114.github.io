@@ -123,7 +123,7 @@ test("badges unlock from hands, streaks and milestones, once where they should",
 });
 
 test("there are about fifty badges, each fully described", () => {
-  assert.ok(BADGES.length >= 48 && BADGES.length <= 60, `${BADGES.length} badges`);
+  assert.ok(BADGES.length >= 48 && BADGES.length <= 65, `${BADGES.length} badges`);
   assert.equal(new Set(BADGES.map((b) => b.id)).size, BADGES.length);
   for (const badge of BADGES) {
     assert.ok(badge.name && badge.desc && badge.glyph, badge.id);

@@ -2,7 +2,8 @@
 // these describe this device, not the player's progress.
 
 const SETTINGS_KEY = 'brownjack.settings.v1'
-const DEFAULTS = { sound: true, haptics: true, coach: false, table: 'oak', cardBack: 'classic' }
+// unlocksSeen: ids of tables and backs already announced (null until first run).
+const DEFAULTS = { sound: true, haptics: true, coach: false, table: 'oak', cardBack: 'classic', unlocksSeen: null }
 
 let settings = loadSettings()
 

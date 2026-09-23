@@ -27,15 +27,16 @@ import {
   rankOf,
   scoreRound,
 } from './ranked.mjs'
-import { celebrate, celebrateRank, glyphElement, isCelebrating } from './celebrate.mjs'
+import { celebrate, celebrateRank, celebrateUnlock, fillEmblem, glyphElement, isCelebrating } from './celebrate.mjs'
 import { MAX_SAVE_BYTES, exportSave, parseSave, saveFileName } from './save.mjs'
 import { buzz, canVibrate, play } from './sound.mjs'
 import { getSettings, setSetting } from './prefs.mjs'
 import { bestMove, describeSpot } from './strategy.mjs'
-import { CARD_BACKS, TABLES, isUnlocked, selected, unlockTier, unlocksAt } from './cosmetics.mjs'
+import { CARD_BACKS, TABLES, byRank, progress, selected, unlockedIds, unlocksAt } from './cosmetics.mjs'
 import {
   DAILY_HANDS,
   cleanDay,
+  dailyRecord,
   dailyKey,
   dailyNumber,
   dailyShoe,
@@ -172,8 +173,11 @@ function cardElement(card, faceDown = false) {
   wrapper.className = 'card down'
   const inner = document.createElement('div')
   inner.className = 'card-inner'
+  const back = currentBack()
+  wrapper.dataset.back = back.id
+  if (back.shimmer) wrapper.classList.add('shimmer')
   img.className = 'card-back'
-  img.src = `./assets/cards/${currentBack().file}`
+  img.src = `./assets/cards/${back.file}`
   img.alt = 'Face-down card'
   const face = document.createElement('img')
   face.className = 'card-face'
@@ -331,19 +335,37 @@ let beforePeak = 0
 
 // ---- Cosmetics -----------------------------------------------------------------
 
-const peakTier = () => rankOf(profile.peakRp).tierIndex
-const currentBack = () => selected(CARD_BACKS, getSettings().cardBack, peakTier())
+// What the unlock conditions read: the profile and the daily-challenge record.
+const collectionContext = () => ({ profile, daily: dailyRecord(dailyHistory) })
+const currentBack = () => selected(CARD_BACKS, getSettings().cardBack, collectionContext())
 
 function applyTable() {
-  document.documentElement.dataset.table = selected(TABLES, getSettings().table, peakTier()).id
+  document.documentElement.dataset.table = selected(TABLES, getSettings().table, collectionContext()).id
+}
+
+// Celebrate tables and backs unlocked since last time. Rank unlocks are already
+// named on the tier-up celebration, so only the others get their own.
+function announceUnlocks() {
+  const now = unlockedIds(collectionContext())
+  const seen = getSettings().unlocksSeen
+  setSetting('unlocksSeen', [...new Set([...(seen ?? []), ...now])])
+  // The first run with this feature takes everything already unlocked as known.
+  if (!seen) return
+  for (const id of now.filter((unlockedId) => !seen.includes(unlockedId))) {
+    const table = TABLES.find((t) => t.id === id)
+    const item = table ?? CARD_BACKS.find((b) => b.id === id)
+    if (byRank(item)) continue
+    celebrateUnlock(item, table ? 'table' : 'back', progress(item, collectionContext()).text)
+  }
 }
 
 function renderCosmetics() {
-  const tier = peakTier()
+  const context = collectionContext()
   const picker = (container, list, key, current) =>
     container.replaceChildren(
       ...list.map((item) => {
-        const unlocked = isUnlocked(item, tier)
+        const state = progress(item, context)
+        const unlocked = state.unlocked
         const button = document.createElement('button')
         button.type = 'button'
         button.className = 'swatch'
@@ -354,9 +376,16 @@ function renderCosmetics() {
         if (key === 'table') preview.dataset.table = item.id
         else preview.style.backgroundImage = `url('./assets/cards/${item.file}')`
         const label = document.createElement('span')
-        label.textContent = unlocked ? item.name : `🔒 ${unlockTier(item)}`
-        button.title = unlocked ? item.name : `${item.name}: reach ${unlockTier(item)} to unlock`
+        label.className = 'swatch-name'
+        label.textContent = unlocked ? item.name : `🔒 ${item.name}`
+        button.title = unlocked ? item.name : `${item.name}: ${state.text}`
         button.append(preview, label)
+        if (!unlocked) {
+          const how = document.createElement('small')
+          how.className = 'swatch-how'
+          how.textContent = state.status ? `${state.text} · ${state.status}` : state.text
+          button.append(how)
+        }
         button.addEventListener('click', () => {
           setSetting(key, item.id)
           applyTable()
@@ -366,16 +395,13 @@ function renderCosmetics() {
         return button
       }),
     )
-  picker(el.tablePicker, TABLES, 'table', selected(TABLES, getSettings().table, tier))
+  picker(el.tablePicker, TABLES, 'table', selected(TABLES, getSettings().table, context))
   picker(el.backPicker, CARD_BACKS, 'cardBack', currentBack())
 }
 
 const signed = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '±0')
 
-function renderEmblem(node, rank) {
-  node.dataset.tier = rank.tier.toLowerCase()
-  node.textContent = rank.division ?? `★${rank.stars}`
-}
+const renderEmblem = fillEmblem
 
 function renderRank() {
   const rank = rankOf(profile.rp)
@@ -670,6 +696,7 @@ function togglePin(id) {
   renderBadgesDialog()
   el.badgeSections.querySelector(`[data-pin="${id}"]`)?.focus()
   for (const earned of result.earned) celebrate(badgeById(earned))
+  announceUnlocks()
 }
 
 // ---- The round -------------------------------------------------------------
@@ -1075,7 +1102,10 @@ function showResult(winners, result, beforeRp) {
   if (dailyOver) showDailyShare(el.game)
   // Focus first: a celebration takes focus and hands it back when it closes.
   ;(dailyOver ? el.shareDaily : el.again).focus()
-  if (result.daily) return
+  if (result.daily) {
+    if (dailyOver) announceUnlocks()
+    return
+  }
   // A promotion (or a new Legend star) plays first, then the hand's badges.
   const step = (rp) => Math.floor(rp / POINTS_PER_DIVISION)
   if (!result.unranked && step(result.profile.rp) > step(beforeRp)) {
@@ -1084,6 +1114,7 @@ function showResult(winners, result, beforeRp) {
     celebrateRank(result.before, result.after, { note: newTier ? `Unlocked: ${unlocksAt(result.after.tierIndex)}` : '' })
   }
   for (const id of result.earned) celebrate(badgeById(id))
+  announceUnlocks()
 }
 
 // ---- Daily challenge -------------------------------------------------------------
@@ -1387,6 +1418,7 @@ el.confirmImport.addEventListener('click', () => {
   renderRank()
   applyTable()
   renderCosmetics()
+  announceUnlocks()
   setStatus(
     stored
       ? `Save imported: ${describe(profile)}.`
@@ -1556,4 +1588,7 @@ renderStack()
 renderRank()
 applyTable()
 renderDailyButton()
+// Play is where the start screen puts you; celebrations hand focus back to it.
+el.play.focus()
 for (const id of caughtUp.earned) celebrate(badgeById(id))
+announceUnlocks()

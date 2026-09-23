@@ -26,6 +26,8 @@
     }
     .dev-btn.plain { padding: 8px 14px; }
     .dev-row .emblem { width: 22px; font-size: 8px; }
+    .dev-swatch { width: 22px; height: 22px; border-radius: 50%; background: var(--table-bg) center / cover; filter: var(--table-filter); }
+    .dev-swatch:not([data-table]) { background: center / cover; filter: none; }
     .dev-btn:hover { background: var(--mustard); }
   </style>
   <script type="module" src="js/dev-test.js"></script>
@@ -40,6 +42,8 @@
       <div class="dev-row" id="division-steps"></div>
       <h2>Rank-ups · new tier</h2>
       <div class="dev-row" id="tier-flips"></div>
+      <h2>Unlocks · tables &amp; card backs</h2>
+      <div class="dev-row" id="unlocks"></div>
       <h2>Badges by rarity</h2>
       <div class="dev-row" id="by-rarity"></div>
       <h2>Every badge</h2>

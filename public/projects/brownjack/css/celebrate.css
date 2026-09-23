@@ -567,13 +567,171 @@
     shimmer 2.4s linear 3s infinite;
 }
 
+/* ---- Unlocked tables and card backs --------------------------------------------
+   The reveal lands at --burst-at, when the rings, sparks and captions arrive. */
+
+.celebration.unlock {
+  --accent: #ffdb58;
+  --burst-at: 1.05s;
+}
+
+.unlock-stage .ring {
+  inset: 0 auto auto 50%;
+  width: 170px;
+  height: 170px;
+  margin-left: -85px;
+}
+
+.unlock .celebration-kicker { animation-delay: 1.1s; }
+.unlock .celebration-name { animation-delay: 1.2s; }
+.unlock .celebration-desc { animation-delay: 1.3s; }
+
+.unlock-stage {
+  position: relative;
+  width: 240px;
+  height: 170px;
+  display: grid;
+  place-items: center;
+  perspective: 900px;
+}
+
+.unlock-stage .rays {
+  animation:
+    rays-in 0.9s ease-out var(--burst-at) both,
+    rays-spin 16s linear infinite;
+}
+
+/* Card back: rise in face down (the wrapper), then turn over (the card). */
+.unlock-rise {
+  position: relative;
+  z-index: 1;
+  perspective: 900px;
+  animation: unlock-rise 1.3s cubic-bezier(0.3, 0.7, 0.3, 1) both;
+}
+
+@keyframes unlock-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(60px) scale(0.8);
+  }
+  30% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  55% {
+    transform: translateY(-14px) scale(1.04);
+  }
+}
+
+.unlock-card {
+  position: relative;
+  width: 104px;
+  height: 151px;
+  transform-style: preserve-3d;
+  transform: rotateY(180deg);
+  animation: unlock-turn 1.3s cubic-bezier(0.3, 0.7, 0.3, 1) both;
+}
+
+@keyframes unlock-turn {
+  0%,
+  55% {
+    transform: rotateY(0deg);
+  }
+}
+
+.unlock-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 8px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 0.5);
+}
+
+.unlock-face img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.unlock-face.new {
+  transform: rotateY(180deg);
+  box-shadow: 0 0 36px var(--accent), 0 12px 30px rgb(0 0 0 / 0.5);
+}
+
+/* The Legendary back keeps its shimmer here too. */
+.unlock-face.new.shimmer {
+  -webkit-mask: linear-gradient(115deg, #000 40%, rgb(0 0 0 / 0.75) 50%, #000 60%) -150% 0 / 250% 100%;
+  mask: linear-gradient(115deg, #000 40%, rgb(0 0 0 / 0.75) 50%, #000 60%) -150% 0 / 250% 100%;
+  animation: shimmer-mask 2.6s ease-in-out 1.4s infinite;
+}
+
+@keyframes shimmer-mask {
+  60%,
+  100% {
+    -webkit-mask-position: 150% 0;
+    mask-position: 150% 0;
+  }
+}
+
+/* Table: a tabletop in a bark-brown rail that opens from the centre. */
+.unlock-table {
+  position: relative;
+  z-index: 1;
+  width: 220px;
+  height: 132px;
+  overflow: hidden;
+  border: 7px solid #492612;
+  border-radius: 18px;
+  box-shadow: 0 0 36px var(--accent), inset 0 0 18px rgb(0 0 0 / 0.55), 0 12px 30px rgb(0 0 0 / 0.5);
+  animation: unlock-table-in 0.5s ease-out both;
+}
+
+@keyframes unlock-table-in {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+}
+
+.unlock-felt {
+  position: absolute;
+  inset: 0;
+  background: var(--table-bg);
+  filter: var(--table-filter);
+  animation: unlock-felt 0.7s cubic-bezier(0.4, 0, 0.2, 1) 0.4s both;
+}
+
+@keyframes unlock-felt {
+  from {
+    clip-path: inset(0 50% 0 50%);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.unlock-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(115deg, transparent 35%, rgb(255 244 210 / 0.55) 50%, transparent 65%) -150% 0 / 250% 100% no-repeat;
+  animation: sheen 1s ease-in-out 1.05s both;
+}
+
+@keyframes sheen {
+  to {
+    background-position: 150% 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .celebration *,
   .celebration .badge-glyph {
     animation: none !important;
   }
 
-  .coin {
+  .coin,
+  .unlock-card {
     transform: rotateY(180deg);
   }
 

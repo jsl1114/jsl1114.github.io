@@ -10,7 +10,7 @@ import { buzz, play } from './sound.mjs'
 
 // How long each celebration ignores clicks and keys, in ms: long enough to land
 // the animation's main beat.
-const LOCK = { common: 800, rare: 1000, epic: 1300, legendary: 1800, division: 1800, tier: 2800, legend: 3000 }
+const LOCK = { common: 800, rare: 1000, epic: 1300, legendary: 1800, division: 1800, tier: 2800, legend: 3000, unlock: 1300 }
 const MODIFIER_KEYS = new Set(['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Fn'])
 const SPARKS = { common: 0, rare: 10, epic: 18, legendary: 28 }
 const RINGS = { common: 1, rare: 2, epic: 3, legendary: 3 }
@@ -30,11 +30,41 @@ export function glyphElement(badge) {
 }
 
 // The hexagon rank emblem (styled by .emblem[data-tier] in game.css).
+// Legend plates draw each star up to this many (fewer on small plates, where
+// more wouldn't be legible); beyond it they show a count.
+export const MAX_DRAWN_STARS = 9
+const MAX_DRAWN_STARS_SMALL = 3
+
+// Fill a rank plate: the division numeral, or a Legend's stars (drawn one by
+// one up to nine, in up to three rows; "★12" from ten on; a hollow star at zero).
+export function fillEmblem(emblem, rank) {
+  emblem.dataset.tier = rank.tier.toLowerCase()
+  delete emblem.dataset.stars
+  emblem.removeAttribute('aria-label')
+  if (rank.division) {
+    emblem.textContent = rank.division
+    return
+  }
+  const { stars } = rank
+  const limit = emblem.classList.contains('mini') ? MAX_DRAWN_STARS_SMALL : MAX_DRAWN_STARS
+  if (stars === 0 || stars > limit) {
+    emblem.textContent = stars ? `★${stars}` : '☆'
+    return
+  }
+  const rows = stars <= 3 ? 1 : stars <= 6 ? 2 : 3
+  const grid = document.createElement('span')
+  grid.className = 'stars'
+  grid.style.setProperty('--per-row', Math.ceil(stars / rows))
+  grid.append(...Array.from({ length: stars }, () => Object.assign(document.createElement('span'), { textContent: '★' })))
+  emblem.dataset.stars = stars
+  emblem.replaceChildren(grid)
+  emblem.setAttribute('aria-label', rank.name)
+}
+
 export function emblemElement(rank) {
   const emblem = document.createElement('span')
   emblem.className = 'emblem'
-  emblem.dataset.tier = rank.tier.toLowerCase()
-  emblem.textContent = rank.division ?? `★${rank.stars}`
+  fillEmblem(emblem, rank)
   return emblem
 }
 
@@ -155,6 +185,49 @@ function buildTierFlip(from, to, note) {
   card.append(stage)
   captions(card, legend ? 'You are a Legend' : 'New tier', to.name, `${from.name} → ${to.name}`, note)
   overlay.append(screenFx, card)
+  return overlay
+}
+
+// A new table or card back: `kind` is 'table' or 'back', `how` what unlocked it.
+export function celebrateUnlock(item, kind, how) {
+  return enqueue(() => buildUnlock(item, kind, how), LOCK.unlock, 'epic', 'badge')
+}
+
+// A card back: a face-down Classic card rises and turns over to show the new
+// back. A table: a framed tabletop opens from the centre, then a sheen crosses it.
+function buildUnlock(item, kind, how) {
+  const label = kind === 'table' ? 'table' : 'card back'
+  const overlay = overlayElement(`epic unlock unlock-for-${kind}`, `New ${label} unlocked: ${item.name}`)
+  const stage = node('div', 'unlock-stage')
+  stage.append(node('div', 'rays'))
+  rings(stage, 2)
+  sparks(stage, 18, 100)
+  if (kind === 'table') {
+    const top = node('div', 'unlock-table')
+    const felt = node('span', 'unlock-felt')
+    felt.dataset.table = item.id
+    top.append(felt, node('span', 'unlock-sheen'))
+    stage.append(top)
+  } else {
+    const card = node('div', 'unlock-card')
+    // Faces are divs around the images, as on the rank coin: a bare <img> doesn't
+    // reliably hide its back face mid-flip.
+    const face = (file, className) => {
+      const wrapper = node('div', className)
+      wrapper.append(Object.assign(node('img'), { src: `./assets/cards/${file}`, alt: '' }))
+      return wrapper
+    }
+    card.append(face('back.svg', 'unlock-face old'), face(item.file, `unlock-face new${item.shimmer ? ' shimmer' : ''}`))
+    // The rise and fade live on a flat wrapper: animating opacity on the 3D card
+    // itself would flatten it, and both faces would show.
+    const rise = node('div', 'unlock-rise')
+    rise.append(card)
+    stage.append(rise)
+  }
+  const card = node('div', 'celebration-card')
+  card.append(stage)
+  captions(card, `New ${label} unlocked`, item.name, how, 'Choose it in Settings')
+  overlay.append(node('div', 'celebration-fx'), card)
   return overlay
 }
 

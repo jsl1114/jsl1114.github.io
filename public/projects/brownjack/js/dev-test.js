@@ -1,6 +1,8 @@
 // dev-test.js — buttons that replay every celebration: rank-ups and badges (dev only).
 import { BADGES, CATEGORIES, LEGEND_AT, POINTS_PER_DIVISION, rankOf } from './ranked.mjs'
-import { celebrate, celebrateRank, emblemElement, glyphElement } from './celebrate.mjs'
+import { celebrate, celebrateRank, celebrateUnlock, emblemElement, glyphElement } from './celebrate.mjs'
+import { CARD_BACKS, TABLES, byRank, progress } from './cosmetics.mjs'
+import { newProfile } from './ranked.mjs'
 
 function devButton(icon, label, onClick) {
   const button = document.createElement('button')
@@ -30,6 +32,20 @@ document.getElementById('division-steps').append(
 )
 document.getElementById('tier-flips').append(
   ...promotions.filter(([from, to]) => from.tier !== to.tier).map(rankButton),
+)
+
+// Achievement unlocks (rank ones are named on the tier-up celebration instead).
+const empty = { profile: newProfile(), daily: { bestStreak: 0, completed: 0 } }
+const unlockButton = (item, kind) => {
+  const icon = document.createElement('span')
+  icon.className = 'dev-swatch'
+  if (kind === 'table') icon.dataset.table = item.id
+  else icon.style.backgroundImage = `url('./assets/cards/${item.file}')`
+  return devButton(icon, `${item.name} · ${kind}`, () => celebrateUnlock(item, kind, progress(item, empty).text))
+}
+document.getElementById('unlocks').append(
+  ...TABLES.filter((t) => !byRank(t)).map((t) => unlockButton(t, 'table')),
+  ...CARD_BACKS.filter((b) => !byRank(b)).map((b) => unlockButton(b, 'back')),
 )
 
 const rarities = ['Common', 'Rare', 'Epic', 'Legendary']

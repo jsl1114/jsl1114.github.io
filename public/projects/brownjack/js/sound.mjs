@@ -107,6 +107,8 @@ const PATTERNS = {
 
 export function buzz(name) {
   if (!getSettings().haptics || !canVibrate()) return
+  // Browsers refuse (and complain) until the player has touched the page.
+  if (globalThis.navigator.userActivation && !globalThis.navigator.userActivation.hasBeenActive) return
   try {
     globalThis.navigator.vibrate(PATTERNS[name])
   } catch {

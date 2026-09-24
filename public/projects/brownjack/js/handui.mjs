@@ -3,8 +3,9 @@
 import { featureName, isHallOfFame, oneIn } from './handodds.mjs'
 
 // The hand's grade as one letter among the round's other chips; tapping it
-// shows why. A rare hand (S or better) arrives locked: it pulses until tapped,
-// and `onReveal` runs once it has been.
+// shows why. A rare hand (S or better) arrives locked, in a spotlight: the rest
+// of the screen goes dark and taps elsewhere only nudge it, until it's tapped
+// and `onReveal` runs.
 export function gradeChip(record, { onReveal } = {}) {
   const chip = document.createElement('button')
   chip.type = 'button'
@@ -14,7 +15,8 @@ export function gradeChip(record, { onReveal } = {}) {
   chip.append(
     Object.assign(document.createElement('span'), { className: 'grade-letter', textContent: record.grade }),
     Object.assign(document.createElement('span'), { className: 'grade-detail', textContent: why }),
-    Object.assign(document.createElement('span'), { className: 'grade-hint', textContent: 'Rare hand! Tap' }),
+    Object.assign(document.createElement('span'), { className: 'grade-hint', textContent: 'Rare hand! Tap to reveal' }),
+    ...['a', 'b', 'c', 'd'].map((spot) => Object.assign(document.createElement('span'), { className: `grade-spark spark-${spot}`, ariaHidden: 'true' })),
   )
   let locked = isHallOfFame(record.grade)
   const expand = (open) => {
@@ -27,10 +29,34 @@ export function gradeChip(record, { onReveal } = {}) {
     if (!locked) return expand(chip.getAttribute('aria-expanded') !== 'true')
     locked = false
     chip.classList.replace('locked', 'revealed')
+    clearSpotlight()
     expand(true)
     onReveal?.()
   })
+  // Once it's on the page: bring it into view, and catch taps everywhere else.
+  if (locked) requestAnimationFrame(() => chip.isConnected && spotlight(chip))
   return chip
+}
+
+let catcher = null
+
+function spotlight(chip) {
+  clearSpotlight()
+  chip.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  catcher = document.createElement('div')
+  catcher.className = 'spotlight-catch'
+  catcher.addEventListener('pointerdown', (event) => {
+    event.preventDefault()
+    // A chip that's gone (the player left the table) lets go of the screen.
+    if (chip.isConnected && chip.offsetParent) nudge(chip)
+    else clearSpotlight()
+  })
+  document.body.append(catcher)
+}
+
+export function clearSpotlight() {
+  catcher?.remove()
+  catcher = null
 }
 
 // Nudge a locked chip when something tries to get past it.

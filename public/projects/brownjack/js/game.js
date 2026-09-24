@@ -72,7 +72,7 @@ import {
 } from './daily.mjs'
 import { daysLeft, rollSeason, seasonId, seasonName } from './seasons.mjs'
 import { featureName, isHallOfFame, oneIn, rateHand } from './handodds.mjs'
-import { gradeChip, nudge, showToast } from './handui.mjs'
+import { clearSpotlight, gradeChip, nudge, showToast } from './handui.mjs'
 import { addToHall, rankHall } from './halloffame.mjs'
 import { GAME_URL, canvasBlob, drawShareCard, headline } from './sharecard.mjs'
 
@@ -1271,6 +1271,7 @@ function startRound({ daily = false } = {}) {
   el.again.hidden = el.toSetup.hidden = el.shareHand.hidden = true
   state.gradeLock = false
   el.again.classList.remove('waiting')
+  clearSpotlight()
 
   const arriving = el.game.hidden
   el.start.hidden = true
@@ -1880,6 +1881,7 @@ function nextRound() {
 
 function showSetup({ keepNotice = false } = {}) {
   disarmLeave()
+  clearSpotlight()
   if (!keepNotice) el.notice.hidden = true
   state.done = true
   el.dailyDone.hidden = true

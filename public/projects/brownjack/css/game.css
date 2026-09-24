@@ -1879,9 +1879,61 @@ kbd {
   display: inline;
 }
 
+/* A rare hand's chip, locked: the rest of the screen goes dark (its own huge
+   shadow), gold rays turn behind it and a sheen crosses it. Layers, bottom up:
+   the shadow, the rays (::before), the pill with its sheen (::after), the text. */
+.grade-pill.locked,
+.grade-pill.revealed {
+  position: relative;
+  z-index: 32;
+}
+
 .grade-pill.locked {
-  padding-right: 10px;
-  animation: grade-pulse 1.4s ease-in-out infinite;
+  padding: 4px 14px 4px 4px;
+  background: transparent;
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.8);
+  font-size: 13px;
+  animation: spotlight-in 0.6s ease-out;
+}
+
+.grade-pill.revealed {
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0);
+  transition: box-shadow 0.5s ease-out;
+}
+
+.grade-pill.locked::before,
+.grade-pill.revealed::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: -1;
+  width: 280px;
+  height: 280px;
+  margin: -140px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(rgb(255 219 88 / 0.4) 0deg 8deg, transparent 8deg 24deg);
+  -webkit-mask: radial-gradient(closest-side, #000 25%, transparent);
+  mask: radial-gradient(closest-side, #000 25%, transparent);
+  pointer-events: none;
+  animation: rays-turn 14s linear infinite;
+}
+
+.grade-pill.revealed::before {
+  animation: rays-flare 0.8s ease-out forwards;
+}
+
+.grade-pill.locked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    linear-gradient(110deg, transparent 35%, rgb(255 255 255 / 0.6) 50%, transparent 65%) -150% 0 / 250% 100% no-repeat,
+    rgb(36 18 7 / 0.96);
+  box-shadow: 0 0 0 2px var(--grade), 0 0 26px 4px var(--grade);
+  animation: sheen 2.4s ease-in-out 0.4s infinite;
 }
 
 .grade-pill.locked .grade-hint {
@@ -1890,30 +1942,61 @@ kbd {
 }
 
 .grade-pill.locked .grade-letter {
-  animation: grade-shine 1.4s ease-in-out infinite;
+  box-shadow: 0 0 12px 2px var(--grade);
 }
 
-.grade-pill.revealed .grade-letter {
-  animation: grade-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1);
+/* Four sparkles twinkle around the locked chip. */
+.grade-spark {
+  display: none;
 }
+
+.grade-pill.locked .grade-spark {
+  position: absolute;
+  display: block;
+  width: 10px;
+  height: 10px;
+  background: var(--mustard);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  pointer-events: none;
+  animation: twinkle 1.6s ease-in-out infinite;
+}
+
+.spark-a { top: -12px; left: 18%; }
+.spark-b { bottom: -12px; left: 62%; animation-delay: 0.4s !important; }
+.spark-c { top: -8px; right: -10px; animation-delay: 0.8s !important; }
+.spark-d { bottom: -6px; left: -12px; animation-delay: 1.2s !important; }
 
 .grade-pill.nudge {
   animation: grade-nudge 0.4s ease-in-out;
 }
 
-@keyframes grade-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 var(--grade); transform: scale(1); }
-  50% { box-shadow: 0 0 0 6px transparent, 0 0 18px 2px var(--grade); transform: scale(1.08); }
+/* Taps anywhere but the chip, while it's locked, only nudge it. */
+.spotlight-catch {
+  position: fixed;
+  inset: 0;
+  z-index: 31;
 }
 
-@keyframes grade-shine {
-  0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(1.35); }
+@keyframes spotlight-in {
+  from { box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0); }
 }
 
-@keyframes grade-pop {
-  0% { transform: scale(0.4) rotate(-20deg); }
-  100% { transform: scale(1) rotate(0); }
+@keyframes rays-turn {
+  to { rotate: 360deg; }
+}
+
+@keyframes rays-flare {
+  to { scale: 2.2; opacity: 0; }
+}
+
+@keyframes sheen {
+  0% { background-position: -150% 0, 0 0; }
+  55%, 100% { background-position: 250% 0, 0 0; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0; scale: 0.3; rotate: 0deg; }
+  50% { opacity: 1; scale: 1; rotate: 45deg; }
 }
 
 @keyframes grade-nudge {
@@ -1924,9 +2007,10 @@ kbd {
 
 @media (prefers-reduced-motion: reduce) {
   .grade-pill.locked,
-  .grade-pill.locked .grade-letter {
+  .grade-pill.locked::before,
+  .grade-pill.locked::after,
+  .grade-pill.locked .grade-spark {
     animation: none;
-    box-shadow: 0 0 0 2px var(--grade);
   }
 }
 

@@ -24,6 +24,7 @@ import {
   TIERS,
   WIN_POINTS,
   catchUpBadges,
+  moveShowcase,
   newProfile,
   pinBadge,
   rankOf,
@@ -131,6 +132,7 @@ const el = {
   stats: $('stats'),
   badgeSections: $('badge-sections'),
   showcaseHint: $('showcase-hint'),
+  showcaseSlots: $('showcase-slots'),
   showcase: $('showcase'),
   chipShowcase: $('chip-showcase'),
   pointsTable: $('points-table'),
@@ -760,12 +762,13 @@ function renderStatsDialog() {
 
 function renderBadgesDialog() {
   renderCollection(el.collection)
-  const showcase = profile.showcase ?? []
-  el.showcaseHint.textContent = `Pin up to ${SHOWCASE_SIZE} earned badges to show beside your rank · ${showcase.length}/${SHOWCASE_SIZE} pinned`
+  renderShowcaseEditor()
   renderBadgeTabs()
-  el.badgeSections.replaceChildren(
-    ...CATEGORIES.filter((category) => badgeTab === 'All' || badgeTab === category).map((category) => {
+  const earnedOnly = badgeTab === 'Earned'
+  const sections = CATEGORIES.filter((category) => earnedOnly || badgeTab === 'All' || badgeTab === category).map((category) => {
       const badges = BADGES.filter((badge) => badge.category === category)
+      const shown = earnedOnly ? badges.filter((b) => profile.badges[b.id]) : badges
+      if (!shown.length) return null
       const section = document.createElement('section')
       section.className = 'badge-section'
       const heading = document.createElement('h3')
@@ -774,12 +777,127 @@ function renderBadgesDialog() {
       heading.append(category, count)
       const grid = document.createElement('ul')
       grid.className = 'badge-grid'
-      grid.append(...badges.map(badgeItem))
+      grid.append(...shown.map(badgeItem))
       section.append(heading, grid)
       return section
+    }).filter(Boolean)
+  el.badgeSections.replaceChildren(
+    ...(sections.length
+      ? sections
+      : [Object.assign(document.createElement('p'), { className: 'showcase-hint', textContent: 'No badges yet. Play a few hands to earn some.' })]),
+  )
+}
+
+// ---- The showcase editor ---------------------------------------------------
+
+// One slot per showcase place, in order. A pinned badge can be dragged to another
+// slot, moved with the arrow keys, or taken out with × (or Delete).
+function renderShowcaseEditor() {
+  const showcase = profile.showcase ?? []
+  el.showcaseHint.textContent = showcase.length
+    ? `${showcase.length}/${SHOWCASE_SIZE} · drag to reorder`
+    : `Pin up to ${SHOWCASE_SIZE} earned badges below to show beside your rank`
+  el.showcaseSlots.replaceChildren(
+    ...Array.from({ length: SHOWCASE_SIZE }, (_, i) => {
+      const badge = badgeById(showcase[i])
+      const slot = document.createElement('li')
+      if (!badge) {
+        slot.className = 'slot empty'
+        slot.textContent = 'Empty'
+        return slot
+      }
+      slot.className = `slot filled ${badge.rarity.toLowerCase()}`
+      slot.dataset.slot = badge.id
+      slot.tabIndex = 0
+      slot.setAttribute(
+        'aria-label',
+        `${badge.name}, place ${i + 1} of ${showcase.length}. Arrow keys move it, Delete removes it.`,
+      )
+      const name = Object.assign(document.createElement('span'), { className: 'slot-name', textContent: badge.name })
+      const remove = document.createElement('button')
+      remove.type = 'button'
+      remove.className = 'slot-remove'
+      remove.textContent = '×'
+      remove.setAttribute('aria-label', `Remove ${badge.name} from your showcase`)
+      remove.addEventListener('click', () => unpinFromShowcase(badge.id))
+      slot.append(glyphElement(badge), name, remove)
+      slot.addEventListener('keydown', (event) => {
+        const moves = { ArrowLeft: i - 1, ArrowUp: i - 1, ArrowRight: i + 1, ArrowDown: i + 1, Home: 0, End: showcase.length - 1 }
+        if (event.key in moves) {
+          event.preventDefault()
+          reorderShowcase(badge.id, moves[event.key])
+        } else if (event.key === 'Delete' || event.key === 'Backspace') {
+          event.preventDefault()
+          unpinFromShowcase(badge.id)
+        }
+      })
+      slot.addEventListener('pointerdown', (event) => startSlotDrag(event, slot, badge.id))
+      return slot
     }),
   )
+}
 
+function reorderShowcase(id, to) {
+  const next = moveShowcase(profile, id, to)
+  if (next === profile) return
+  profile = next
+  saveProfile()
+  renderRank()
+  renderShowcaseEditor()
+  el.showcaseSlots.querySelector(`[data-slot="${id}"]`)?.focus()
+}
+
+// Keep focus in the editor, on the badge that slid into the freed place (or the
+// last one). With the showcase empty, fall back to the badge's Pin button.
+function unpinFromShowcase(id) {
+  const index = profile.showcase.indexOf(id)
+  const result = pinBadge(profile, id)
+  profile = result.profile
+  saveProfile()
+  renderRank()
+  renderBadgesDialog()
+  const slots = el.showcaseSlots.querySelectorAll('.slot.filled')
+  ;(slots[Math.min(index, slots.length - 1)] ?? el.badgeSections.querySelector(`[data-pin="${id}"]`))?.focus()
+}
+
+// Drag with a mouse, pen or finger: the badge follows the pointer and drops into
+// the slot whose centre is nearest. A press that barely moves isn't a drag.
+function startSlotDrag(event, slot, id) {
+  if (event.button !== 0 || event.target.closest('.slot-remove')) return
+  const slots = [...el.showcaseSlots.querySelectorAll('.slot.filled')]
+  const centres = slots.map((s) => {
+    const rect = s.getBoundingClientRect()
+    return rect.left + rect.width / 2
+  })
+  const startX = event.clientX
+  const startY = event.clientY
+  let dragging = false
+  let target = slots.indexOf(slot)
+  slot.setPointerCapture(event.pointerId)
+
+  const move = (e) => {
+    const dx = e.clientX - startX
+    const dy = e.clientY - startY
+    if (!dragging && Math.hypot(dx, dy) < 5) return
+    dragging = true
+    slot.classList.add('dragging')
+    slot.style.transform = `translate(${dx}px, ${dy}px)`
+    target = centres.reduce((best, c, i) => (Math.abs(c - e.clientX) < Math.abs(centres[best] - e.clientX) ? i : best), 0)
+    slots.forEach((s, i) => s.classList.toggle('drop-target', i === target && s !== slot))
+  }
+  const end = (e) => {
+    slot.removeEventListener('pointermove', move)
+    slot.removeEventListener('pointerup', end)
+    slot.removeEventListener('pointercancel', end)
+    if (!dragging) return
+    slot.style.transform = ''
+    slot.classList.remove('dragging')
+    slots.forEach((s) => s.classList.remove('drop-target'))
+    if (e.type === 'pointerup') reorderShowcase(id, target)
+  }
+  slot.addEventListener('pointermove', move)
+  slot.addEventListener('pointerup', end)
+  slot.addEventListener('pointercancel', end)
 }
 
 // ---- Collection points and badge tabs ----------------------------------------------
@@ -823,10 +941,10 @@ function renderCollection(container) {
 let badgeTab = 'All'
 
 function renderBadgeTabs() {
-  const tabs = ['All', ...CATEGORIES]
+  const tabs = ['All', 'Earned', ...CATEGORIES]
   el.badgeTabs.replaceChildren(
     ...tabs.map((tab) => {
-      const badges = BADGES.filter((b) => tab === 'All' || b.category === tab)
+      const badges = BADGES.filter((b) => tab === 'All' || tab === 'Earned' || b.category === tab)
       const button = document.createElement('button')
       button.type = 'button'
       button.className = 'badge-tab'

@@ -8,6 +8,7 @@ import {
   WIN_POINTS,
   catchUpBadges,
   newProfile,
+  moveShowcase,
   pinBadge,
   rankOf,
   SHOWCASE_SIZE,
@@ -164,6 +165,15 @@ test("the showcase holds up to five earned badges and pinning one earns Show-Off
   assert.deepEqual(pinBadge(profile, "sevens").profile.showcase, ids.slice(0, 5), "a sixth pin is refused");
   assert.deepEqual(pinBadge(profile, "twins").profile.showcase, ["natural", "heater", "flush", "charlie"], "unpin");
   assert.deepEqual(pinBadge(at(0), "inferno").profile.showcase, [], "locked badges can't be pinned");
+});
+
+test("a pinned badge can be moved to another slot in the showcase", () => {
+  const profile = at(0, { showcase: ["natural", "twins", "heater", "flush"] });
+  assert.deepEqual(moveShowcase(profile, "flush", 0).showcase, ["flush", "natural", "twins", "heater"]);
+  assert.deepEqual(moveShowcase(profile, "natural", 2).showcase, ["twins", "heater", "natural", "flush"]);
+  assert.deepEqual(moveShowcase(profile, "twins", 9).showcase, ["natural", "heater", "flush", "twins"], "past the end lands last");
+  assert.equal(moveShowcase(profile, "twins", 1), profile, "same slot is a no-op");
+  assert.equal(moveShowcase(profile, "sevens", 0), profile, "unpinned badges don't move");
 });
 
 test("hard rule: a stacked deck never wins or loses points, stats, streaks or badges", () => {

@@ -231,3 +231,14 @@ export function pinBadge(profile, id, now = Date.now()) {
   }
   return { profile: next, earned }
 }
+
+// Move a pinned badge to another slot in the showcase; the rest shift to make room.
+export function moveShowcase(profile, id, to) {
+  const showcase = profile.showcase ?? []
+  const from = showcase.indexOf(id)
+  const slot = Math.max(0, Math.min(to, showcase.length - 1))
+  if (from === -1 || from === slot) return profile
+  const next = showcase.filter((b) => b !== id)
+  next.splice(slot, 0, id)
+  return { ...profile, showcase: next }
+}

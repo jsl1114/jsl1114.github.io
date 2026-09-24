@@ -625,23 +625,28 @@ kbd {
   color: var(--walnut);
 }
 
-/* A dot on the line for each step: filled once reached. */
-.ladder-step::before {
+/* A dot on the line for each step: filled once reached. It hangs off the name
+   so it stays level with it when the bar and tag wrap onto a second row, and
+   is centred on the line (17px left: the 16px padding plus half the 2px border). */
+.ladder-name::before {
   content: '';
   position: absolute;
-  left: -22px;
-  width: 10px;
-  height: 10px;
+  top: 50%;
+  left: -17px;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
   border: 2px solid rgb(73 38 18 / 0.3);
   border-radius: 50%;
   background: var(--cream);
+  transform: translate(-50%, -50%);
 }
 
 .ladder-step.done {
   color: var(--bark);
 }
 
-.ladder-step.done::before {
+.ladder-step.done .ladder-name::before {
   border-color: var(--bark);
   background: var(--bark);
 }
@@ -650,13 +655,14 @@ kbd {
   font-weight: 700;
 }
 
-.ladder-step.now::before {
+.ladder-step.now .ladder-name::before {
   border-color: var(--mustard);
   background: var(--mustard);
   box-shadow: 0 0 0 3px rgb(255 219 88 / 0.35);
 }
 
 .ladder-name {
+  position: relative;
   min-width: 96px;
 }
 

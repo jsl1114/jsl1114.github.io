@@ -48,6 +48,7 @@ import {
   TABLES,
   TOTAL_POINTS,
   byRank,
+  isUnlocked,
   collectionPoints,
   nextTable,
   progress,
@@ -106,7 +107,13 @@ const el = {
   rankSeason: $('rank-season'),
   seasonMedals: $('season-medals'),
   collection: $('collection'),
-  settingsCollection: $('settings-collection'),
+  openAppearance: $('open-appearance'),
+  settingsAppearance: $('settings-appearance'),
+  appearanceDialog: $('appearance-dialog'),
+  closeAppearance: $('close-appearance'),
+  appearanceCollection: $('appearance-collection'),
+  appearanceTabs: $('appearance-tabs'),
+  appearanceSections: $('appearance-sections'),
   badgeTabs: $('badge-tabs'),
   openRoadmap: $('open-roadmap'),
   roadmapDialog: $('roadmap-dialog'),
@@ -153,9 +160,7 @@ const el = {
   settingHaptics: $('setting-haptics'),
   hapticsRow: $('haptics-row'),
   settingCoach: $('setting-coach'),
-  tablePicker: $('table-picker'),
   tableArt: $('table-art'),
-  backPicker: $('back-picker'),
   coach: $('coach'),
 }
 
@@ -167,7 +172,7 @@ const state = {
   stacked: [],
   deck: [],
   // The player's hands: one, or two after a split. Each is
-  // { cards, doubled, done, fromAces, riskyHit, needle, view }.
+  // { cards, doubled, done, fromAces, riskyHit, needle, hailMary, view }.
   hands: [],
   active: 0,
   dealer: [],
@@ -413,10 +418,37 @@ function announceUnlocks() {
   }
 }
 
+// Appearance: tables and card backs on their own tabs, each in groups by how
+// they're unlocked. The tab holds while the page is open.
+let appearanceTab = 'table'
+
+const badgeRarity = (item) => BADGES.find((b) => b.id === item.unlock[1]).rarity
+const APPEARANCE = {
+  table: {
+    label: 'Tables',
+    list: TABLES,
+    groups: [
+      ['Rank', (t) => byRank(t)],
+      ['Collection', (t) => !byRank(t)],
+    ],
+  },
+  cardBack: {
+    label: 'Card backs',
+    list: CARD_BACKS,
+    groups: [
+      ['Rank', (b) => byRank(b)],
+      ['Epic badges', (b) => !byRank(b) && badgeRarity(b) === 'Epic'],
+      ['Legendary badges', (b) => !byRank(b) && badgeRarity(b) === 'Legendary'],
+    ],
+  },
+}
+
 function renderCosmetics() {
   const context = collectionContext()
-  const picker = (container, list, key, current) =>
-    container.replaceChildren(
+  const picker = (list, key, current) => {
+    const container = document.createElement('div')
+    container.className = `swatches${key === 'cardBack' ? ' backs' : ''}`
+    container.append(
       ...list.map((item) => {
         const state = progress(item, context)
         const unlocked = state.unlocked
@@ -448,14 +480,52 @@ function renderCosmetics() {
           setSetting(key, item.id)
           applyTable()
           renderCosmetics()
-          container.querySelector('[aria-pressed="true"]')?.focus()
+          el.appearanceSections.querySelector('[aria-pressed="true"]')?.focus()
         })
         return button
       }),
     )
-  renderCollection(el.settingsCollection)
-  picker(el.tablePicker, TABLES, 'table', selected(TABLES, getSettings().table, context))
-  picker(el.backPicker, CARD_BACKS, 'cardBack', currentBack())
+    return container
+  }
+  const current = { table: selected(TABLES, getSettings().table, context), cardBack: currentBack() }
+  const unlockedOf = (list) => `${list.filter((item) => isUnlocked(item, context)).length}/${list.length}`
+
+  renderCollection(el.appearanceCollection)
+  el.appearanceTabs.replaceChildren(
+    ...Object.entries(APPEARANCE).map(([key, tab]) => {
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.className = 'badge-tab'
+      button.setAttribute('role', 'tab')
+      button.setAttribute('aria-selected', String(key === appearanceTab))
+      button.append(tab.label, Object.assign(document.createElement('small'), { textContent: unlockedOf(tab.list) }))
+      button.addEventListener('click', () => {
+        appearanceTab = key
+        renderCosmetics()
+        el.appearanceTabs.querySelector('[aria-selected="true"]')?.focus()
+      })
+      return button
+    }),
+  )
+  const tab = APPEARANCE[appearanceTab]
+  el.appearanceSections.replaceChildren(
+    ...tab.groups.map(([name, test]) => {
+      const items = tab.list.filter(test)
+      const section = document.createElement('section')
+      section.className = 'badge-section'
+      const heading = document.createElement('h3')
+      heading.append(name, Object.assign(document.createElement('span'), { textContent: unlockedOf(items) }))
+      const swatches = picker(items, appearanceTab, current[appearanceTab])
+      swatches.setAttribute('aria-label', `${tab.label}: ${name}`)
+      section.append(heading, swatches)
+      return section
+    }),
+  )
+}
+
+function openAppearance() {
+  renderCosmetics()
+  el.appearanceDialog.showModal()
 }
 
 const signed = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '±0')
@@ -1015,7 +1085,7 @@ function togglePin(id) {
 // ---- The round -------------------------------------------------------------
 
 const activeHand = () => state.hands[state.active]
-const newHand = (cards = []) => ({ cards, doubled: false, done: false, fromAces: false, riskyHit: false, needle: false, view: null })
+const newHand = (cards = []) => ({ cards, doubled: false, done: false, fromAces: false, riskyHit: false, needle: false, hailMary: false, view: null })
 const isBust = (hand) => handValue(hand.cards).total > 21
 // Bets at risk: a doubled hand counts two. Stored so leaving mid-hand costs it all.
 const stake = () => state.hands.reduce((sum, hand) => sum + (hand.doubled ? 2 : 1), 0)
@@ -1237,6 +1307,7 @@ function hit() {
   if (!before.soft && before.total >= 17) {
     hand.riskyHit = true
     if (before.total >= 18 && total === 21) hand.needle = true
+    if (before.total === 20 && total === 21) hand.hailMary = true
   }
   // A bust ends the hand; so does 21, which can only be stood on.
   if (total >= 21) endHand()
@@ -1371,6 +1442,7 @@ function finish() {
       doubled: hand.doubled,
       riskyHit: hand.riskyHit,
       needle: hand.needle,
+      hailMary: hand.hailMary,
     })),
     dealer: state.dealer,
     stacked: !state.ranked,
@@ -1751,12 +1823,21 @@ const describe = (p) => {
   return `${rankOf(p.rp).name}, ${badges} badge${badges === 1 ? '' : 's'}, ${p.games} hand${p.games === 1 ? '' : 's'}`
 }
 
+el.openAppearance.addEventListener('click', openAppearance)
+el.closeAppearance.addEventListener('click', () => el.appearanceDialog.close())
+el.appearanceDialog.addEventListener('click', (event) => {
+  if (event.target === el.appearanceDialog) el.appearanceDialog.close()
+})
+el.settingsAppearance.addEventListener('click', () => {
+  el.settingsDialog.close()
+  openAppearance()
+})
+
 el.openSettings.addEventListener('click', () => {
   const prefs = getSettings()
   el.settingSound.checked = prefs.sound
   el.settingHaptics.checked = prefs.haptics
   el.settingCoach.checked = prefs.coach
-  renderCosmetics()
   el.hapticsRow.hidden = !canVibrate()
   clearImport()
   disarmReset()

@@ -227,7 +227,7 @@ function buildUnlock(item, kind, how) {
   }
   const card = node('div', 'celebration-card')
   card.append(stage)
-  captions(card, `New ${label} unlocked`, item.name, how, 'Choose it in Settings')
+  captions(card, `New ${label} unlocked`, item.name, how, 'Choose it in Appearance')
   overlay.append(node('div', 'celebration-fx'), card)
   return overlay
 }

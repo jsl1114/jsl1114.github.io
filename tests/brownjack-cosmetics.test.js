@@ -12,10 +12,14 @@ const ctx = (profile = {}) => ({ profile: { ...newProfile(), ...profile } });
 const item = (list, id) => list.find((i) => i.id === id);
 const earned = (...ids) => Object.fromEntries(ids.map((id) => [id, { count: 1, first: 0 }]));
 
-test("every Legendary badge has its own card back, and every back's file exists", () => {
-  const legendary = BADGES.filter((b) => b.rarity === "Legendary").map((b) => b.id);
-  const badgeBacks = CARD_BACKS.filter((b) => b.unlock[0] === "badge").map((b) => b.unlock[1]);
-  assert.deepEqual([...badgeBacks].sort(), [...legendary].sort());
+test("every Epic and Legendary badge has its own card back, and every back's file exists", () => {
+  const themed = BADGES.filter((b) => b.rarity === "Epic" || b.rarity === "Legendary").map((b) => b.id);
+  const badgeBacks = CARD_BACKS.filter((b) => b.unlock[0] === "badge");
+  assert.deepEqual(badgeBacks.map((b) => b.unlock[1]).sort(), [...themed].sort());
+  // Only the Legendary backs shimmer, which keeps them above the Epic ones.
+  for (const back of badgeBacks) {
+    assert.equal(Boolean(back.shimmer), BADGES.find((b) => b.id === back.unlock[1]).rarity === "Legendary", back.id);
+  }
   assert.deepEqual(CARD_BACKS.filter((b) => b.unlock[0] === "tier").map((b) => b.unlock[1]), [0, 1, 2, 3, 4, 5]);
   for (const back of CARD_BACKS) {
     assert.ok(existsSync(new URL(`../public/projects/brownjack/assets/cards/${back.file}`, import.meta.url)), back.file);

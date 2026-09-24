@@ -864,7 +864,7 @@ kbd {
 
 .menu-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin-top: -6px;
 }
@@ -1808,6 +1808,31 @@ kbd {
 
 .settings-dialog {
   width: min(440px, calc(100vw - 32px));
+}
+
+/* Appearance: tables and card backs, a tab each, grouped by how they unlock. */
+.appearance-dialog {
+  width: min(480px, calc(100vw - 32px));
+}
+
+.appearance-intro {
+  margin: 4px 0 12px;
+  color: var(--walnut);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Two tabs share the row evenly, on phones too (after the badge tabs' grid). */
+.appearance-tabs {
+  display: flex;
+}
+
+.appearance-tabs .badge-tab {
+  flex: 1;
+}
+
+.badge-section > .swatches {
+  margin-top: 0;
 }
 
 .swatches {

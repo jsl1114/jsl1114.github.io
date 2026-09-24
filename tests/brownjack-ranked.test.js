@@ -97,6 +97,18 @@ test("badges unlock from hands, streaks and milestones, once where they should",
   assert.ok(unlocks(at(0), { ...win, player: hand(["A"], ["A", "clubs"], ["A", "spades"], ["8"]) }, "ace-collector"));
   assert.ok(unlocks(at(0), { ...loss, player: hand(["A", "spades"], ["A", "clubs"], ["8", "spades"], ["8", "clubs"], ["K"]) }, "dead-mans-hand"));
   assert.ok(unlocks(at(0), { ...loss, player: hand(["K"], ["5"], ["7"]) }, "so-close"));
+  assert.ok(unlocks(at(0), { ...win, player: hand(["5"], ["5", "clubs"], ["5", "spades"], ["5", "diamonds"]) }, "four-kind"));
+  assert.ok(!unlocks(at(0), { ...win, player: hand(["5"], ["5", "clubs"], ["5", "spades"], ["4"]) }, "four-kind"));
+  assert.ok(unlocks(at(0), { ...win, player: hand(["3"], ["3", "clubs"], ["3", "spades"], ["A"], ["A", "clubs"]) }, "full-house"));
+  assert.ok(!unlocks(at(0), { ...win, player: hand(["3"], ["3", "clubs"], ["3", "spades"], ["A"], ["2"]) }, "full-house"));
+  assert.ok(!unlocks(at(0), { ...win, player: hand(["2"], ["2", "clubs"], ["2", "spades"], ["2", "diamonds"], ["A"]) }, "full-house"), "four of a kind isn't a full house");
+  assert.ok(unlocks(at(0), { ...win, riskyHit: true, needle: true, hailMary: true }, "hail-mary"));
+  assert.ok(!unlocks(at(0), { ...win, riskyHit: true, needle: true }, "hail-mary"));
+  assert.ok(unlocks(at(0, { blackjackStreak: 1 }), { ...win, player: hand(["A"], ["K"]) }, "back-to-back"));
+  assert.ok(!unlocks(at(0), { ...win, player: hand(["A"], ["K"]) }, "back-to-back"));
+  assert.equal(scoreRound(at(0, { blackjackStreak: 1 }), win).profile.blackjackStreak, 0, "any other hand breaks the run");
+  assert.ok(unlocks(at(0), { ...loss, at: new Date(2027, 0, 1, 0, 5).getTime() }, "new-year"));
+  assert.ok(!unlocks(at(0), { ...loss, at: new Date(2026, 11, 31, 23, 55).getTime() }, "new-year"));
   assert.ok(unlocks(at(0, { streak: 2 }), win, "hat-trick"));
   assert.ok(unlocks(at(0, { streak: 4 }), win, "heater"));
   assert.ok(unlocks(at(0, { streak: 9 }), win, "inferno"));
@@ -126,8 +138,8 @@ test("badges unlock from hands, streaks and milestones, once where they should",
   assert.equal(twice.profile.badges["first-win"].count, 1);
 });
 
-test("there are about fifty badges, each fully described", () => {
-  assert.ok(BADGES.length >= 48 && BADGES.length <= 65, `${BADGES.length} badges`);
+test("there are about seventy badges, each fully described", () => {
+  assert.ok(BADGES.length >= 60 && BADGES.length <= 80, `${BADGES.length} badges`);
   assert.equal(new Set(BADGES.map((b) => b.id)).size, BADGES.length);
   for (const badge of BADGES) {
     assert.ok(badge.name && badge.desc && badge.glyph, badge.id);
@@ -249,6 +261,15 @@ test("a split 21 isn't a blackjack, and both-hands badges need both hands", () =
   assert.ok(result.earned.includes("snake-eyes"), "the dealt pair counts");
   const oneEach = scoreRound(at(0), { hands: [aces[0], { ...aces[1], winner: "dealer" }], dealer: [card("10"), card("9")] });
   assert.ok(!oneEach.earned.includes("split-decision"));
+
+  const doubled = [
+    { cards: [card("6"), card("5"), card("K")], winner: "player", doubled: true },
+    { cards: [card("6", "clubs"), card("4"), card("Q")], winner: "player", doubled: true },
+  ];
+  const dealer = [card("6", "spades"), card("10"), card("9")];
+  assert.ok(scoreRound(at(0), { hands: doubled, dealer }).earned.includes("double-trouble"));
+  const oneDoubled = [doubled[0], { ...doubled[1], doubled: false }];
+  assert.ok(!scoreRound(at(0), { hands: oneDoubled, dealer }).earned.includes("double-trouble"));
 });
 
 test("abandoning a doubled or split hand costs what was at stake", () => {

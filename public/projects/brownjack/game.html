@@ -47,6 +47,7 @@
         <div class="menu-row">
           <button type="button" class="badges-btn" id="open-stats">Stats</button>
           <button type="button" class="badges-btn" id="open-badges">Badges <span id="badge-count"></span></button>
+          <button type="button" class="badges-btn" id="open-appearance">Appearance</button>
         </div>
 
         <details class="setup">
@@ -164,6 +165,20 @@
     <ol class="ladder" id="ladder"></ol>
   </dialog>
 
+  <dialog class="badges-dialog appearance-dialog" id="appearance-dialog" aria-labelledby="appearance-title">
+    <div class="dialog-head">
+      <h2 id="appearance-title">Appearance</h2>
+      <button type="button" class="close" id="close-appearance" aria-label="Close">×</button>
+    </div>
+    <p class="appearance-intro">
+      Each tier unlocks a table and card back in its metal. More tables come with collection points, and
+      each Epic and Legendary badge has its own card back.
+    </p>
+    <div class="collection" id="appearance-collection"></div>
+    <div class="badge-tabs appearance-tabs" id="appearance-tabs" role="tablist" aria-label="Appearance"></div>
+    <div id="appearance-sections"></div>
+  </dialog>
+
   <dialog class="badges-dialog settings-dialog" id="settings-dialog" aria-labelledby="settings-title">
     <div class="dialog-head">
       <h2 id="settings-title">Settings</h2>
@@ -186,13 +201,8 @@
 
     <section class="setting">
       <h3>Table &amp; cards</h3>
-      <p>
-        Each tier unlocks a table and card back in its metal. More tables are earned with collection points:
-        every badge adds some (Common 1 · Rare 3 · Epic 8 · Legendary 20). Each Legendary badge has its own card back.
-      </p>
-      <div class="collection" id="settings-collection"></div>
-      <div class="swatches" id="table-picker" aria-label="Table"></div>
-      <div class="swatches backs" id="back-picker" aria-label="Card back"></div>
+      <p>Choose the table you play on and the back of your cards.</p>
+      <button type="button" class="setting-btn" id="settings-appearance">Open Appearance</button>
     </section>
 
     <section class="setting">

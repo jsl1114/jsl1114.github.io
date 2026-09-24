@@ -1890,30 +1890,6 @@ a.setting-btn {
   width: min(520px, calc(100vw - 32px));
 }
 
-.hall-week {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-  font-size: 13px;
-}
-
-.hall-step {
-  width: 32px;
-  height: 32px;
-  border: 1px solid rgb(73 38 18 / 0.25);
-  border-radius: 50%;
-  background: transparent;
-  color: var(--bark);
-  font-size: 18px;
-  line-height: 1;
-}
-
-.hall-step:disabled {
-  opacity: 0.3;
-}
-
 .hall-list {
   display: flex;
   flex-direction: column;

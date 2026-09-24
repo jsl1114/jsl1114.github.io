@@ -70,8 +70,8 @@ import {
   totalScore,
 } from './daily.mjs'
 import { daysLeft, rollSeason, seasonId, seasonName } from './seasons.mjs'
-import { gradeOf, handChance, oneIn } from './handodds.mjs'
-import { addToHall, hallWeek, hallWeeks, weekName } from './halloffame.mjs'
+import { featureName, oneIn, rateHand } from './handodds.mjs'
+import { addToHall, rankHall } from './halloffame.mjs'
 import { GAME_URL, canvasBlob, drawShareCard, headline } from './sharecard.mjs'
 
 const $ = (id) => document.getElementById(id)
@@ -123,9 +123,6 @@ const el = {
   openHall: $('open-hall'),
   hallDialog: $('hall-dialog'),
   closeHall: $('close-hall'),
-  hallOlder: $('hall-older'),
-  hallNewer: $('hall-newer'),
-  hallWeekName: $('hall-week-name'),
   hallList: $('hall-list'),
   settingsAppearance: $('settings-appearance'),
   appearanceDialog: $('appearance-dialog'),
@@ -1529,15 +1526,16 @@ function showResult(winners, result, beforeRp) {
 }
 
 // ---- Sharing a hand and the Hall of Fame -----------------------------------------
-// After every hand: its odds and grade, and an image of it to share. Hands graded
-// S or better go into this device's Hall of Fame, the ten rarest each week.
+// After every hand: how rare it was and its grade, and an image of it to share.
+// Hands graded S or better go into this device's Hall of Fame, the ten rarest ever.
 
 const HALL_KEY = 'brownjack.halloffame.v1'
 
 function loadHall() {
   try {
     const saved = JSON.parse(readStorage(HALL_KEY))
-    return Array.isArray(saved) ? saved.filter((e) => e && Number.isFinite(e.at) && e.chance > 0 && e.grade) : []
+    const valid = (e) => e && Number.isFinite(e.at) && Array.isArray(e.hands) && e.hands.length && Array.isArray(e.dealer)
+    return Array.isArray(saved) ? rankHall(saved.filter(valid)) : []
   } catch {
     return []
   }
@@ -1549,12 +1547,18 @@ const saveHall = () => writeStorage(HALL_KEY, JSON.stringify(hall))
 const plainCards = (cards) => cards.map(({ rank, suit }) => ({ rank, suit }))
 
 // The finished hand as a record for the share image and the Hall of Fame (see
-// sharecard.mjs). Rigged hands get no chance or grade.
+// sharecard.mjs). Rigged hands aren't rated.
 function handRecord(winners, result, beforeRp) {
   const rigged = result.unranked && !result.daily
-  const hands = state.hands.map((hand, i) => ({ cards: plainCards(hand.cards), winner: winners[i], doubled: hand.doubled }))
+  const hands = state.hands.map((hand, i) => ({
+    cards: plainCards(hand.cards),
+    winner: winners[i],
+    doubled: hand.doubled,
+    riskyHit: hand.riskyHit,
+    needle: hand.needle,
+    hailMary: hand.hailMary,
+  }))
   const dealer = plainCards(state.dealer)
-  const chance = rigged ? null : handChance(hands.flatMap((h) => h.cards), dealer)
   const step = (rp) => Math.floor(rp / POINTS_PER_DIVISION)
   const seen = getSettings().unlocksSeen
   const record = {
@@ -1569,10 +1573,9 @@ function handRecord(winners, result, beforeRp) {
     rankUp: !result.unranked && step(result.profile.rp) > step(beforeRp) ? { from: result.before.name, to: result.after.name } : null,
     earned: result.earned,
     unlocks: seen ? unlockedIds(collectionContext()).filter((id) => !seen.includes(id)) : [],
-    chance,
-    grade: rigged ? null : gradeOf(chance),
     place: null,
   }
+  Object.assign(record, rigged ? { chance: null, grade: null, reason: null } : rateHand(record))
   const added = addToHall(hall, record)
   if (added.place) {
     record.place = added.place
@@ -1587,13 +1590,13 @@ function showHandOdds(record) {
   if (!record.grade) return
   el.handOdds.dataset.grade = record.grade
   el.handOdds.textContent =
-    `Rarity ${record.grade} · ${oneIn(record.chance)}` +
-    (record.place ? ` · #${record.place} in this week's Hall of Fame` : '')
+    `Rarity ${record.grade} · ${featureName(record.reason)} · ${oneIn(record.chance)} hands` +
+    (record.place ? ` · #${record.place} in your Hall of Fame` : '')
 }
 
 const shareCaption = (record) =>
   record.grade
-    ? `My ${record.grade} hand in BrownJack: ${oneIn(record.chance)}. Play at ${GAME_URL}`
+    ? `My ${record.grade} hand in BrownJack (${featureName(record.reason)}, ${oneIn(record.chance)} hands). Play at ${GAME_URL}`
     : `A hand from BrownJack. Play at ${GAME_URL}`
 
 let shareFile = null
@@ -1614,7 +1617,7 @@ async function openShare(record) {
     if (shareUrl) URL.revokeObjectURL(shareUrl)
     shareUrl = URL.createObjectURL(blob)
     el.shareImage.src = shareUrl
-    el.shareImage.alt = `${headline(record)}${record.grade ? `, rarity ${record.grade}, ${oneIn(record.chance)}` : ''}`
+    el.shareImage.alt = `${headline(record)}${record.grade ? `, rarity ${record.grade}: ${featureName(record.reason)}, ${oneIn(record.chance)} hands` : ''}`
     el.shareDownload.href = shareUrl
     el.shareDownload.download = name
     el.shareDownload.hidden = false
@@ -1650,8 +1653,7 @@ el.shareDialog.addEventListener('click', (event) => {
   if (event.target === el.shareDialog) el.shareDialog.close()
 })
 
-// The Hall of Fame: one week at a time, newest first.
-let hallShown = null
+// The Hall of Fame: the ten rarest hands ever, rarest first.
 
 const SUIT_SIGNS = { spades: '♠', hearts: '♥', clubs: '♣', diamonds: '♦' }
 function cardsLine(cards) {
@@ -1676,9 +1678,9 @@ function hallItem(entry, place) {
   const top = document.createElement('div')
   top.className = 'hall-top'
   top.append(
-    Object.assign(document.createElement('strong'), { textContent: `#${place} · ${oneIn(entry.chance)}` }),
+    Object.assign(document.createElement('strong'), { textContent: `#${place} · ${featureName(entry.reason)}` }),
     Object.assign(document.createElement('small'), {
-      textContent: `${new Date(entry.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · ${headline(entry)}`,
+      textContent: `${oneIn(entry.chance)} hands · ${headline(entry)} · ${new Date(entry.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`,
     }),
   )
   const table = document.createElement('div')
@@ -1696,32 +1698,17 @@ function hallItem(entry, place) {
 }
 
 function renderHall() {
-  const weeks = hallWeeks(hall)
-  if (!weeks.includes(hallShown)) hallShown = weeks[0]
-  const index = weeks.indexOf(hallShown)
-  el.hallWeekName.textContent = `${index === 0 ? 'This week · ' : ''}${weekName(hallShown)}`
-  el.hallOlder.disabled = index >= weeks.length - 1
-  el.hallNewer.disabled = index <= 0
-  const entries = hallWeek(hall, hallShown)
   el.hallList.replaceChildren(
-    ...(entries.length
-      ? entries.map((entry, i) => hallItem(entry, i + 1))
+    ...(hall.length
+      ? hall.map((entry, i) => hallItem(entry, i + 1))
       : [Object.assign(document.createElement('li'), {
           className: 'hall-empty',
-          textContent: 'No hands graded S or better this week yet. About one hand in ten makes it.',
+          textContent: 'No hands graded S or better yet. Standoff, Royal Couple or Straight 21 would get you in.',
         })]),
   )
 }
 
-const stepHall = (by) => {
-  const weeks = hallWeeks(hall)
-  hallShown = weeks[Math.max(0, Math.min(weeks.length - 1, weeks.indexOf(hallShown) + by))]
-  renderHall()
-}
-el.hallOlder.addEventListener('click', () => stepHall(1))
-el.hallNewer.addEventListener('click', () => stepHall(-1))
 el.openHall.addEventListener('click', () => {
-  hallShown = null
   renderHall()
   el.hallDialog.showModal()
 })

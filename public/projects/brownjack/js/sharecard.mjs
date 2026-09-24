@@ -7,11 +7,12 @@
 //     hands: [{ cards, winner, doubled }], dealer: cards,
 //     delta: RP won or lost (ranked only), rankUp: { from, to } rank names or null,
 //     earned: badge ids, unlocks: table and card-back ids,
-//     chance, grade (null when rigged), place: its Hall of Fame place, if any }
+//     chance, grade, reason: from rateHand (null when rigged),
+//     place: its Hall of Fame place, if any }
 import { handValue, isBlackjack } from './blackjack.mjs'
 import { badgeById } from './badges.mjs'
 import { CARD_BACKS, TABLES } from './cosmetics.mjs'
-import { oneIn } from './handodds.mjs'
+import { featureName, oneIn } from './handodds.mjs'
 import { tableSVG } from './tableart.mjs'
 
 export const GAME_URL = 'https://jsl1114.github.io/projects/brownjack/game.html'
@@ -181,7 +182,7 @@ function blocks(ctx, record, images) {
 
   // The odds and the grade, on a cream panel.
   const oddsNote = record.grade
-    ? 'Chance of these exact cards, yours and the dealer’s, from a fresh six-deck shoe.'
+    ? `${featureName(record.reason)}: comes up about once in ${Math.round(1 / record.chance).toLocaleString('en-US')} hands.`
     : 'Rigged deck: a practice hand, so it isn’t graded.'
   const noteLines = wrap(ctx, oddsNote, INNER - 300, 26)
   const oddsH = Math.max(250, 150 + noteLines.length * 36)
@@ -205,7 +206,7 @@ function blocks(ctx, record, images) {
     ctx.fillText(grade, cx, cy + 6)
     const left = PAD + 270
     text(ctx, record.grade ? 'RARITY' : 'PRACTICE', left, y + 64, { size: 24, weight: 700, color: COLORS.walnut, spacing: 3 })
-    text(ctx, record.grade ? oneIn(record.chance) : 'No grade', left, y + 128, { size: 60, weight: 700, color: COLORS.bark })
+    text(ctx, record.grade ? `${oneIn(record.chance)} hands` : 'No grade', left, y + 128, { size: 54, weight: 700, color: COLORS.bark })
     noteLines.forEach((line, i) => text(ctx, line, left, y + 178 + i * 36, { size: 26, color: COLORS.walnut }))
   })
 
@@ -221,7 +222,7 @@ function blocks(ctx, record, images) {
   const extras = [
     ...(record.rankUp ? [`Promoted: ${record.rankUp.from} → ${record.rankUp.to}`] : []),
     ...(unlocks.length ? [`Unlocked: ${unlocks.join(', ')}`] : []),
-    ...(record.place ? [`★ #${record.place} in this week’s Hall of Fame`] : []),
+    ...(record.place ? [`★ #${record.place} in the Hall of Fame`] : []),
   ]
   if (badges.length || extras.length) {
     const perRow = 5

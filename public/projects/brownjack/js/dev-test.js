@@ -6,7 +6,7 @@ import { celebrate, celebrateRank, celebrateUnlock, emblemElement, glyphElement 
 import { CARD_BACKS, TABLES, byRank, progress, unlocksAt } from './cosmetics.mjs'
 import { newProfile } from './ranked.mjs'
 import { tableSVG } from './tableart.mjs'
-import { gradeOf, handChance, oneIn } from './handodds.mjs'
+import { featureName, oneIn, rateHand } from './handodds.mjs'
 import { addToHall } from './halloffame.mjs'
 import { canvasBlob, drawShareCard } from './sharecard.mjs'
 import { CARD_SOUND, audioContext, cardSound, play } from './sound.mjs'
@@ -103,25 +103,41 @@ for (const category of CATEGORIES) {
 
 // ---- Sharing a hand ---------------------------------------------------------------
 
-// Sample hands for the share image and the Hall of Fame.
-const c = (rank, suit) => ({ rank, suit })
+// Sample hands for the share image and the Hall of Fame, rated as the game rates them.
+const c = (rank, suit = 'hearts') => ({ rank, suit })
+const hand = (winner, ...cards) => ({ cards, winner })
 function sampleHand(hands, dealer, extra = {}) {
-  const chance = handChance(hands.flatMap((h) => h.cards), dealer)
-  return { at: Date.now(), mode: 'ranked', label: 'Ranked · Gold II', hands, dealer, delta: 25, rankUp: null,
-    earned: [], unlocks: [], chance, grade: gradeOf(chance), place: null, ...extra }
+  const record = { at: Date.now(), mode: 'ranked', label: 'Ranked · Gold II', hands, dealer, delta: 25, rankUp: null,
+    earned: [], unlocks: [], place: null, ...extra }
+  return extra.mode === 'rigged' ? { ...record, chance: null, grade: null, reason: null } : { ...record, ...rateHand(record) }
 }
 const SAMPLE_HANDS = [
-  ['Lucky Sevens, with a promotion', sampleHand([{ cards: [c('7', 'hearts'), c('7', 'clubs'), c('7', 'spades')], winner: 'player' }],
-    [c('10', 'diamonds'), c('6', 'clubs'), c('5', 'hearts'), c('K', 'spades')],
-    { delta: 49, earned: ['sevens', 'hat-trick'], unlocks: ['sevens'], rankUp: { from: 'Gold II', to: 'Gold III' }, place: 1 })],
+  ['Aces High, with a promotion', sampleHand([hand('player', c('A'), c('K', 'clubs')), hand('player', c('A', 'spades'), c('Q'))],
+    [c('10', 'diamonds'), c('8', 'clubs')], { delta: 60, earned: ['aces-high', 'split-decision'], unlocks: ['aces'], rankUp: { from: 'Gold II', to: 'Gold III' }, place: 1 })],
+  ['Straight 21', sampleHand([hand('player', c('6'), c('7', 'clubs'), c('8', 'spades'))], [c('10', 'diamonds'), c('9', 'clubs')], { earned: ['straight'] })],
   ['A split: one win, one loss', sampleHand([
-    { cards: [c('8', 'hearts'), c('3', 'clubs'), c('K', 'spades')], winner: 'player', doubled: true },
-    { cards: [c('8', 'spades'), c('10', 'hearts')], winner: 'dealer' },
+    { cards: [c('8'), c('3', 'clubs'), c('K', 'spades')], winner: 'player', doubled: true },
+    hand('dealer', c('8', 'spades'), c('10')),
   ], [c('9', 'diamonds'), c('10', 'clubs')], { delta: 30 })],
-  ['A daily hand', sampleHand([{ cards: [c('A', 'hearts'), c('Q', 'hearts')], winner: 'player' }], [c('9', 'spades'), c('8', 'clubs')],
+  ['A daily blackjack', sampleHand([hand('player', c('A'), c('Q'))], [c('9', 'spades'), c('8', 'clubs')],
     { mode: 'daily', label: 'Daily #2 · hand 3 of 5', delta: null })],
-  ['A rigged hand', { ...sampleHand([{ cards: [c('A', 'spades'), c('J', 'clubs')], winner: 'player' }], [c('9', 'diamonds'), c('8', 'clubs')]),
-    mode: 'rigged', label: 'Rigged · practice', delta: null, chance: null, grade: null }],
+  ['A rigged hand', sampleHand([hand('player', c('A', 'spades'), c('J', 'clubs'))], [c('9', 'diamonds'), c('8', 'clubs')],
+    { mode: 'rigged', label: 'Rigged · practice', delta: null })],
+]
+// Rare hands of every kind, for the Hall of Fame.
+const HALL_SAMPLES = [
+  [[hand('player', c('A'), c('K', 'clubs')), hand('player', c('A', 'spades'), c('Q'))], [c('10', 'diamonds'), c('8', 'clubs')]],
+  [[hand('player', c('5'), c('5', 'clubs'), c('5', 'spades'), c('5', 'diamonds'))], [c('10'), c('7', 'clubs')]],
+  [[hand('player', c('3'), c('3', 'clubs'), c('3', 'spades'), c('A'), c('A', 'clubs'), c('10'))], [c('9', 'spades'), c('9', 'clubs')]],
+  [[hand('player', c('7'), c('7', 'clubs'), c('7', 'spades'))], [c('10', 'diamonds'), c('8', 'clubs')]],
+  [[hand('player', c('2'), c('3', 'clubs'), c('2', 'spades'), c('4'), c('3'), c('5', 'clubs'))], [c('10'), c('6', 'clubs'), c('K')]],
+  [[hand('push', c('A'), c('K'))], [c('A', 'clubs'), c('Q', 'clubs')]],
+  [[hand('player', c('K'), c('Q'))], [c('2'), c('3'), c('4'), c('2', 'clubs'), c('5'), c('K', 'clubs')]],
+  [[hand('player', c('A', 'spades'), c('J', 'clubs'))], [c('9', 'diamonds'), c('8', 'clubs')]],
+  [[hand('player', c('K'), c('Q'))], [c('10', 'clubs'), c('9')]],
+  [[hand('player', c('6'), c('7', 'clubs'), c('8', 'spades'))], [c('10', 'diamonds'), c('9', 'clubs')]],
+  [[hand('player', c('A'), c('A', 'clubs'), c('A', 'spades'), c('8'))], [c('10', 'diamonds'), c('9', 'clubs')]],
+  [[hand('player', c('K'), c('9'))], [c('10', 'clubs'), c('7')]],
 ]
 async function openShareImage(record) {
   const canvas = await drawShareCard(record, { tableId: 'saloon' })
@@ -129,21 +145,17 @@ async function openShareImage(record) {
 }
 group('share', 'Share images', SAMPLE_HANDS.map(([name, record]) =>
   row(symbol(record.grade ?? '—'), name, {
-    sub: record.grade ? `${record.grade} · ${oneIn(record.chance)}` : 'Not graded',
+    sub: record.grade ? `${record.grade} · ${featureName(record.reason)} · ${oneIn(record.chance)} hands` : 'Not graded',
     onClick: () => openShareImage(record),
   })), 'Opens the image in a new tab, drawn on the Saloon table.')
 group('share', 'Hall of Fame', [
-  row(symbol('★'), "Fill this week's Hall of Fame", {
-    sub: 'Twelve rare sample hands; the game keeps the ten rarest',
+  row(symbol('★'), 'Fill the Hall of Fame', {
+    sub: 'A dozen sample hands; the ones graded S or better make it',
     onClick: () => {
       let hall = []
-      const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
-      for (let i = 0; i < 12; i++) {
-        const low = ranks[i % 5]
-        const hand = sampleHand([{ cards: [c(low, 'hearts'), c(low, 'clubs'), c(low, 'spades'), c('A', 'diamonds')], winner: 'player' }],
-          [c(ranks[11 - i], 'clubs'), c(ranks[(i + 6) % 12], 'hearts'), c('9', 'spades')], { at: Date.now() - i * 3_600_000 })
-        hall = addToHall(hall, hand).hall
-      }
+      HALL_SAMPLES.forEach(([hands, dealer], i) => {
+        hall = addToHall(hall, sampleHand(hands, dealer, { at: Date.now() - i * 86_400_000 })).hall
+      })
       try {
         localStorage.setItem('brownjack.halloffame.v1', JSON.stringify(hall))
         hallStatus.textContent = `Saved ${hall.length} hands. Open the game's Hall of Fame to see them.`

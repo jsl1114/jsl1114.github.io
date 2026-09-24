@@ -37,6 +37,8 @@ export const newProfile = () => ({
   bestStreak: 0,
   lossStreak: 0,
   blackjacks: 0,
+  // Hands in a row dealt as a blackjack.
+  blackjackStreak: 0,
   daredevilWins: 0,
   // Hit/stand decisions checked against basic strategy, and the run of hands
   // played without a single mistake.
@@ -80,10 +82,11 @@ export function rankOf(rp) {
 }
 
 // `round` describes a finished hand:
-//   { hands: [{ cards, winner, doubled, riskyHit, needle }], dealer, forfeit, stake, stacked,
+//   { hands: [{ cards, winner, doubled, riskyHit, needle, hailMary }], dealer, forfeit, stake, stacked,
 //     at, sessionHands, firstInShoe, lastInShoe, decisions }
 // (or a single hand as { player, winner, riskyHit, needle }). winner is 'player' | 'dealer' | 'push'.
-// riskyHit: the player hit on a hard 17+; needle: that hit was on 18+ and landed on 21.
+// riskyHit: the player hit on a hard 17+; needle: that hit was on 18+ and landed on 21;
+// hailMary: it was on a hard 20 (so the card was an ace).
 // stake: bets at risk when a hand is abandoned (a double counts two).
 // at: when the hand finished (for time-based badges); sessionHands: ranked hands this sitting.
 // firstInShoe / lastInShoe: the hand opened a new shoe / was the last before a reshuffle.
@@ -109,7 +112,7 @@ export function scoreRound(profile, round) {
   const dealer = round.dealer ?? []
   // A hand is one or two player hands (after a split). Older callers pass a
   // single `player` hand with its `winner`.
-  const hands = round.hands ?? (round.player ? [{ cards: round.player, winner: round.winner, riskyHit: round.riskyHit, needle: round.needle }] : [])
+  const hands = round.hands ?? (round.player ? [{ cards: round.player, winner: round.winner, riskyHit: round.riskyHit, needle: round.needle, hailMary: round.hailMary }] : [])
   const split = hands.length > 1
   const dealt = hands.length ? (split ? [hands[0].cards[0], hands[1].cards[0]] : hands[0].cards.slice(0, 2)) : []
   const natural = !split && hands.length === 1 && isBlackjack(hands[0].cards)
@@ -121,6 +124,7 @@ export function scoreRound(profile, round) {
   next.games++
   next.seasonGames = (next.seasonGames ?? 0) + 1
   if (natural) next.blackjacks++
+  next.blackjackStreak = natural ? (next.blackjackStreak ?? 0) + 1 : 0
   // Hands with no choice to make (a natural, say) neither extend nor break the run.
   const decisions = round.decisions ?? []
   if (decisions.length) {
@@ -191,6 +195,7 @@ export function scoreRound(profile, round) {
         doubled: Boolean(hand.doubled),
         riskyHit: Boolean(hand.riskyHit),
         needle: Boolean(hand.needle),
+        hailMary: Boolean(hand.hailMary),
       }))
     : [{ ...base, player: [], pv: 0, won: false, lost: overall === 'dealer' }]
   const earned = awardBadges(next, contexts, round.at)
@@ -230,4 +235,15 @@ export function pinBadge(profile, id, now = Date.now()) {
     earned.push(...awardBadges(next, [{}], now, ['collector', 'completionist']))
   }
   return { profile: next, earned }
+}
+
+// Move a pinned badge to another slot in the showcase; the rest shift to make room.
+export function moveShowcase(profile, id, to) {
+  const showcase = profile.showcase ?? []
+  const from = showcase.indexOf(id)
+  const slot = Math.max(0, Math.min(to, showcase.length - 1))
+  if (from === -1 || from === slot) return profile
+  const next = showcase.filter((b) => b !== id)
+  next.splice(slot, 0, id)
+  return { ...profile, showcase: next }
 }

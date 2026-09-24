@@ -1,7 +1,7 @@
 // badges.mjs — every achievement, and the check that awards it.
 //
 // Each check gets one of the player's hands from a finished ranked round:
-//   { player, pv, won, lost, doubled, riskyHit, needle,          — this hand
+//   { player, pv, won, lost, doubled, riskyHit, needle, hailMary, — this hand
 //     overall, natural, dealt, split, handsWon, dealer, dv,     — the round
 //     round, profile, next, after, peak }
 // `overall` is the round's result for streaks; `natural` a dealt, unsplit
@@ -18,6 +18,8 @@ import { handValue, isBlackjack } from './blackjack.mjs'
 const FACES = ['J', 'Q', 'K']
 const has = (hand, rank, suit) => hand.some((c) => c.rank === rank && c.suit === suit)
 const count = (hand, rank) => hand.filter((c) => c.rank === rank).length
+// How many of each rank a hand holds, most first: [3, 2] for 3-3-3-A-A.
+const groups = (hand) => [...new Set(hand.map((c) => c.rank))].map((rank) => count(hand, rank)).sort((a, b) => b - a)
 // Rank badges go by your best-ever rank, so slipping back a tier never costs one.
 const reached = (tierIndex) => (x) => x.peak.tierIndex >= tierIndex
 const peakGoal = (rp) => (profile) => [Math.min(profile.peakRp, rp), rp]
@@ -79,6 +81,16 @@ export const BADGES = [
     check: (x) => x.won && x.player.length >= 7 },
   { id: 'dead-mans-hand', category: 'Hands', rarity: 'Legendary', glyph: 'A8', name: "Dead Man's Hand", desc: 'Hold two aces and two eights in one hand.',
     check: (x) => count(x.player, 'A') >= 2 && count(x.player, '8') >= 2 },
+  // Poker hands, the blackjack way: only low cards leave room for this many.
+  { id: 'four-kind', category: 'Hands', rarity: 'Legendary', glyph: '5555', name: 'Four of a Kind', desc: 'Hold four cards of the same rank in one hand.',
+    check: (x) => groups(x.player)[0] >= 4 },
+  { id: 'full-house', category: 'Hands', rarity: 'Legendary', glyph: '333AA', name: 'Full House', desc: 'Hold three of a kind and a pair in one hand.',
+    check: (x) => {
+      const [most, next] = groups(x.player)
+      return most >= 3 && next >= 2
+    } },
+  { id: 'hail-mary', category: 'Hands', rarity: 'Legendary', glyph: '20+A', name: 'Hail Mary', desc: 'Hit on a hard 20 and draw an ace for 21.',
+    check: (x) => x.hailMary },
 
   { id: 'doubled-up', category: 'Hands', rarity: 'Common', glyph: '2×', name: 'Doubled Up', desc: 'Win a hand you doubled down on.',
     check: (x) => x.won && x.doubled },
@@ -86,6 +98,8 @@ export const BADGES = [
     check: (x) => x.split && x.handsWon === 2 },
   { id: 'aces-high', category: 'Hands', rarity: 'Legendary', glyph: 'A|A', name: 'Aces High', desc: 'Split aces and make 21 on both hands.',
     check: (x) => x.split && x.dealt.every((c) => c.rank === 'A') && x.round.hands.every((h) => handValue(h.cards).total === 21) },
+  { id: 'double-trouble', category: 'Hands', rarity: 'Legendary', glyph: '2×2×', name: 'Double Trouble', desc: 'Split, double down on both hands, and win them both.',
+    check: (x) => x.split && x.round.hands.every((h) => h.doubled && h.winner === 'player') },
 
   // ---- Streaks --------------------------------------------------------------
   { id: 'hat-trick', category: 'Streaks', rarity: 'Common', glyph: '3×', name: 'Hat Trick', desc: 'Win three hands in a row.',
@@ -94,6 +108,8 @@ export const BADGES = [
     check: (x) => x.overall === 'player' && x.next.streak === 5 },
   { id: 'inferno', category: 'Streaks', rarity: 'Legendary', glyph: '10×', name: 'Inferno', desc: 'Win ten hands in a row.',
     check: (x) => x.overall === 'player' && x.next.streak === 10 },
+  { id: 'back-to-back', category: 'Streaks', rarity: 'Legendary', glyph: 'BJ²', name: 'Back to Back', desc: 'Get dealt blackjack two hands in a row.',
+    check: (x) => x.next.blackjackStreak === 2 },
   { id: 'cold-streak', category: 'Streaks', rarity: 'Rare', glyph: '❄', name: 'Cold Streak', desc: 'Lose five hands in a row.',
     check: (x) => x.overall === 'dealer' && x.next.lossStreak === 5 },
   { id: 'comeback', category: 'Streaks', rarity: 'Rare', glyph: '↺', name: 'Comeback Kid', desc: 'Win right after losing five or more in a row.',
@@ -156,6 +172,11 @@ export const BADGES = [
     check: (x) => {
       const day = new Date(x.round.at ?? Date.now())
       return day.getDay() === 5 && day.getDate() === 13
+    } },
+  { id: 'new-year', category: 'Special', rarity: 'Legendary', glyph: '1/1', name: 'Auld Lang Syne', desc: "Play a ranked hand on New Year's Day.", once: true,
+    check: (x) => {
+      const day = new Date(x.round.at ?? Date.now())
+      return day.getMonth() === 0 && day.getDate() === 1
     } },
   { id: 'last-call', category: 'Special', rarity: 'Rare', glyph: '✂', name: 'Last Call', desc: 'Win the last hand before the shoe is reshuffled.',
     check: (x) => x.overall === 'player' && Boolean(x.round.lastInShoe) },

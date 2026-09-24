@@ -24,6 +24,7 @@ import {
   TIERS,
   WIN_POINTS,
   catchUpBadges,
+  moveShowcase,
   newProfile,
   pinBadge,
   rankOf,
@@ -47,6 +48,7 @@ import {
   TABLES,
   TOTAL_POINTS,
   byRank,
+  isUnlocked,
   collectionPoints,
   nextTable,
   progress,
@@ -105,7 +107,13 @@ const el = {
   rankSeason: $('rank-season'),
   seasonMedals: $('season-medals'),
   collection: $('collection'),
-  settingsCollection: $('settings-collection'),
+  openAppearance: $('open-appearance'),
+  settingsAppearance: $('settings-appearance'),
+  appearanceDialog: $('appearance-dialog'),
+  closeAppearance: $('close-appearance'),
+  appearanceCollection: $('appearance-collection'),
+  appearanceTabs: $('appearance-tabs'),
+  appearanceSections: $('appearance-sections'),
   badgeTabs: $('badge-tabs'),
   openRoadmap: $('open-roadmap'),
   roadmapDialog: $('roadmap-dialog'),
@@ -131,6 +139,7 @@ const el = {
   stats: $('stats'),
   badgeSections: $('badge-sections'),
   showcaseHint: $('showcase-hint'),
+  showcaseSlots: $('showcase-slots'),
   showcase: $('showcase'),
   chipShowcase: $('chip-showcase'),
   pointsTable: $('points-table'),
@@ -151,9 +160,7 @@ const el = {
   settingHaptics: $('setting-haptics'),
   hapticsRow: $('haptics-row'),
   settingCoach: $('setting-coach'),
-  tablePicker: $('table-picker'),
   tableArt: $('table-art'),
-  backPicker: $('back-picker'),
   coach: $('coach'),
 }
 
@@ -165,7 +172,7 @@ const state = {
   stacked: [],
   deck: [],
   // The player's hands: one, or two after a split. Each is
-  // { cards, doubled, done, fromAces, riskyHit, needle, view }.
+  // { cards, doubled, done, fromAces, riskyHit, needle, hailMary, view }.
   hands: [],
   active: 0,
   dealer: [],
@@ -411,10 +418,37 @@ function announceUnlocks() {
   }
 }
 
+// Appearance: tables and card backs on their own tabs, each in groups by how
+// they're unlocked. The tab holds while the page is open.
+let appearanceTab = 'table'
+
+const badgeRarity = (item) => BADGES.find((b) => b.id === item.unlock[1]).rarity
+const APPEARANCE = {
+  table: {
+    label: 'Tables',
+    list: TABLES,
+    groups: [
+      ['Rank', (t) => byRank(t)],
+      ['Collection', (t) => !byRank(t)],
+    ],
+  },
+  cardBack: {
+    label: 'Card backs',
+    list: CARD_BACKS,
+    groups: [
+      ['Rank', (b) => byRank(b)],
+      ['Epic badges', (b) => !byRank(b) && badgeRarity(b) === 'Epic'],
+      ['Legendary badges', (b) => !byRank(b) && badgeRarity(b) === 'Legendary'],
+    ],
+  },
+}
+
 function renderCosmetics() {
   const context = collectionContext()
-  const picker = (container, list, key, current) =>
-    container.replaceChildren(
+  const picker = (list, key, current) => {
+    const container = document.createElement('div')
+    container.className = `swatches${key === 'cardBack' ? ' backs' : ''}`
+    container.append(
       ...list.map((item) => {
         const state = progress(item, context)
         const unlocked = state.unlocked
@@ -446,14 +480,52 @@ function renderCosmetics() {
           setSetting(key, item.id)
           applyTable()
           renderCosmetics()
-          container.querySelector('[aria-pressed="true"]')?.focus()
+          el.appearanceSections.querySelector('[aria-pressed="true"]')?.focus()
         })
         return button
       }),
     )
-  renderCollection(el.settingsCollection)
-  picker(el.tablePicker, TABLES, 'table', selected(TABLES, getSettings().table, context))
-  picker(el.backPicker, CARD_BACKS, 'cardBack', currentBack())
+    return container
+  }
+  const current = { table: selected(TABLES, getSettings().table, context), cardBack: currentBack() }
+  const unlockedOf = (list) => `${list.filter((item) => isUnlocked(item, context)).length}/${list.length}`
+
+  renderCollection(el.appearanceCollection)
+  el.appearanceTabs.replaceChildren(
+    ...Object.entries(APPEARANCE).map(([key, tab]) => {
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.className = 'badge-tab'
+      button.setAttribute('role', 'tab')
+      button.setAttribute('aria-selected', String(key === appearanceTab))
+      button.append(tab.label, Object.assign(document.createElement('small'), { textContent: unlockedOf(tab.list) }))
+      button.addEventListener('click', () => {
+        appearanceTab = key
+        renderCosmetics()
+        el.appearanceTabs.querySelector('[aria-selected="true"]')?.focus()
+      })
+      return button
+    }),
+  )
+  const tab = APPEARANCE[appearanceTab]
+  el.appearanceSections.replaceChildren(
+    ...tab.groups.map(([name, test]) => {
+      const items = tab.list.filter(test)
+      const section = document.createElement('section')
+      section.className = 'badge-section'
+      const heading = document.createElement('h3')
+      heading.append(name, Object.assign(document.createElement('span'), { textContent: unlockedOf(items) }))
+      const swatches = picker(items, appearanceTab, current[appearanceTab])
+      swatches.setAttribute('aria-label', `${tab.label}: ${name}`)
+      section.append(heading, swatches)
+      return section
+    }),
+  )
+}
+
+function openAppearance() {
+  renderCosmetics()
+  el.appearanceDialog.showModal()
 }
 
 const signed = (n) => (n > 0 ? `+${n}` : n < 0 ? `−${-n}` : '±0')
@@ -760,12 +832,13 @@ function renderStatsDialog() {
 
 function renderBadgesDialog() {
   renderCollection(el.collection)
-  const showcase = profile.showcase ?? []
-  el.showcaseHint.textContent = `Pin up to ${SHOWCASE_SIZE} earned badges to show beside your rank · ${showcase.length}/${SHOWCASE_SIZE} pinned`
+  renderShowcaseEditor()
   renderBadgeTabs()
-  el.badgeSections.replaceChildren(
-    ...CATEGORIES.filter((category) => badgeTab === 'All' || badgeTab === category).map((category) => {
+  const earnedOnly = badgeTab === 'Earned'
+  const sections = CATEGORIES.filter((category) => earnedOnly || badgeTab === 'All' || badgeTab === category).map((category) => {
       const badges = BADGES.filter((badge) => badge.category === category)
+      const shown = earnedOnly ? badges.filter((b) => profile.badges[b.id]) : badges
+      if (!shown.length) return null
       const section = document.createElement('section')
       section.className = 'badge-section'
       const heading = document.createElement('h3')
@@ -774,12 +847,127 @@ function renderBadgesDialog() {
       heading.append(category, count)
       const grid = document.createElement('ul')
       grid.className = 'badge-grid'
-      grid.append(...badges.map(badgeItem))
+      grid.append(...shown.map(badgeItem))
       section.append(heading, grid)
       return section
+    }).filter(Boolean)
+  el.badgeSections.replaceChildren(
+    ...(sections.length
+      ? sections
+      : [Object.assign(document.createElement('p'), { className: 'showcase-hint', textContent: 'No badges yet. Play a few hands to earn some.' })]),
+  )
+}
+
+// ---- The showcase editor ---------------------------------------------------
+
+// One slot per showcase place, in order. A pinned badge can be dragged to another
+// slot, moved with the arrow keys, or taken out with × (or Delete).
+function renderShowcaseEditor() {
+  const showcase = profile.showcase ?? []
+  el.showcaseHint.textContent = showcase.length
+    ? `${showcase.length}/${SHOWCASE_SIZE} · drag to reorder`
+    : `Pin up to ${SHOWCASE_SIZE} earned badges below to show beside your rank`
+  el.showcaseSlots.replaceChildren(
+    ...Array.from({ length: SHOWCASE_SIZE }, (_, i) => {
+      const badge = badgeById(showcase[i])
+      const slot = document.createElement('li')
+      if (!badge) {
+        slot.className = 'slot empty'
+        slot.textContent = 'Empty'
+        return slot
+      }
+      slot.className = `slot filled ${badge.rarity.toLowerCase()}`
+      slot.dataset.slot = badge.id
+      slot.tabIndex = 0
+      slot.setAttribute(
+        'aria-label',
+        `${badge.name}, place ${i + 1} of ${showcase.length}. Arrow keys move it, Delete removes it.`,
+      )
+      const name = Object.assign(document.createElement('span'), { className: 'slot-name', textContent: badge.name })
+      const remove = document.createElement('button')
+      remove.type = 'button'
+      remove.className = 'slot-remove'
+      remove.textContent = '×'
+      remove.setAttribute('aria-label', `Remove ${badge.name} from your showcase`)
+      remove.addEventListener('click', () => unpinFromShowcase(badge.id))
+      slot.append(glyphElement(badge), name, remove)
+      slot.addEventListener('keydown', (event) => {
+        const moves = { ArrowLeft: i - 1, ArrowUp: i - 1, ArrowRight: i + 1, ArrowDown: i + 1, Home: 0, End: showcase.length - 1 }
+        if (event.key in moves) {
+          event.preventDefault()
+          reorderShowcase(badge.id, moves[event.key])
+        } else if (event.key === 'Delete' || event.key === 'Backspace') {
+          event.preventDefault()
+          unpinFromShowcase(badge.id)
+        }
+      })
+      slot.addEventListener('pointerdown', (event) => startSlotDrag(event, slot, badge.id))
+      return slot
     }),
   )
+}
 
+function reorderShowcase(id, to) {
+  const next = moveShowcase(profile, id, to)
+  if (next === profile) return
+  profile = next
+  saveProfile()
+  renderRank()
+  renderShowcaseEditor()
+  el.showcaseSlots.querySelector(`[data-slot="${id}"]`)?.focus()
+}
+
+// Keep focus in the editor, on the badge that slid into the freed place (or the
+// last one). With the showcase empty, fall back to the badge's Pin button.
+function unpinFromShowcase(id) {
+  const index = profile.showcase.indexOf(id)
+  const result = pinBadge(profile, id)
+  profile = result.profile
+  saveProfile()
+  renderRank()
+  renderBadgesDialog()
+  const slots = el.showcaseSlots.querySelectorAll('.slot.filled')
+  ;(slots[Math.min(index, slots.length - 1)] ?? el.badgeSections.querySelector(`[data-pin="${id}"]`))?.focus()
+}
+
+// Drag with a mouse, pen or finger: the badge follows the pointer and drops into
+// the slot whose centre is nearest. A press that barely moves isn't a drag.
+function startSlotDrag(event, slot, id) {
+  if (event.button !== 0 || event.target.closest('.slot-remove')) return
+  const slots = [...el.showcaseSlots.querySelectorAll('.slot.filled')]
+  const centres = slots.map((s) => {
+    const rect = s.getBoundingClientRect()
+    return rect.left + rect.width / 2
+  })
+  const startX = event.clientX
+  const startY = event.clientY
+  let dragging = false
+  let target = slots.indexOf(slot)
+  slot.setPointerCapture(event.pointerId)
+
+  const move = (e) => {
+    const dx = e.clientX - startX
+    const dy = e.clientY - startY
+    if (!dragging && Math.hypot(dx, dy) < 5) return
+    dragging = true
+    slot.classList.add('dragging')
+    slot.style.transform = `translate(${dx}px, ${dy}px)`
+    target = centres.reduce((best, c, i) => (Math.abs(c - e.clientX) < Math.abs(centres[best] - e.clientX) ? i : best), 0)
+    slots.forEach((s, i) => s.classList.toggle('drop-target', i === target && s !== slot))
+  }
+  const end = (e) => {
+    slot.removeEventListener('pointermove', move)
+    slot.removeEventListener('pointerup', end)
+    slot.removeEventListener('pointercancel', end)
+    if (!dragging) return
+    slot.style.transform = ''
+    slot.classList.remove('dragging')
+    slots.forEach((s) => s.classList.remove('drop-target'))
+    if (e.type === 'pointerup') reorderShowcase(id, target)
+  }
+  slot.addEventListener('pointermove', move)
+  slot.addEventListener('pointerup', end)
+  slot.addEventListener('pointercancel', end)
 }
 
 // ---- Collection points and badge tabs ----------------------------------------------
@@ -823,10 +1011,10 @@ function renderCollection(container) {
 let badgeTab = 'All'
 
 function renderBadgeTabs() {
-  const tabs = ['All', ...CATEGORIES]
+  const tabs = ['All', 'Earned', ...CATEGORIES]
   el.badgeTabs.replaceChildren(
     ...tabs.map((tab) => {
-      const badges = BADGES.filter((b) => tab === 'All' || b.category === tab)
+      const badges = BADGES.filter((b) => tab === 'All' || tab === 'Earned' || b.category === tab)
       const button = document.createElement('button')
       button.type = 'button'
       button.className = 'badge-tab'
@@ -897,7 +1085,7 @@ function togglePin(id) {
 // ---- The round -------------------------------------------------------------
 
 const activeHand = () => state.hands[state.active]
-const newHand = (cards = []) => ({ cards, doubled: false, done: false, fromAces: false, riskyHit: false, needle: false, view: null })
+const newHand = (cards = []) => ({ cards, doubled: false, done: false, fromAces: false, riskyHit: false, needle: false, hailMary: false, view: null })
 const isBust = (hand) => handValue(hand.cards).total > 21
 // Bets at risk: a doubled hand counts two. Stored so leaving mid-hand costs it all.
 const stake = () => state.hands.reduce((sum, hand) => sum + (hand.doubled ? 2 : 1), 0)
@@ -1119,6 +1307,7 @@ function hit() {
   if (!before.soft && before.total >= 17) {
     hand.riskyHit = true
     if (before.total >= 18 && total === 21) hand.needle = true
+    if (before.total === 20 && total === 21) hand.hailMary = true
   }
   // A bust ends the hand; so does 21, which can only be stood on.
   if (total >= 21) endHand()
@@ -1253,6 +1442,7 @@ function finish() {
       doubled: hand.doubled,
       riskyHit: hand.riskyHit,
       needle: hand.needle,
+      hailMary: hand.hailMary,
     })),
     dealer: state.dealer,
     stacked: !state.ranked,
@@ -1633,12 +1823,21 @@ const describe = (p) => {
   return `${rankOf(p.rp).name}, ${badges} badge${badges === 1 ? '' : 's'}, ${p.games} hand${p.games === 1 ? '' : 's'}`
 }
 
+el.openAppearance.addEventListener('click', openAppearance)
+el.closeAppearance.addEventListener('click', () => el.appearanceDialog.close())
+el.appearanceDialog.addEventListener('click', (event) => {
+  if (event.target === el.appearanceDialog) el.appearanceDialog.close()
+})
+el.settingsAppearance.addEventListener('click', () => {
+  el.settingsDialog.close()
+  openAppearance()
+})
+
 el.openSettings.addEventListener('click', () => {
   const prefs = getSettings()
   el.settingSound.checked = prefs.sound
   el.settingHaptics.checked = prefs.haptics
   el.settingCoach.checked = prefs.coach
-  renderCosmetics()
   el.hapticsRow.hidden = !canVibrate()
   clearImport()
   disarmReset()

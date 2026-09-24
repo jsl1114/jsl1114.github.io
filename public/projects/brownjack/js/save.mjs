@@ -14,7 +14,7 @@ export const MAX_SAVE_BYTES = 100_000
 const COUNTERS = [
   'rp', 'peakRp', 'games', 'wins', 'losses', 'pushes', 'streak', 'bestStreak', 'lossStreak', 'blackjacks', 'daredevilWins',
   'decisions', 'goodDecisions', 'textbookStreak', 'bestTextbookStreak',
-  'season', 'seasonPeakRp', 'seasonGames',
+  'season', 'seasonPeakRp', 'seasonGames', 'blackjackStreak',
 ]
 const BADGE_IDS = new Set(BADGES.map((badge) => badge.id))
 

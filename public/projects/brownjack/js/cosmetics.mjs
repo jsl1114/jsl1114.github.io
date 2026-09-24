@@ -2,8 +2,9 @@
 //
 // Each tier (by best-ever rank, so dropping a tier never takes one away)
 // unlocks a table and a card back in its metal. The other tables are earned
-// with collection points, which every badge adds by rarity, and each Legendary
-// badge unlocks a card back themed on it. Every check reads a context:
+// with collection points, which every badge adds by rarity, and each Epic and
+// Legendary badge unlocks a card back themed on it (the Legendary ones shimmer).
+// Every check reads a context:
 // { profile }.
 import { BADGES } from './badges.mjs'
 import { TIERS, rankOf } from './ranked.mjs'
@@ -60,6 +61,7 @@ export const TABLES = [
 ]
 
 const legendaryBack = (badge, id, name) => ({ id, name, file: `back-${id}.svg`, unlock: ['badge', badge], shimmer: true })
+const epicBack = (badge, id, name) => ({ id, name, file: `back-${id}.svg`, unlock: ['badge', badge] })
 
 export const CARD_BACKS = [
   { id: 'classic', name: 'Classic', file: 'back.svg', unlock: ['tier', 0] },
@@ -80,6 +82,28 @@ export const CARD_BACKS = [
   legendaryBack('completionist', 'completionist', 'Mosaic'),
   legendaryBack('friday-13', 'friday13', 'Hockey mask'),
   legendaryBack('bankruptcy', 'bestboss', "World's best boss"),
+  legendaryBack('four-kind', 'quads', 'Quads'),
+  legendaryBack('full-house', 'house', 'House of cards'),
+  legendaryBack('hail-mary', 'longshot', 'Long shot'),
+  legendaryBack('double-trouble', 'double', 'Double trouble'),
+  legendaryBack('back-to-back', 'backtoback', 'Back to back'),
+  legendaryBack('new-year', 'fireworks', 'Fireworks'),
+  // One for each Epic badge: a pattern and a single emblem, with no shimmer.
+  epicBack('straight', 'straight', 'Straight'),
+  epicBack('ace-collector', 'ace-trio', 'Ace trio'),
+  epicBack('six-charlie', 'six-fan', 'Six-card fan'),
+  epicBack('bad-beat', 'bad-beat', 'Broken heart'),
+  epicBack('standoff', 'standoff', 'Crossed swords'),
+  epicBack('meltdown', 'meltdown', 'Meltdown'),
+  epicBack('original', 'original', 'The Original'),
+  epicBack('rock-bottom', 'rock-bottom', 'Cairn'),
+  epicBack('textbook', 'textbook', 'Textbook'),
+  epicBack('thrill-seeker', 'thrill', 'Lightning'),
+  epicBack('lifer', 'lifer', 'Tally marks'),
+  epicBack('royalty', 'royalty', 'Emerald crown'),
+  epicBack('diamond', 'brilliant', 'Brilliant cut'),
+  epicBack('fresh-start', 'fresh-shoe', 'Sprout'),
+  epicBack('collector', 'album', 'Rosette'),
 ]
 
 // { unlocked, current, target, text, status } for one item; `status` is a short

@@ -1,6 +1,7 @@
 // dev-test.js — replays everything the game can celebrate or sound (dev only).
 // Four tabs, each a set of grouped lists: rank-ups, badges, unlocks and sound.
 import { BADGES, CATEGORIES, LEGEND_AT, POINTS_PER_DIVISION, rankOf } from './ranked.mjs'
+import { badgeById } from './badges.mjs'
 import { celebrate, celebrateRank, celebrateUnlock, emblemElement, glyphElement } from './celebrate.mjs'
 import { CARD_BACKS, TABLES, byRank, progress, unlocksAt } from './cosmetics.mjs'
 import { newProfile } from './ranked.mjs'
@@ -68,10 +69,25 @@ group('rank', 'Queue', [
       for (const id of ['hat-trick', 'heater', 'original', 'inferno']) celebrate(BADGES.find((b) => b.id === id))
     },
   }),
+  // What importing a strong save queues: badges caught up, then every unlock.
+  row(symbol('⇪'), 'An imported save', {
+    sub: 'Twelve badges and ten unlocks: skip the rest for a summary',
+    onClick: () => {
+      const ids = ['natural', 'heater', 'straight', 'sevens', 'twins', 'flush', 'standoff', 'four-kind', 'regular', 'gold', 'meltdown', 'charlie']
+      for (const id of ids) celebrate(BADGES.find((b) => b.id === id))
+      for (const table of TABLES.slice(7, 12)) celebrateUnlock(table, 'table', progress(table, empty).text)
+      for (const back of CARD_BACKS.filter((b) => !byRank(b)).slice(0, 5)) celebrateUnlock(back, 'back', progress(back, empty).text)
+    },
+  }),
 ])
 
 // ---- Badges ---------------------------------------------------------------------
 
+// The newest Legendary badges, up top while they're being tuned; each also
+// appears under its type below.
+const NEW_BADGES = ['four-kind', 'full-house', 'hail-mary', 'double-trouble', 'back-to-back', 'new-year']
+group('badges', 'New · Legendary', NEW_BADGES.map(badgeById).map((badge) =>
+  row(glyphElement(badge), badge.name, { sub: badge.desc, detail: badge.category, onClick: () => celebrate(badge) })))
 group('badges', 'By rarity', ['Common', 'Rare', 'Epic', 'Legendary'].map((rarity) => {
   const badge = BADGES.find((b) => b.rarity === rarity)
   const count = BADGES.filter((b) => b.rarity === rarity).length
@@ -101,7 +117,9 @@ group('unlocks', 'Rank tables', tables.filter(byRank).map((t) => unlockRow(t, 't
   'In the game these are named on the tier-up coin flip rather than shown on their own.')
 group('unlocks', 'Collection tables', tables.filter((t) => !byRank(t)).map((t) => unlockRow(t, 'table')))
 group('unlocks', 'Rank card backs', backs.filter(byRank).map((b) => unlockRow(b, 'back')))
-group('unlocks', 'Legendary card backs', backs.filter((b) => !byRank(b)).map((b) => unlockRow(b, 'back')))
+const badgeBacks = (rarity) => backs.filter((b) => !byRank(b) && badgeById(b.unlock[1]).rarity === rarity)
+group('unlocks', 'Legendary card backs', badgeBacks('Legendary').map((b) => unlockRow(b, 'back')), 'These shimmer on the table.')
+group('unlocks', 'Epic card backs', badgeBacks('Epic').map((b) => unlockRow(b, 'back')))
 
 // ---- Sound ----------------------------------------------------------------------
 

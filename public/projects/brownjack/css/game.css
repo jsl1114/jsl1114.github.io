@@ -625,23 +625,28 @@ kbd {
   color: var(--walnut);
 }
 
-/* A dot on the line for each step: filled once reached. */
-.ladder-step::before {
+/* A dot on the line for each step: filled once reached. It hangs off the name
+   so it stays level with it when the bar and tag wrap onto a second row, and
+   is centred on the line (17px left: the 16px padding plus half the 2px border). */
+.ladder-name::before {
   content: '';
   position: absolute;
-  left: -22px;
-  width: 10px;
-  height: 10px;
+  top: 50%;
+  left: -17px;
+  width: 14px;
+  height: 14px;
+  box-sizing: border-box;
   border: 2px solid rgb(73 38 18 / 0.3);
   border-radius: 50%;
   background: var(--cream);
+  transform: translate(-50%, -50%);
 }
 
 .ladder-step.done {
   color: var(--bark);
 }
 
-.ladder-step.done::before {
+.ladder-step.done .ladder-name::before {
   border-color: var(--bark);
   background: var(--bark);
 }
@@ -650,13 +655,14 @@ kbd {
   font-weight: 700;
 }
 
-.ladder-step.now::before {
+.ladder-step.now .ladder-name::before {
   border-color: var(--mustard);
   background: var(--mustard);
   box-shadow: 0 0 0 3px rgb(255 219 88 / 0.35);
 }
 
 .ladder-name {
+  position: relative;
   min-width: 96px;
 }
 
@@ -858,7 +864,7 @@ kbd {
 
 .menu-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin-top: -6px;
 }
@@ -1287,10 +1293,131 @@ kbd {
   font-size: 18px;
 }
 
-.showcase-hint {
+/* The showcase editor: pinned badges in the order they show beside the rank.
+   Drag one (or use the arrow keys) to move it; × takes it out. */
+.showcase-editor {
   margin-bottom: 12px;
+  padding: 10px 12px 12px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.6);
+}
+
+.showcase-editor-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 10px;
+  margin-bottom: 10px;
+}
+
+.showcase-editor-head h3 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.showcase-hint {
   color: var(--walnut);
   font-size: 11px;
+}
+
+.showcase-slots {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  list-style: none;
+}
+
+.slot {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 8px 2px 6px;
+  border-radius: 10px;
+  font-size: 10px;
+  text-align: center;
+}
+
+.slot.empty {
+  justify-content: center;
+  border: 1.5px dashed rgb(73 38 18 / 0.25);
+  color: var(--walnut);
+}
+
+.slot.empty::before {
+  content: '';
+  width: 38px;
+  height: 38px;
+}
+
+.slot.filled {
+  background: rgb(176 129 104 / 0.12);
+  cursor: grab;
+  touch-action: none;
+  outline: none;
+}
+
+.slot.filled:focus-visible {
+  box-shadow: 0 0 0 2px var(--bark);
+}
+
+.slot .badge-glyph {
+  width: 38px;
+  height: 38px;
+  border-width: 2px;
+  font-size: 11px;
+}
+
+.slot .badge-glyph.long {
+  font-size: 8px;
+}
+
+.slot-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* × sits on the slot's corner, clear of the badge even in a narrow slot. */
+.slot-remove {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgb(73 38 18 / 0.25);
+  border-radius: 50%;
+  background: var(--cream);
+  color: var(--walnut);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.slot-remove:hover {
+  border-color: var(--bark);
+  color: var(--bark);
+}
+
+/* Mid-drag: the badge follows the pointer and the slot it would land in lights up. */
+.slot.dragging {
+  z-index: 3;
+  cursor: grabbing;
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.25);
+  background: var(--cream);
+}
+
+.slot.drop-target {
+  box-shadow: inset 0 0 0 2px var(--mustard);
 }
 
 /* Collection points toward the next table. */
@@ -1365,11 +1492,11 @@ kbd {
   display: none;
 }
 
-/* Phones: two rows of three instead of a strip that hides tabs off the edge. */
+/* Phones: two rows of four instead of a strip that hides tabs off the edge. */
 @media (max-width: 480px) {
   .badge-tabs {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     overflow: visible;
   }
 }
@@ -1681,6 +1808,31 @@ kbd {
 
 .settings-dialog {
   width: min(440px, calc(100vw - 32px));
+}
+
+/* Appearance: tables and card backs, a tab each, grouped by how they unlock. */
+.appearance-dialog {
+  width: min(480px, calc(100vw - 32px));
+}
+
+.appearance-intro {
+  margin: 4px 0 12px;
+  color: var(--walnut);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+/* Two tabs share the row evenly, on phones too (after the badge tabs' grid). */
+.appearance-tabs {
+  display: flex;
+}
+
+.appearance-tabs .badge-tab {
+  flex: 1;
+}
+
+.badge-section > .swatches {
+  margin-top: 0;
 }
 
 .swatches {

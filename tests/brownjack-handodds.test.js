@@ -5,7 +5,7 @@ import { bestMove } from "../public/projects/brownjack/js/strategy.mjs";
 import {
   FEATURE_ODDS, GRADES, HAND_BADGES, cardChance, featureName, gradeOf, handFeatures, isHallOfFame, isNotable, oneIn, rateHand,
 } from "../public/projects/brownjack/js/handodds.mjs";
-import { HALL_SIZE, addToHall, rankHall } from "../public/projects/brownjack/js/halloffame.mjs";
+import { HALL_SIZE, addToHall, hallOf, rankHall } from "../public/projects/brownjack/js/halloffame.mjs";
 
 const suits = ["hearts", "clubs", "spades", "diamonds"];
 const cards = (...ranks) => ranks.map((rank, i) => ({ rank, suit: suits[i % 4] }));
@@ -28,6 +28,26 @@ test("a hand is as rare as the rarest thing it did", () => {
   assert.equal(rateHand(one("player", ["7", "7", "7"], ["10", "8"])).grade, "SSS");
   // Hail Mary is a flag from the hit that made it.
   assert.equal(rateHand(one("player", ["10", "10", "A"], ["10", "8"], { riskyHit: true, needle: true, hailMary: true })).reason, "hail-mary");
+});
+
+test("a rare bad hand rates as highly as a rare good one, and is brutal", () => {
+  const disaster = {
+    hands: [
+      { cards: cards("8", "3", "5"), winner: "dealer", doubled: true },
+      { cards: [{ rank: "8", suit: "clubs" }, { rank: "2", suit: "hearts" }, { rank: "7", suit: "spades" }], winner: "dealer", doubled: true },
+    ],
+    dealer: cards("6", "10", "4"),
+  };
+  assert.equal(rateHand(disaster).reason, "double-disaster");
+  assert.equal(rateHand(disaster).grade, "SSS");
+  assert.equal(rateHand(disaster).brutal, true);
+  const longCon = one("dealer", ["10", "8"], ["2", "3", "4", "2", "5", "5"]);
+  assert.equal(rateHand(longCon).reason, "long-con");
+  assert.equal(rateHand(longCon).brutal, true);
+  assert.equal(rateHand(one("dealer", ["10", "6", "2", "3", "K"], ["10", "8"])).reason, "overloaded");
+  // A plain loss is common, not brutal; a good rare hand isn't brutal either.
+  assert.equal(rateHand(one("dealer", ["K", "7"], ["10", "9"])).brutal, false);
+  assert.equal(rateHand(one("player", ["7", "7", "7"], ["10", "8"])).brutal, false);
 });
 
 test("the more exciting the hand, the better its grade", () => {
@@ -122,6 +142,16 @@ test("the Hall of Fame keeps the ten rarest S-and-above hands of all time", () =
   assert.equal(sevens.place, 1, "rarer than every Standoff");
   assert.equal(sevens.hall.length, HALL_SIZE);
   assert.equal(sevens.hall[0].reason, "sevens");
+
+  // Brutal hands go to the Hall of Shame, with their own ten places.
+  const aceslow = entry(50, {
+    hands: [{ cards: cards("A", "5"), winner: "dealer" }, { cards: [{ rank: "A", suit: "clubs" }, { rank: "6", suit: "hearts" }], winner: "dealer" }],
+    dealer: cards("10", "9"),
+  });
+  const shamed = addToHall(sevens.hall, aceslow);
+  assert.equal(shamed.place, 1, "first in the Hall of Shame");
+  assert.equal(hallOf(shamed.hall, "fame").length, HALL_SIZE, "the Hall of Fame is untouched");
+  assert.deepEqual(hallOf(shamed.hall, "shame").map((e) => e.reason), ["aces-low"]);
 
   // Old entries are rated again when read, and anything unrated is dropped.
   const stale = [{ ...standoff(5), chance: 0.5, grade: "D" }, { ...entry(6, one("player", ["K", "9"], ["10", "7"])) }];

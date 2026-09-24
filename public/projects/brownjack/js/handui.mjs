@@ -3,7 +3,8 @@
 import { featureName, isHallOfFame, oneIn } from './handodds.mjs'
 
 // The hand's grade as one letter among the round's other chips; tapping it
-// shows why. A rare hand (S or better) arrives locked, in a spotlight: the rest
+// shows why. A brutal hand (rare the painful way) says so. A rare hand (S or
+// better) arrives locked, in a spotlight: the rest
 // of the screen goes dark and taps elsewhere only nudge it, until it's tapped
 // and `onReveal` runs.
 export function gradeChip(record, { onReveal } = {}) {
@@ -11,17 +12,20 @@ export function gradeChip(record, { onReveal } = {}) {
   chip.type = 'button'
   chip.className = 'grade-pill'
   chip.dataset.grade = record.grade
-  const why = `${featureName(record.reason)} · ${oneIn(record.chance)} hands${record.place ? ` · #${record.place} in your Hall of Fame` : ''}`
+  chip.classList.toggle('brutal', Boolean(record.brutal))
+  const hall = record.brutal ? 'Hall of Shame' : 'Hall of Fame'
+  const kind = record.brutal ? 'Brutal hand' : 'Rare hand'
+  const why = `${record.brutal ? 'Brutal · ' : ''}${featureName(record.reason)} · ${oneIn(record.chance)} hands${record.place ? ` · #${record.place} in your ${hall}` : ''}`
   chip.append(
     Object.assign(document.createElement('span'), { className: 'grade-letter', textContent: record.grade }),
     Object.assign(document.createElement('span'), { className: 'grade-detail', textContent: why }),
-    Object.assign(document.createElement('span'), { className: 'grade-hint', textContent: 'Rare hand! Tap to reveal' }),
+    Object.assign(document.createElement('span'), { className: 'grade-hint', textContent: `${kind}! Tap to reveal` }),
     ...['a', 'b', 'c', 'd'].map((spot) => Object.assign(document.createElement('span'), { className: `grade-spark spark-${spot}`, ariaHidden: 'true' })),
   )
   let locked = isHallOfFame(record.grade)
   const expand = (open) => {
     chip.setAttribute('aria-expanded', String(open))
-    chip.setAttribute('aria-label', locked ? `Rare hand, grade ${record.grade}: tap to reveal` : `Rarity ${record.grade}${open ? `: ${why}` : ''}`)
+    chip.setAttribute('aria-label', locked ? `${kind}, grade ${record.grade}: tap to reveal` : `Rarity ${record.grade}${open ? `: ${why}` : ''}`)
   }
   chip.classList.toggle('locked', locked)
   expand(false)

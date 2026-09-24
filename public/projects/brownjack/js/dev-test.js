@@ -89,7 +89,8 @@ group('rank', 'Queue', [
 
 // The newest badges, up top while they're being tuned; each also appears under
 // its type below.
-const NEW_BADGES = ['hall-of-famer', 'hall-of-legends', 'four-kind', 'full-house', 'hail-mary', 'double-trouble', 'back-to-back', 'new-year']
+const NEW_BADGES = ['doubled-out', 'overloaded', 'double-whammy', 'slow-burn', 'timber', 'aces-low', 'long-con', 'double-disaster',
+  'hall-of-famer', 'hall-of-legends', 'four-kind', 'full-house', 'hail-mary', 'double-trouble', 'back-to-back', 'new-year']
 group('badges', 'New', NEW_BADGES.map(badgeById).map((badge) =>
   row(glyphElement(badge), badge.name, { sub: badge.desc, detail: badge.rarity, onClick: () => celebrate(badge) })))
 group('badges', 'By rarity', ['Common', 'Rare', 'Epic', 'Legendary'].map((rarity) => {
@@ -122,6 +123,10 @@ const SAMPLE_HANDS = [
   ], [c('9', 'diamonds'), c('10', 'clubs')], { delta: 30 })],
   ['A daily blackjack', sampleHand([hand('player', c('A'), c('Q'))], [c('9', 'spades'), c('8', 'clubs')],
     { mode: 'daily', label: 'Daily #2 · hand 3 of 5', delta: null })],
+  ['Double Disaster, a brutal hand', sampleHand([
+    { ...hand('dealer', c('8'), c('3', 'clubs'), c('5')), doubled: true },
+    { ...hand('dealer', c('8', 'spades'), c('2'), c('7', 'clubs')), doubled: true },
+  ], [c('6', 'diamonds'), c('10', 'clubs'), c('4')], { delta: -56, earned: ['double-disaster', 'double-whammy'], unlocks: ['disaster'], place: 1 })],
   ['A rigged hand', sampleHand([hand('player', c('A', 'spades'), c('J', 'clubs'))], [c('9', 'diamonds'), c('8', 'clubs')],
     { mode: 'rigged', label: 'Rigged · practice', delta: null })],
 ]
@@ -139,6 +144,13 @@ const HALL_SAMPLES = [
   [[hand('player', c('6'), c('7', 'clubs'), c('8', 'spades'))], [c('10', 'diamonds'), c('9', 'clubs')]],
   [[hand('player', c('A'), c('A', 'clubs'), c('A', 'spades'), c('8'))], [c('10', 'diamonds'), c('9', 'clubs')]],
   [[hand('player', c('K'), c('9'))], [c('10', 'clubs'), c('7')]],
+  // And brutal ones, for the Hall of Shame.
+  [[hand('dealer', c('A'), c('5')), hand('dealer', c('A', 'clubs'), c('6'))], [c('10', 'clubs'), c('9')]],
+  [[hand('dealer', c('10'), c('8'))], [c('2'), c('3'), c('4', 'clubs'), c('2', 'spades'), c('5'), c('5', 'clubs')]],
+  [[{ ...hand('dealer', c('8'), c('3', 'clubs'), c('5')), doubled: true }, { ...hand('dealer', c('8', 'spades'), c('2'), c('7', 'clubs')), doubled: true }],
+    [c('6', 'diamonds'), c('10', 'clubs'), c('4')]],
+  [[hand('dealer', c('2'), c('3', 'clubs'), c('2', 'spades'), c('4'), c('3', 'diamonds'), c('K'))], [c('10', 'diamonds'), c('7', 'clubs')]],
+  [[hand('dealer', c('K'), c('9'))], [c('2', 'clubs'), c('4'), c('3'), c('5', 'spades'), c('7')]],
 ]
 // The end of a hand, as the game shows it: the grade chip among the round's
 // chips, and Play again waiting on a rare hand until its grade is tapped.
@@ -150,6 +162,12 @@ const AFTER_HAND = [
   ['Straight 21', [hand('player', c('6'), c('7', 'clubs'), c('8', 'spades'))], [c('10', 'diamonds'), c('9', 'clubs')]],
   ['Hail Mary', [{ ...hand('player', c('10'), c('K', 'clubs'), c('A', 'spades')), riskyHit: true, needle: true, hailMary: true }], [c('10', 'clubs'), c('8')]],
   ['Aces High', [hand('player', c('A'), c('K', 'clubs')), hand('player', c('A', 'spades'), c('Q'))], [c('10', 'diamonds'), c('8', 'clubs')]],
+  ['Brutal: Double Whammy', [hand('dealer', c('8'), c('10', 'clubs')), hand('dealer', c('8', 'spades'), c('9'))], [c('10', 'diamonds'), c('Q', 'clubs')]],
+  ['Brutal: Timber!', [hand('dealer', c('2'), c('3', 'clubs'), c('2', 'spades'), c('4'), c('3', 'diamonds'), c('K'))], [c('10', 'diamonds'), c('7', 'clubs')]],
+  ['Brutal: Double Disaster', [
+    { ...hand('dealer', c('8'), c('3', 'clubs'), c('5')), doubled: true },
+    { ...hand('dealer', c('8', 'spades'), c('2'), c('7', 'clubs')), doubled: true },
+  ], [c('6', 'diamonds'), c('10', 'clubs'), c('4')]],
 ]
 const stage = node('div', 'demo-stage')
 const stageNote = node('p', 'group-note', 'Tap a row below to see the end of that hand here.')
@@ -170,7 +188,9 @@ function showAfterHand(record) {
     if (chip.classList.contains('locked')) return nudge(chip)
     stageNote.textContent = 'On to the next hand.'
   })
-  score.append(...(isNotable(record.grade) ? [chip] : []), node('span', 'score-line', 'Win +30'), node('strong', 'score-total', '+30 RP'))
+  const lost = record.hands.every((h) => h.winner === 'dealer')
+  score.append(...(isNotable(record.grade) ? [chip] : []),
+    node('span', 'score-line', lost ? 'Loss −14' : 'Win +30'), node('strong', 'score-total', lost ? '−14 RP' : '+30 RP'))
   stage.replaceChildren(again, score)
   stage.scrollIntoView({ block: 'center', behavior: 'smooth' })
   if (!isNotable(record.grade)) {
@@ -178,7 +198,7 @@ function showAfterHand(record) {
     return
   }
   stageNote.textContent = locked
-    ? 'A rare hand: Play again waits (try it) until the grade is tapped.'
+    ? `A ${record.brutal ? 'brutal' : 'rare'} hand: Play again waits (try it) until the grade is tapped.`
     : 'Tap the grade to see why it got it.'
 }
 
@@ -191,14 +211,15 @@ group('share', 'After a hand', [
       onClick: () => showAfterHand(record),
     })
   }),
-  row(symbol('!'), 'First S-or-better hand notice', {
-    sub: 'Shown once, when the first rare hand is revealed',
-    onClick: () => showToast('Your first hand graded S or better! It’s kept in your Hall of Fame, on the start screen.', {
-      action: 'Open Hall of Fame',
-      onAction: () => { stageNote.textContent = 'In the game, this opens the Hall of Fame.' },
-      ms: 14_000,
-    }),
-  }),
+  ...[['Hall of Fame', 'hand', 'rare'], ['Hall of Shame', 'brutal hand', 'brutal']].map(([hall, what, kind]) =>
+    row(symbol(kind === 'brutal' ? '☠' : '!'), `First ${kind} hand notice`, {
+      sub: `Shown once, when the first ${what} graded S or better is revealed`,
+      onClick: () => showToast(`Your first ${what} graded S or better! It’s kept in your ${hall}, from the Hall of Fame button on the start screen.`, {
+        action: `Open ${hall}`,
+        onAction: () => { stageNote.textContent = `In the game, this opens the ${hall}.` },
+        ms: 14_000,
+      }),
+    })),
 ])
 // The demo sits above the rows it demonstrates.
 const afterHandRows = $('tab-share').querySelector('.group:last-of-type')
@@ -215,7 +236,7 @@ group('share', 'Share images', SAMPLE_HANDS.map(([name, record]) =>
   })), 'Opens the image in a new tab, drawn on the Saloon table.')
 group('share', 'Hall of Fame', [
   row(symbol('★'), 'Fill the Hall of Fame', {
-    sub: 'A dozen sample hands; the ones graded S or better make it',
+    sub: 'Sample hands, rare and brutal; the ones graded S or better make each hall',
     onClick: () => {
       let hall = []
       HALL_SAMPLES.forEach(([hands, dealer], i) => {

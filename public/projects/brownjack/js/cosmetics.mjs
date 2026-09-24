@@ -89,6 +89,8 @@ export const CARD_BACKS = [
   legendaryBack('back-to-back', 'backtoback', 'Back to back'),
   legendaryBack('new-year', 'fireworks', 'Fireworks'),
   legendaryBack('hall-of-legends', 'pantheon', 'Hall of Legends'),
+  legendaryBack('long-con', 'longcon', 'The long con'),
+  legendaryBack('double-disaster', 'disaster', 'Double disaster'),
   // One for each Epic badge: a pattern and a single emblem, with no shimmer.
   epicBack('straight', 'straight', 'Straight'),
   epicBack('ace-collector', 'ace-trio', 'Ace trio'),
@@ -105,6 +107,8 @@ export const CARD_BACKS = [
   epicBack('diamond', 'brilliant', 'Brilliant cut'),
   epicBack('fresh-start', 'fresh-shoe', 'Sprout'),
   epicBack('collector', 'album', 'Rosette'),
+  epicBack('timber', 'timber', 'Toppling tower'),
+  epicBack('aces-low', 'aces-low', 'Aces low'),
 ]
 
 // { unlocked, current, target, text, status } for one item; `status` is a short

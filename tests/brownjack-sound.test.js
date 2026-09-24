@@ -12,7 +12,7 @@ test("sound and vibration are safe no-ops where they aren't available", () => {
 });
 
 test("preferences default on and can be switched off", () => {
-  assert.deepEqual(getSettings(), { sound: true, haptics: true, coach: false, table: "oak", cardBack: "classic", unlocksSeen: null, hallNoticeSeen: false });
+  assert.deepEqual(getSettings(), { sound: true, haptics: true, coach: false, table: "oak", cardBack: "classic", unlocksSeen: null, hallNoticeSeen: false, shameNoticeSeen: false });
   assert.equal(setSetting("sound", false).sound, false);
   assert.equal(getSettings().sound, false);
   assert.equal(getSettings().haptics, true);

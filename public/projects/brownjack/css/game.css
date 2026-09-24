@@ -1923,6 +1923,16 @@ kbd {
   box-shadow: 0 0 12px 2px var(--grade);
 }
 
+/* A brutal hand's chip wears a red ring, and its sparkles are embers. */
+.grade-pill.brutal .grade-letter {
+  outline: 2px solid #ff5a4e;
+  outline-offset: 1px;
+}
+
+.grade-pill.brutal .grade-spark {
+  background: #ff7a5c;
+}
+
 /* Four sparkles twinkle around the locked chip. */
 .grade-spark {
   display: none;
@@ -2112,6 +2122,16 @@ a.setting-btn {
 
 .hall-dialog {
   width: min(520px, calc(100vw - 32px));
+}
+
+.hall-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hall-tab-label svg {
+  flex: none;
 }
 
 .hall-list {

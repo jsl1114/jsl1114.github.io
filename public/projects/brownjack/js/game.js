@@ -73,7 +73,7 @@ import {
 import { daysLeft, rollSeason, seasonId, seasonName } from './seasons.mjs'
 import { featureName, isHallOfFame, isNotable, oneIn, rateHand } from './handodds.mjs'
 import { clearSpotlight, gradeChip, nudge, showToast } from './handui.mjs'
-import { addToHall, rankHall } from './halloffame.mjs'
+import { HALLS, HALL_SIZE, addToHall, hallOf, rankHall } from './halloffame.mjs'
 import { GAME_URL, canvasBlob, drawShareCard, headline } from './sharecard.mjs'
 
 const $ = (id) => document.getElementById(id)
@@ -125,6 +125,9 @@ const el = {
   hallDialog: $('hall-dialog'),
   closeHall: $('close-hall'),
   hallList: $('hall-list'),
+  hallTitle: $('hall-title'),
+  hallTabs: $('hall-tabs'),
+  hallIntro: $('hall-intro'),
   settingsAppearance: $('settings-appearance'),
   appearanceDialog: $('appearance-dialog'),
   closeAppearance: $('close-appearance'),
@@ -1534,7 +1537,8 @@ function showResult(winners, result, beforeRp) {
 
 // ---- Sharing a hand and the Hall of Fame -----------------------------------------
 // After every hand: how rare it was and its grade, and an image of it to share.
-// Hands graded S or better go into this device's Hall of Fame, the ten rarest ever.
+// Hands graded S or better go into this device's Hall of Fame (or, if brutal,
+// its Hall of Shame), the ten rarest ever in each.
 
 const HALL_KEY = 'brownjack.halloffame.v1'
 
@@ -1588,8 +1592,8 @@ function handRecord(winners, result, beforeRp) {
     record.place = added.place
     hall = added.hall
   }
-  // The first hand in the Hall, and a full one, each earn a badge.
-  const hallBadges = awardHallBadges(profile, hall.length, record.at)
+  // The first hand in the Hall of Fame, and a full one, each earn a badge.
+  const hallBadges = awardHallBadges(profile, hallOf(hall, 'fame').length, record.at)
   if (hallBadges.earned.length) {
     profile = hallBadges.profile
     saveProfile()
@@ -1610,7 +1614,10 @@ function handRecord(winners, result, beforeRp) {
 // the way to the Hall of Fame.
 let shownGrade = null
 
+let shownRecord = null
+
 function showGrade(record) {
+  shownRecord = record
   shownGrade = isNotable(record.grade) ? gradeChip(record, { onReveal: revealRareHand }) : null
   state.gradeLock = Boolean(record.grade && isHallOfFame(record.grade))
   el.again.classList.toggle('waiting', state.gradeLock)
@@ -1623,11 +1630,14 @@ function revealRareHand() {
   state.gradeLock = false
   el.again.classList.remove('waiting')
   if (!el.again.hidden) el.again.focus()
-  if (getSettings().hallNoticeSeen) return
-  setSetting('hallNoticeSeen', true)
-  showToast('Your first hand graded S or better! It’s kept in your Hall of Fame, on the start screen.', {
-    action: 'Open Hall of Fame',
-    onAction: openHall,
+  const brutal = Boolean(shownRecord?.brutal)
+  const seen = brutal ? 'shameNoticeSeen' : 'hallNoticeSeen'
+  if (getSettings()[seen]) return
+  setSetting(seen, true)
+  const hall = brutal ? 'Hall of Shame' : 'Hall of Fame'
+  showToast(`Your first ${brutal ? 'brutal hand' : 'hand'} graded S or better! It’s kept in your ${hall}, from the Hall of Fame button on the start screen.`, {
+    action: `Open ${hall}`,
+    onAction: () => openHall(brutal ? 'shame' : 'fame'),
     ms: 14_000,
   })
 }
@@ -1735,23 +1745,63 @@ function hallItem(entry, place) {
   return item
 }
 
+// Two halls in one dialog, a tab each.
+const ICON_ATTRS = 'viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'
+const HALL_TABS = {
+  fame: {
+    title: 'Hall of Fame',
+    icon: `<svg ${ICON_ATTRS}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`,
+    intro: 'Your ten rarest hands of all time, graded S or better. A hand is as rare as the rarest thing it did, such as Aces High or Lucky Sevens. Rigged hands don’t count.',
+    empty: 'No hands graded S or better yet. Standoff, Royal Couple or Straight 21 would get you in.',
+  },
+  shame: {
+    title: 'Hall of Shame',
+    icon: `<svg ${ICON_ATTRS}><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/></svg>`,
+    intro: 'Your ten most brutal hands: rare the painful way, graded S or better, such as Aces Low or The Long Con. Rigged hands don’t count.',
+    empty: 'No brutal hands graded S or better yet. Timber!, Slow Burn or Aces Low would get you in.',
+  },
+}
+let hallTab = 'fame'
+
 function renderHall() {
+  const tab = HALL_TABS[hallTab]
+  el.hallTitle.textContent = tab.title
+  el.hallIntro.textContent = tab.intro
+  el.hallTabs.replaceChildren(
+    ...HALLS.map((name) => {
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.className = 'badge-tab hall-tab'
+      button.setAttribute('role', 'tab')
+      button.setAttribute('aria-selected', String(name === hallTab))
+      const label = document.createElement('span')
+      label.className = 'hall-tab-label'
+      label.innerHTML = HALL_TABS[name].icon
+      label.append(HALL_TABS[name].title)
+      button.append(label, Object.assign(document.createElement('small'), { textContent: `${hallOf(hall, name).length}/${HALL_SIZE}` }))
+      button.addEventListener('click', () => {
+        hallTab = name
+        renderHall()
+        el.hallTabs.querySelector('[aria-selected="true"]')?.focus()
+      })
+      return button
+    }),
+  )
+  const entries = hallOf(hall, hallTab)
   el.hallList.replaceChildren(
-    ...(hall.length
-      ? hall.map((entry, i) => hallItem(entry, i + 1))
-      : [Object.assign(document.createElement('li'), {
-          className: 'hall-empty',
-          textContent: 'No hands graded S or better yet. Standoff, Royal Couple or Straight 21 would get you in.',
-        })]),
+    ...(entries.length
+      ? entries.map((entry, i) => hallItem(entry, i + 1))
+      : [Object.assign(document.createElement('li'), { className: 'hall-empty', textContent: tab.empty })]),
   )
 }
 
-function openHall() {
+function openHall(name = 'fame') {
+  hallTab = name
   renderHall()
   el.hallDialog.showModal()
 }
 
-el.openHall.addEventListener('click', openHall)
+el.openHall.addEventListener('click', () => openHall())
 el.closeHall.addEventListener('click', () => el.hallDialog.close())
 el.hallDialog.addEventListener('click', (event) => {
   if (event.target === el.hallDialog) el.hallDialog.close()
@@ -2181,7 +2231,7 @@ el.confirmImport.addEventListener('click', () => {
   if (!pendingImport) return
   const caughtUp = catchUpBadges(pendingImport.profile)
   // This device's Hall of Fame stays with the device, so its badges come along.
-  const hallCaught = awardHallBadges(caughtUp.profile, hall.length)
+  const hallCaught = awardHallBadges(caughtUp.profile, hallOf(hall, 'fame').length)
   caughtUp.earned.push(...hallCaught.earned)
   profile = hallCaught.profile
   // An imported save from an earlier season rolls into this one.
@@ -2353,7 +2403,7 @@ if (seasonNote) {
 
 const caughtUp = catchUpBadges(profile)
 // A Hall of Fame kept before its badges existed earns them now.
-const hallCaught = awardHallBadges(caughtUp.profile, hall.length)
+const hallCaught = awardHallBadges(caughtUp.profile, hallOf(hall, 'fame').length)
 caughtUp.earned.push(...hallCaught.earned)
 if (caughtUp.earned.length) {
   profile = hallCaught.profile

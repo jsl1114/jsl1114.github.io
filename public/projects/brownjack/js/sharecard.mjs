@@ -7,7 +7,7 @@
 //     hands: [{ cards, winner, doubled }], dealer: cards,
 //     delta: RP won or lost (ranked only), rankUp: { from, to } rank names or null,
 //     earned: badge ids, unlocks: table and card-back ids,
-//     chance, grade, reason: from rateHand (null when rigged),
+//     chance, grade, reason, brutal: from rateHand (null when rigged),
 //     place: its Hall of Fame place, if any }
 import { handValue, isBlackjack } from './blackjack.mjs'
 import { badgeById } from './badges.mjs'
@@ -205,7 +205,8 @@ function blocks(ctx, record, images) {
     ctx.textBaseline = 'middle'
     ctx.fillText(grade, cx, cy + 6)
     const left = PAD + 270
-    text(ctx, record.grade ? 'RARITY' : 'PRACTICE', left, y + 64, { size: 24, weight: 700, color: COLORS.walnut, spacing: 3 })
+    const kicker = !record.grade ? 'PRACTICE' : record.brutal ? 'BRUTAL HAND' : 'RARITY'
+    text(ctx, kicker, left, y + 64, { size: 24, weight: 700, color: record.brutal ? '#b3261e' : COLORS.walnut, spacing: 3 })
     text(ctx, record.grade ? `${oneIn(record.chance)} hands` : 'No grade', left, y + 128, { size: 54, weight: 700, color: COLORS.bark })
     noteLines.forEach((line, i) => text(ctx, line, left, y + 178 + i * 36, { size: 26, color: COLORS.walnut }))
   })
@@ -222,7 +223,7 @@ function blocks(ctx, record, images) {
   const extras = [
     ...(record.rankUp ? [`Promoted: ${record.rankUp.from} → ${record.rankUp.to}`] : []),
     ...(unlocks.length ? [`Unlocked: ${unlocks.join(', ')}`] : []),
-    ...(record.place ? [`★ #${record.place} in the Hall of Fame`] : []),
+    ...(record.place ? [`${record.brutal ? '☠' : '★'} #${record.place} in the Hall of ${record.brutal ? 'Shame' : 'Fame'}`] : []),
   ]
   if (badges.length || extras.length) {
     const perRow = 5

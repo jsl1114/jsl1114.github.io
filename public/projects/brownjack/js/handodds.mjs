@@ -58,21 +58,27 @@ export const FEATURE_ODDS = {
   ambushed: 1 / 21.1,
   natural: 1 / 21.1,
   'so-close': 1 / 22.1,
+  'doubled-out': 1 / 25.7,
   'photo-finish': 1 / 58.6,
   heartbreaker: 1 / 60.4,
   'hard-way': 1 / 74.9,
   'low-roller': 1 / 78.2,
+  overloaded: 1 / 79.5,
   'suited-up': 1 / 84.4,
   flush: 1 / 104,
   'split-decision': 1 / 109,
+  'double-whammy': 1 / 123,
   charlie: 1 / 165,
   'snake-eyes': 1 / 176,
   'royal-couple': 1 / 339,
+  'slow-burn': 1 / 347,
   needle: 1 / 390,
   meltdown: 1 / 452,
   standoff: 1 / 462,
   straight: 1 / 604,
+  timber: 1 / 619,
   original: 1 / 676,
+  'aces-low': 1 / 925,
   'hail-mary': 1 / 958,
   'six-charlie': 1 / 1_520,
   'ace-collector': 1 / 1_810,
@@ -80,7 +86,9 @@ export const FEATURE_ODDS = {
   'aces-high': 1 / 1_910,
   'full-house': 1 / 2_040,
   'double-trouble': 1 / 2_500,
+  'long-con': 1 / 3_390,
   'four-kind': 1 / 4_490,
+  'double-disaster': 1 / 4_860,
   sevens: 1 / 4_890,
   'seven-charlie': 1 / 19_400,
   'dead-mans-hand': 1 / 20_200,
@@ -146,12 +154,19 @@ export const HALL_OF_FAME_FROM = 'S'
 export const isHallOfFame = atLeast(HALL_OF_FAME_FROM)
 export const isNotable = atLeast('A')
 
-// { chance, grade, reason, cardChance }: `reason` is what made the hand rare.
+// { chance, grade, reason, brutal, cardChance }: `reason` is what made the hand
+// rare, and `brutal` whether that was rare the painful way.
 export function rateHand(record) {
   const odds = (id) => FEATURE_ODDS[id] ?? 1
   const reason = handFeatures(record).reduce((rarest, id) => (odds(id) < odds(rarest) ? id : rarest))
   const chance = odds(reason)
-  return { chance, grade: gradeOf(chance), reason, cardChance: cardChance(record.hands.flatMap((h) => h.cards), record.dealer) }
+  return {
+    chance,
+    grade: gradeOf(chance),
+    reason,
+    brutal: Boolean(badgeById(reason)?.brutal),
+    cardChance: cardChance(record.hands.flatMap((h) => h.cards), record.dealer),
+  }
 }
 
 // Rarest first: by what the hand did, then by its exact cards.

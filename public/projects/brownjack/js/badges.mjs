@@ -8,6 +8,7 @@
 // blackjack; `dealt` the two cards first dealt; `profile` is before the round
 // and `next` after it; `after`/`peak` are the current and best-ever rank.
 // `once` badges are milestones: they unlock a single time and never count up.
+// `brutal` hand badges are rare the painful way (see handodds.mjs).
 // `goal` (optional) reports [current, target] so locked milestones show progress.
 //
 // Rarity comes from simulating basic-strategy play. Badges that depend on how
@@ -34,13 +35,13 @@ export const BADGES = [
     check: (x) => x.dealt.length === 2 && x.dealt.every((c) => FACES.includes(c.rank)) },
   { id: 'twins', category: 'Hands', rarity: 'Common', glyph: '88', name: 'Twins', desc: 'Get dealt a pair.',
     check: (x) => x.dealt.length === 2 && x.dealt[0].rank === x.dealt[1].rank },
-  { id: 'so-close', category: 'Hands', rarity: 'Common', glyph: '22', name: 'So Close', desc: 'Bust with exactly 22.',
+  { id: 'so-close', category: 'Hands', brutal: true, rarity: 'Common', glyph: '22', name: 'So Close', desc: 'Bust with exactly 22.',
     check: (x) => x.pv === 22 },
-  { id: 'ambushed', category: 'Hands', rarity: 'Common', glyph: '!', name: 'Ambushed', desc: 'The dealer is dealt blackjack.',
+  { id: 'ambushed', category: 'Hands', brutal: true, rarity: 'Common', glyph: '!', name: 'Ambushed', desc: 'The dealer is dealt blackjack.',
     check: (x) => isBlackjack(x.dealer) },
   { id: 'photo-finish', category: 'Hands', rarity: 'Rare', glyph: '21>20', name: 'Photo Finish', desc: "Beat the dealer's 20 with a 21.",
     check: (x) => x.won && x.pv === 21 && x.dv === 20 },
-  { id: 'heartbreaker', category: 'Hands', rarity: 'Rare', glyph: '♥', name: 'Heartbreaker', desc: "Lose a 20 to the dealer's 21.",
+  { id: 'heartbreaker', category: 'Hands', brutal: true, rarity: 'Rare', glyph: '♥', name: 'Heartbreaker', desc: "Lose a 20 to the dealer's 21.",
     check: (x) => x.lost && x.pv === 20 && x.dv === 21 },
   { id: 'suited-up', category: 'Hands', rarity: 'Rare', glyph: 'A♦', name: 'Suited Up', desc: 'Blackjack with an ace and a ten-card of the same suit.',
     check: (x) => x.natural && x.dealt[0].suit === x.dealt[1].suit },
@@ -67,7 +68,7 @@ export const BADGES = [
     check: (x) => count(x.player, 'A') >= 3 },
   { id: 'six-charlie', category: 'Hands', rarity: 'Epic', glyph: '6♣', name: 'Six-Card Charlie', desc: 'Win holding six or more cards.',
     check: (x) => x.won && x.player.length >= 6 },
-  { id: 'bad-beat', category: 'Hands', rarity: 'Epic', glyph: '20<21', name: 'Bad Beat', desc: 'Lose a 20 to a dealer 21 made with five or more cards.',
+  { id: 'bad-beat', category: 'Hands', brutal: true, rarity: 'Epic', glyph: '20<21', name: 'Bad Beat', desc: 'Lose a 20 to a dealer 21 made with five or more cards.',
     check: (x) => x.lost && x.pv === 20 && x.dv === 21 && x.dealer.length >= 5 },
   { id: 'standoff', category: 'Hands', rarity: 'Epic', glyph: '21²', name: 'Standoff', desc: 'You and the dealer are both dealt blackjack.',
     check: (x) => x.natural && isBlackjack(x.dealer) },
@@ -100,6 +101,25 @@ export const BADGES = [
     check: (x) => x.split && x.dealt.every((c) => c.rank === 'A') && x.round.hands.every((h) => handValue(h.cards).total === 21) },
   { id: 'double-trouble', category: 'Hands', rarity: 'Legendary', glyph: '2×2×', name: 'Double Trouble', desc: 'Split, double down on both hands, and win them both.',
     check: (x) => x.split && x.round.hands.every((h) => h.doubled && h.winner === 'player') },
+
+  // Brutal hands: rare the painful way. They count toward a hand's rarity like
+  // any other, and a hand whose rarest feat is one of them is a brutal hand.
+  { id: 'doubled-out', category: 'Hands', brutal: true, rarity: 'Common', glyph: '2×↓', name: 'Doubled Down and Out', desc: 'Lose a hand you doubled down on.',
+    check: (x) => x.lost && x.doubled },
+  { id: 'overloaded', category: 'Hands', brutal: true, rarity: 'Rare', glyph: '5✕', name: 'Overloaded', desc: 'Bust holding five or more cards.',
+    check: (x) => x.pv > 21 && x.player.length >= 5 },
+  { id: 'double-whammy', category: 'Hands', brutal: true, rarity: 'Rare', glyph: '⑂✕', name: 'Double Whammy', desc: 'Split a pair and lose both hands.',
+    check: (x) => x.split && x.round.hands.every((h) => h.winner === 'dealer') },
+  { id: 'slow-burn', category: 'Hands', brutal: true, rarity: 'Rare', glyph: '5→21', name: 'Slow Burn', desc: 'Lose to a dealer 21 made with five or more cards.',
+    check: (x) => x.lost && x.dv === 21 && x.dealer.length >= 5 },
+  { id: 'timber', category: 'Hands', brutal: true, rarity: 'Epic', glyph: '6✕', name: 'Timber!', desc: 'Bust holding six or more cards.',
+    check: (x) => x.pv > 21 && x.player.length >= 6 },
+  { id: 'aces-low', category: 'Hands', brutal: true, rarity: 'Epic', glyph: 'A✕A', name: 'Aces Low', desc: 'Split aces and lose both hands.',
+    check: (x) => x.split && x.dealt.every((c) => c.rank === 'A') && x.round.hands.every((h) => h.winner === 'dealer') },
+  { id: 'long-con', category: 'Hands', brutal: true, rarity: 'Legendary', glyph: '6→21', name: 'The Long Con', desc: 'Lose to a dealer 21 made with six or more cards.',
+    check: (x) => x.lost && x.dv === 21 && x.dealer.length >= 6 },
+  { id: 'double-disaster', category: 'Hands', brutal: true, rarity: 'Legendary', glyph: '✕✕', name: 'Double Disaster', desc: 'Split, double down on both hands, and lose them both.',
+    check: (x) => x.split && x.round.hands.every((h) => h.doubled && h.winner === 'dealer') },
 
   // ---- Streaks --------------------------------------------------------------
   { id: 'hat-trick', category: 'Streaks', rarity: 'Common', glyph: '3×', name: 'Hat Trick', desc: 'Win three hands in a row.',

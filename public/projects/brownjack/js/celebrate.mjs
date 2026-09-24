@@ -4,14 +4,19 @@
 // a new tier flips a coin from the old emblem to the new one. Everything queues
 // and plays one at a time. A celebration stays up until the player clicks or
 // presses a key, which only counts once a short lock has passed, so it can't be
-// dismissed by a click or key press that was meant for the game.
+// dismissed by a click or key press that was meant for the game. When a pile
+// builds up (say, after importing a save), each one offers to skip the rest,
+// which swaps them for a single summary of everything skipped.
 import { DIVISIONS } from './ranked.mjs'
 import { buzz, play } from './sound.mjs'
 import { tableSVG } from './tableart.mjs'
 
 // How long each celebration ignores clicks and keys, in ms: long enough to land
 // the animation's main beat.
-const LOCK = { common: 800, rare: 1000, epic: 1300, legendary: 1800, division: 1800, tier: 2800, legend: 3000, unlock: 1300 }
+const LOCK = { common: 800, rare: 1000, epic: 1300, legendary: 1800, division: 1800, tier: 2800, legend: 3000, unlock: 1300, summary: 600 }
+// Offer "Skip all" once at least this many more are waiting behind the current one.
+const SKIP_FROM = 3
+const RARITIES = ['Legendary', 'Epic', 'Rare', 'Common']
 const MODIFIER_KEYS = new Set(['Shift', 'Control', 'Alt', 'Meta', 'CapsLock', 'Fn'])
 const SPARKS = { common: 0, rare: 10, epic: 18, legendary: 28 }
 const RINGS = { common: 1, rare: 2, epic: 3, legendary: 3 }
@@ -19,6 +24,8 @@ const FALLING_SUITS = ['♠', '♥', '♣', '♦']
 
 const queue = []
 let showing = false
+// Keeps the current celebration's "Skip all" count up to date as more queue up.
+let refreshSkip = () => {}
 
 export const isCelebrating = () => showing
 
@@ -69,23 +76,27 @@ export function emblemElement(rank) {
   return emblem
 }
 
-function enqueue(build, lock, sound, vibration) {
+// `about` says what's being celebrated, for the summary if it gets skipped:
+// { badge } | { from, to } | { item, kind }.
+function enqueue(build, lock, sound, vibration, about) {
   return new Promise((resolve) => {
-    queue.push({ build, lock, sound, vibration, resolve })
+    queue.push({ build, lock, sound, vibration, about, resolve })
     if (!showing) showNext()
+    else refreshSkip()
   })
 }
 
 export function celebrate(badge) {
   const rarity = badge.rarity.toLowerCase()
-  return enqueue(() => build(badge), LOCK[rarity], rarity, 'badge')
+  return enqueue(() => build(badge), LOCK[rarity], rarity, 'badge', { badge })
 }
 
 // `from` and `to` are rankOf() results for a promotion or a new Legend star.
 // `note` (optional) is an extra line, such as what the new tier unlocks.
 export function celebrateRank(from, to, { note } = {}) {
-  if (from.tier === to.tier) return enqueue(() => buildDivisionStep(from, to), LOCK.division, 'division', 'rankUp')
-  return enqueue(() => buildTierFlip(from, to, note), to.tier === 'Legend' ? LOCK.legend : LOCK.tier, 'tier', 'rankUp')
+  const about = { from, to }
+  if (from.tier === to.tier) return enqueue(() => buildDivisionStep(from, to), LOCK.division, 'division', 'rankUp', about)
+  return enqueue(() => buildTierFlip(from, to, note), to.tier === 'Legend' ? LOCK.legend : LOCK.tier, 'tier', 'rankUp', about)
 }
 
 function node(tag, className, text) {
@@ -191,7 +202,7 @@ function buildTierFlip(from, to, note) {
 
 // A new table or card back: `kind` is 'table' or 'back', `how` what unlocked it.
 export function celebrateUnlock(item, kind, how) {
-  return enqueue(() => buildUnlock(item, kind, how), LOCK.unlock, 'epic', 'badge')
+  return enqueue(() => buildUnlock(item, kind, how), LOCK.unlock, 'epic', 'badge', { item, kind })
 }
 
 // A card back: a face-down Classic card rises and turns over to show the new
@@ -284,10 +295,77 @@ function build(badge) {
   return overlay
 }
 
+// One screen for everything skipped: the rank reached, then badges (rarest
+// first), tables and card backs, each as a small tile with its name.
+function buildSummary(skipped) {
+  const overlay = overlayElement('summary', `${skipped.length} more unlocks`)
+  const card = node('div', 'celebration-card summary-card')
+  card.append(node('p', 'celebration-kicker', 'Skipped'), node('h2', 'celebration-name', `${skipped.length} more unlocks`))
+
+  const list = node('div', 'summary-list')
+  const group = (title, tiles) => {
+    if (!tiles.length) return
+    const section = node('section', 'summary-group')
+    const grid = node('ul', 'summary-tiles')
+    grid.append(...tiles)
+    section.append(node('h3', '', `${title} · ${tiles.length}`), grid)
+    list.append(section)
+  }
+  const tile = (picture, name, className = '') => {
+    const li = node('li', `summary-tile ${className}`)
+    li.append(picture, node('span', 'summary-tile-name', name))
+    return li
+  }
+  const abouts = skipped.map((s) => s.about ?? {})
+
+  const ranks = abouts.filter((a) => a.to)
+  if (ranks.length) group('Rank', [tile(emblemElement(ranks.at(-1).to), ranks.at(-1).to.name)])
+  const badges = abouts.filter((a) => a.badge).map((a) => a.badge)
+  group(
+    'Badges',
+    badges
+      .sort((a, b) => RARITIES.indexOf(a.rarity) - RARITIES.indexOf(b.rarity))
+      .map((badge) => tile(glyphElement(badge), badge.name, badge.rarity.toLowerCase())),
+  )
+  const cosmetics = (kind) => abouts.filter((a) => a.kind === kind).map((a) => a.item)
+  group('Tables', cosmetics('table').map((table) => {
+    const felt = node('span', 'summary-felt')
+    felt.innerHTML = tableSVG(table.id, 64, 40, { detail: false })
+    return tile(felt, table.name)
+  }))
+  group('Card backs', cosmetics('back').map((back) => {
+    const face = node('span', 'summary-back')
+    face.style.backgroundImage = `url('./assets/cards/${back.file}')`
+    return tile(face, back.name)
+  }))
+
+  const done = node('button', 'summary-done', 'Done')
+  done.type = 'button'
+  card.append(list, done, node('p', 'celebration-hint', 'Press Enter or Esc to close'))
+  overlay.append(card)
+  return overlay
+}
+
+// Swap everything still waiting for one summary, which settles their promises
+// once it closes.
+function skipRest() {
+  const skipped = queue.splice(0)
+  const top = RARITIES.find((rarity) => skipped.some((s) => s.about?.badge?.rarity === rarity))
+  queue.push({
+    build: () => buildSummary(skipped),
+    lock: LOCK.summary,
+    sound: top ? top.toLowerCase() : 'epic',
+    vibration: 'badge',
+    summary: true,
+    resolve: () => skipped.forEach((s) => s.resolve()),
+  })
+}
+
 function showNext() {
   const item = queue.shift()
   if (!item) {
     showing = false
+    refreshSkip = () => {}
     return
   }
   showing = true
@@ -311,6 +389,21 @@ function showNext() {
     overlay.classList.add('unlocked')
   }, item.lock)
 
+  // "Skip all" joins the card once enough are waiting, and counts them.
+  const skip = node('button', 'celebration-skip')
+  skip.type = 'button'
+  refreshSkip = () => {
+    skip.textContent = `Skip all · ${queue.length} more`
+    if (!item.summary && queue.length >= SKIP_FROM && !skip.isConnected) overlay.querySelector('.celebration-card')?.append(skip)
+  }
+  refreshSkip()
+  skip.addEventListener('click', (event) => {
+    event.stopPropagation()
+    if (!unlocked) return
+    skipRest()
+    close()
+  })
+
   const close = () => {
     if (closed || !unlocked) return
     closed = true
@@ -326,12 +419,18 @@ function showNext() {
   }
   // Captured on window so no key reaches the page while a celebration is up,
   // even if focus has wandered off the overlay.
+  // The summary can be long enough to scroll, so only Done, Enter, Esc or a
+  // click outside it closes it.
   const onKey = (event) => {
     event.preventDefault()
     event.stopPropagation()
     if (event.repeat || MODIFIER_KEYS.has(event.key)) return
+    if (item.summary && event.key !== 'Enter' && event.key !== 'Escape') return
     close()
   }
   window.addEventListener('keydown', onKey, true)
-  overlay.addEventListener('click', close)
+  overlay.addEventListener('click', (event) => {
+    if (item.summary && event.target.closest('.summary-card') && !event.target.closest('.summary-done')) return
+    close()
+  })
 }

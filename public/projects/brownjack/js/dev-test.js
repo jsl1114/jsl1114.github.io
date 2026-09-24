@@ -69,6 +69,16 @@ group('rank', 'Queue', [
       for (const id of ['hat-trick', 'heater', 'original', 'inferno']) celebrate(BADGES.find((b) => b.id === id))
     },
   }),
+  // What importing a strong save queues: badges caught up, then every unlock.
+  row(symbol('⇪'), 'An imported save', {
+    sub: 'Twelve badges and ten unlocks: skip the rest for a summary',
+    onClick: () => {
+      const ids = ['natural', 'heater', 'straight', 'sevens', 'twins', 'flush', 'standoff', 'four-kind', 'regular', 'gold', 'meltdown', 'charlie']
+      for (const id of ids) celebrate(BADGES.find((b) => b.id === id))
+      for (const table of TABLES.slice(7, 12)) celebrateUnlock(table, 'table', progress(table, empty).text)
+      for (const back of CARD_BACKS.filter((b) => !byRank(b)).slice(0, 5)) celebrateUnlock(back, 'back', progress(back, empty).text)
+    },
+  }),
 ])
 
 // ---- Badges ---------------------------------------------------------------------

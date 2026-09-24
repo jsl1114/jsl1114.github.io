@@ -241,7 +241,12 @@ export const PROJECTS = [
       {
         title: "Rewards worth chasing",
         description:
-          "I enjoyed turning progress into things you can see: tables and card backs drawn as SVG, a rank roadmap, collection points that fill toward the next table, and a card back for every Legendary badge, from a hockey mask to a World's Best Boss mug. I learned that a reward feels earned when the player can always see what's next and how close it is.",
+          "I enjoyed turning progress into things you can see: tables and card backs drawn as SVG, a rank roadmap, collection points that fill toward the next table, and a card back for every Epic and Legendary badge, from a hockey mask to a World's Best Boss mug. I learned that a reward feels earned when the player can always see what's next and how close it is.",
+      },
+      {
+        title: "Deciding what makes a hand rare",
+        description:
+          "My first rarity score used the chance of a hand's exact cards, but nearly every hand came out one in tens of thousands, and a blackjack scored like a dull 19. I switched to grading a hand by the rarest thing it did, measured over 20 million simulated hands, and added badges for painful hands so a brutal loss can rank as high as a great win. I learned that a good metric has to match what players actually find remarkable, not just what's easy to compute.",
       },
       {
         title: "Details you feel more than see",
@@ -254,15 +259,26 @@ export const PROJECTS = [
           "I kept the rules, scoring, rewards and save files as small pure modules with their own tests, separate from the page. That made it much easier to add doubles, splits, a six-deck shoe and monthly seasons without breaking what already worked, and to reject tampered or damaged save files.",
       },
     ],
-    desc: "A browser Blackjack game with ranked seasons, 62 badges, collectible tables and card backs, a rank roadmap, a basic-strategy coach, doubles and splits, and a daily challenge with the same deal for everyone.",
-    technologies: ["HTML", "CSS", "JavaScript", "SVG", "Web Audio API", "node:test"],
+    desc: "A browser Blackjack game with ranked seasons, 78 badges, 43 collectible card backs and 17 tables, hands graded D to SSS for rarity and shared as images, a Hall of Fame and a Hall of Shame, a basic-strategy coach, doubles and splits, and a daily challenge with the same deal for everyone.",
+    technologies: ["HTML", "CSS", "JavaScript", "SVG", "Canvas API", "Web Audio API", "node:test"],
     urls: {
       github:
         "https://github.com/jsl1114/jsl1114.github.io/tree/v2/public/projects/brownjack",
       live: "https://jsl1114.github.io/projects/brownjack/game.html",
     },
     image: "brown.webp",
-    screenshots: ["brown1.webp", "brown2.webp", "brown3.webp", "brown4.webp", "brown5.webp", "brown6.webp", "brown7.webp", "brown8.webp"],
+    screenshots: [
+      "brown1.webp",
+      "brown2.webp",
+      "brown3.webp",
+      "brown4.webp",
+      "brown5.webp",
+      "brown6.webp",
+      "brown7.webp",
+      "brown8.webp",
+      "brown9.webp",
+      "brown10.webp",
+    ],
   },
   {
     title: "Inky",

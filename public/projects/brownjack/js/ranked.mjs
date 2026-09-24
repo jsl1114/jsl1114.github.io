@@ -25,6 +25,7 @@ export const BONUS = {
 
 export { BADGES, CATEGORIES } from './badges.mjs'
 export const SHOWCASE_SIZE = 5
+export const HALL_SIZE = 10
 
 export const newProfile = () => ({
   rp: 0,
@@ -235,6 +236,16 @@ export function pinBadge(profile, id, now = Date.now()) {
     earned.push(...awardBadges(next, [{}], now, ['collector', 'completionist']))
   }
   return { profile: next, earned }
+}
+
+// The Hall of Fame badges, for a hall of `size` hands: the first one in, and a
+// full ten. Like Show-Off, either can complete a collection badge.
+export function awardHallBadges(profile, size, now = Date.now()) {
+  const due = [...(size >= 1 ? ['hall-of-famer'] : []), ...(size >= HALL_SIZE ? ['hall-of-legends'] : [])].filter((id) => !profile.badges[id])
+  if (!due.length) return { profile, earned: [] }
+  const next = { ...profile, badges: { ...profile.badges } }
+  for (const id of due) next.badges[id] = { count: 1, first: now }
+  return { profile: next, earned: [...due, ...awardBadges(next, [{}], now, ['collector', 'completionist'])] }
 }
 
 // Move a pinned badge to another slot in the showcase; the rest shift to make room.

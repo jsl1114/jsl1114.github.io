@@ -188,6 +188,9 @@ export const BADGES = [
   { id: 'marathon', category: 'Special', rarity: 'Rare', glyph: '50', name: 'Marathon', desc: 'Play 50 ranked hands in one sitting.', once: true,
     check: (x) => (x.round.sessionHands ?? 0) >= 50 },
   { id: 'show-off', category: 'Special', rarity: 'Common', glyph: '☆', name: 'Show-Off', desc: 'Put a badge in your showcase.', once: true },
+  // Awarded as the Hall of Fame fills (see awardHallBadges in ranked.mjs), not by a check.
+  { id: 'hall-of-famer', category: 'Special', rarity: 'Rare', glyph: 'HoF', name: 'Hall of Famer', desc: 'Get a hand graded S or better into your Hall of Fame.', once: true },
+  { id: 'hall-of-legends', category: 'Special', rarity: 'Legendary', glyph: '10★', name: 'Hall of Legends', desc: 'Fill all ten places in your Hall of Fame.', once: true },
   // The two collection badges are checked last, after everything above.
   { id: 'collector', category: 'Special', rarity: 'Epic', glyph: '25', name: 'Collector', desc: 'Earn 25 different badges.', once: true,
     check: (x) => Object.keys(x.next.badges).length >= 25,

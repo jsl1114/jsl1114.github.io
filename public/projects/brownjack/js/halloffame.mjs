@@ -4,8 +4,9 @@
 // sharecard.mjs); it's rated again whenever the list is read, so a change to
 // the odds re-sorts hands already kept.
 import { isHallOfFame, rarerThan, rateHand } from './handodds.mjs'
+import { HALL_SIZE } from './ranked.mjs'
 
-export const HALL_SIZE = 10
+export { HALL_SIZE }
 
 // The kept entries, rated, rarest first; anything that no longer qualifies drops out.
 export const rankHall = (hall) =>

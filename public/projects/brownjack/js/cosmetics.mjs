@@ -88,6 +88,7 @@ export const CARD_BACKS = [
   legendaryBack('double-trouble', 'double', 'Double trouble'),
   legendaryBack('back-to-back', 'backtoback', 'Back to back'),
   legendaryBack('new-year', 'fireworks', 'Fireworks'),
+  legendaryBack('hall-of-legends', 'pantheon', 'Hall of Legends'),
   // One for each Epic badge: a pattern and a single emblem, with no shimmer.
   epicBack('straight', 'straight', 'Straight'),
   epicBack('ace-collector', 'ace-trio', 'Ace trio'),

@@ -23,6 +23,7 @@ import {
   SHOWCASE_SIZE,
   TIERS,
   WIN_POINTS,
+  awardHallBadges,
   catchUpBadges,
   moveShowcase,
   newProfile,
@@ -70,7 +71,8 @@ import {
   totalScore,
 } from './daily.mjs'
 import { daysLeft, rollSeason, seasonId, seasonName } from './seasons.mjs'
-import { featureName, oneIn, rateHand } from './handodds.mjs'
+import { featureName, isHallOfFame, oneIn, rateHand } from './handodds.mjs'
+import { gradeChip, nudge, showToast } from './handui.mjs'
 import { addToHall, rankHall } from './halloffame.mjs'
 import { GAME_URL, canvasBlob, drawShareCard, headline } from './sharecard.mjs'
 
@@ -112,7 +114,6 @@ const el = {
   collection: $('collection'),
   openAppearance: $('open-appearance'),
   shareHand: $('share-hand'),
-  handOdds: $('hand-odds'),
   shareDialog: $('share-dialog'),
   closeShare: $('close-share'),
   shareImage: $('share-image'),
@@ -1267,7 +1268,9 @@ function startRound({ daily = false } = {}) {
   el.dealerCount.textContent = '?'
   el.coach.hidden = true
   el.dealerCounter.classList.remove('winner')
-  el.again.hidden = el.toSetup.hidden = el.shareHand.hidden = el.handOdds.hidden = true
+  el.again.hidden = el.toSetup.hidden = el.shareHand.hidden = true
+  state.gradeLock = false
+  el.again.classList.remove('waiting')
 
   const arriving = el.game.hidden
   el.start.hidden = true
@@ -1497,8 +1500,9 @@ function showResult(winners, result, beforeRp) {
   renderRankChip(beforeRp)
   renderRoundScore(result, beforeRp)
   // Before announceUnlocks marks this hand's unlocks as seen.
-  lastHand = handRecord(winners, result, beforeRp)
-  showHandOdds(lastHand)
+  const { record, hallEarned } = handRecord(winners, result, beforeRp)
+  lastHand = record
+  showGrade(record)
   el.shareHand.hidden = false
 
   // A finished daily has no next hand: show the shareable result instead.
@@ -1509,9 +1513,11 @@ function showResult(winners, result, beforeRp) {
   el.toSetup.hidden = false
   if (dailyOver) showDailyShare(el.game)
   // Focus first: a celebration takes focus and hands it back when it closes.
-  ;(dailyOver ? el.shareDaily : el.again).focus()
+  // A rare hand's grade has to be tapped before the next hand.
+  ;(dailyOver ? el.shareDaily : state.gradeLock ? shownGrade : el.again).focus()
   if (result.daily) {
-    if (dailyOver) announceUnlocks()
+    for (const id of hallEarned) celebrate(badgeById(id))
+    if (dailyOver || hallEarned.length) announceUnlocks()
     return
   }
   // A promotion (or a new Legend star) plays first, then the hand's badges.
@@ -1521,7 +1527,7 @@ function showResult(winners, result, beforeRp) {
     const newTier = result.after.tierIndex > rankOf(beforePeak).tierIndex
     celebrateRank(result.before, result.after, { note: newTier ? `Unlocked: ${unlocksAt(result.after.tierIndex)}` : '' })
   }
-  for (const id of result.earned) celebrate(badgeById(id))
+  for (const id of [...result.earned, ...hallEarned]) celebrate(badgeById(id))
   announceUnlocks()
 }
 
@@ -1547,7 +1553,7 @@ const saveHall = () => writeStorage(HALL_KEY, JSON.stringify(hall))
 const plainCards = (cards) => cards.map(({ rank, suit }) => ({ rank, suit }))
 
 // The finished hand as a record for the share image and the Hall of Fame (see
-// sharecard.mjs). Rigged hands aren't rated.
+// sharecard.mjs), and any Hall of Fame badges it earned. Rigged hands aren't rated.
 function handRecord(winners, result, beforeRp) {
   const rigged = result.unranked && !result.daily
   const hands = state.hands.map((hand, i) => ({
@@ -1560,7 +1566,6 @@ function handRecord(winners, result, beforeRp) {
   }))
   const dealer = plainCards(state.dealer)
   const step = (rp) => Math.floor(rp / POINTS_PER_DIVISION)
-  const seen = getSettings().unlocksSeen
   const record = {
     at: Date.now(),
     mode: result.daily ? 'daily' : rigged ? 'rigged' : 'ranked',
@@ -1572,26 +1577,57 @@ function handRecord(winners, result, beforeRp) {
     delta: result.unranked ? null : result.delta,
     rankUp: !result.unranked && step(result.profile.rp) > step(beforeRp) ? { from: result.before.name, to: result.after.name } : null,
     earned: result.earned,
-    unlocks: seen ? unlockedIds(collectionContext()).filter((id) => !seen.includes(id)) : [],
+    unlocks: [],
     place: null,
   }
-  Object.assign(record, rigged ? { chance: null, grade: null, reason: null } : rateHand(record))
+  if (rigged) return { record: { ...record, chance: null, grade: null, reason: null }, hallEarned: [] }
+  Object.assign(record, rateHand(record))
   const added = addToHall(hall, record)
   if (added.place) {
     record.place = added.place
     hall = added.hall
+  }
+  // The first hand in the Hall, and a full one, each earn a badge.
+  const hallBadges = awardHallBadges(profile, hall.length, record.at)
+  if (hallBadges.earned.length) {
+    profile = hallBadges.profile
+    saveProfile()
+    renderRank()
+  }
+  record.earned = [...result.earned, ...hallBadges.earned]
+  const seen = getSettings().unlocksSeen
+  record.unlocks = seen ? unlockedIds(collectionContext()).filter((id) => !seen.includes(id)) : []
+  if (added.place) {
+    hall = hall.map((entry) => (entry.at === record.at ? { ...entry, earned: record.earned, unlocks: record.unlocks, place: record.place } : entry))
     saveHall()
   }
-  return record
+  return { record, hallEarned: hallBadges.earned }
 }
 
-function showHandOdds(record) {
-  el.handOdds.hidden = !record.grade
-  if (!record.grade) return
-  el.handOdds.dataset.grade = record.grade
-  el.handOdds.textContent =
-    `Rarity ${record.grade} · ${featureName(record.reason)} · ${oneIn(record.chance)} hands` +
-    (record.place ? ` · #${record.place} in your Hall of Fame` : '')
+// The grade chip among the round's chips. A rare hand's has to be tapped before
+// the next hand, and the first one ever points the way to the Hall of Fame.
+let shownGrade = null
+
+function showGrade(record) {
+  shownGrade = record.grade ? gradeChip(record, { onReveal: revealRareHand }) : null
+  state.gradeLock = Boolean(record.grade && isHallOfFame(record.grade))
+  el.again.classList.toggle('waiting', state.gradeLock)
+  if (!shownGrade) return
+  el.roundScore.prepend(shownGrade)
+  el.roundScore.hidden = false
+}
+
+function revealRareHand() {
+  state.gradeLock = false
+  el.again.classList.remove('waiting')
+  if (!el.again.hidden) el.again.focus()
+  if (getSettings().hallNoticeSeen) return
+  setSetting('hallNoticeSeen', true)
+  showToast('Your first hand graded S or better! It’s kept in your Hall of Fame, on the start screen.', {
+    action: 'Open Hall of Fame',
+    onAction: openHall,
+    ms: 14_000,
+  })
 }
 
 const shareCaption = (record) =>
@@ -1708,10 +1744,12 @@ function renderHall() {
   )
 }
 
-el.openHall.addEventListener('click', () => {
+function openHall() {
   renderHall()
   el.hallDialog.showModal()
-})
+}
+
+el.openHall.addEventListener('click', openHall)
 el.closeHall.addEventListener('click', () => el.hallDialog.close())
 el.hallDialog.addEventListener('click', (event) => {
   if (event.target === el.hallDialog) el.hallDialog.close()
@@ -1832,6 +1870,7 @@ el.shareDaily.addEventListener('click', async () => {
 })
 
 function nextRound() {
+  if (state.gradeLock) return nudge(shownGrade)
   if (state.mode === 'daily') {
     if (!dailyComplete(state.dailyKey)) startRound({ daily: true })
     return
@@ -2138,7 +2177,10 @@ el.cancelImport.addEventListener('click', () => {
 el.confirmImport.addEventListener('click', () => {
   if (!pendingImport) return
   const caughtUp = catchUpBadges(pendingImport.profile)
-  profile = caughtUp.profile
+  // This device's Hall of Fame stays with the device, so its badges come along.
+  const hallCaught = awardHallBadges(caughtUp.profile, hall.length)
+  caughtUp.earned.push(...hallCaught.earned)
+  profile = hallCaught.profile
   // An imported save from an earlier season rolls into this one.
   const importNote = applySeason()
   if (importNote) {
@@ -2307,8 +2349,11 @@ if (seasonNote) {
 }
 
 const caughtUp = catchUpBadges(profile)
+// A Hall of Fame kept before its badges existed earns them now.
+const hallCaught = awardHallBadges(caughtUp.profile, hall.length)
+caughtUp.earned.push(...hallCaught.earned)
 if (caughtUp.earned.length) {
-  profile = caughtUp.profile
+  profile = hallCaught.profile
   saveProfile()
 }
 

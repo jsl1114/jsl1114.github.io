@@ -9,6 +9,7 @@ import { tableSVG } from './tableart.mjs'
 import { featureName, oneIn, rateHand } from './handodds.mjs'
 import { addToHall } from './halloffame.mjs'
 import { canvasBlob, drawShareCard } from './sharecard.mjs'
+import { gradeChip, nudge, showToast } from './handui.mjs'
 import { CARD_SOUND, audioContext, cardSound, play } from './sound.mjs'
 
 const $ = (id) => document.getElementById(id)
@@ -86,11 +87,11 @@ group('rank', 'Queue', [
 
 // ---- Badges ---------------------------------------------------------------------
 
-// The newest Legendary badges, up top while they're being tuned; each also
-// appears under its type below.
-const NEW_BADGES = ['four-kind', 'full-house', 'hail-mary', 'double-trouble', 'back-to-back', 'new-year']
-group('badges', 'New · Legendary', NEW_BADGES.map(badgeById).map((badge) =>
-  row(glyphElement(badge), badge.name, { sub: badge.desc, detail: badge.category, onClick: () => celebrate(badge) })))
+// The newest badges, up top while they're being tuned; each also appears under
+// its type below.
+const NEW_BADGES = ['hall-of-famer', 'hall-of-legends', 'four-kind', 'full-house', 'hail-mary', 'double-trouble', 'back-to-back', 'new-year']
+group('badges', 'New', NEW_BADGES.map(badgeById).map((badge) =>
+  row(glyphElement(badge), badge.name, { sub: badge.desc, detail: badge.rarity, onClick: () => celebrate(badge) })))
 group('badges', 'By rarity', ['Common', 'Rare', 'Epic', 'Legendary'].map((rarity) => {
   const badge = BADGES.find((b) => b.rarity === rarity)
   const count = BADGES.filter((b) => b.rarity === rarity).length
@@ -139,6 +140,66 @@ const HALL_SAMPLES = [
   [[hand('player', c('A'), c('A', 'clubs'), c('A', 'spades'), c('8'))], [c('10', 'diamonds'), c('9', 'clubs')]],
   [[hand('player', c('K'), c('9'))], [c('10', 'clubs'), c('7')]],
 ]
+// The end of a hand, as the game shows it: the grade chip among the round's
+// chips, and Play again waiting on a rare hand until its grade is tapped.
+const AFTER_HAND = [
+  ['A plain win', [hand('player', c('K'), c('9', 'clubs'))], [c('10', 'spades'), c('7')]],
+  ['A blackjack', [hand('player', c('A', 'spades'), c('K'))], [c('10', 'clubs'), c('7')]],
+  ['Photo Finish', [hand('player', c('10'), c('5', 'clubs'), c('6'))], [c('K', 'spades'), c('Q')]],
+  ['Five-Card Charlie', [hand('player', c('2'), c('3', 'clubs'), c('4'), c('2', 'spades'), c('5'))], [c('10', 'clubs'), c('8')]],
+  ['Straight 21', [hand('player', c('6'), c('7', 'clubs'), c('8', 'spades'))], [c('10', 'diamonds'), c('9', 'clubs')]],
+  ['Hail Mary', [{ ...hand('player', c('10'), c('K', 'clubs'), c('A', 'spades')), riskyHit: true, needle: true, hailMary: true }], [c('10', 'clubs'), c('8')]],
+  ['Aces High', [hand('player', c('A'), c('K', 'clubs')), hand('player', c('A', 'spades'), c('Q'))], [c('10', 'diamonds'), c('8', 'clubs')]],
+]
+const stage = node('div', 'demo-stage')
+const stageNote = node('p', 'group-note', 'Tap a row below to see the end of that hand here.')
+
+function showAfterHand(record) {
+  const again = node('button', 'action primary', 'Play again')
+  again.type = 'button'
+  const score = node('div', 'round-score')
+  const chip = gradeChip(record, {
+    onReveal: () => {
+      again.classList.remove('waiting')
+      stageNote.textContent = 'Revealed. Play again works now; tap the grade again to fold it.'
+    },
+  })
+  const locked = chip.classList.contains('locked')
+  again.classList.toggle('waiting', locked)
+  again.addEventListener('click', () => {
+    if (chip.classList.contains('locked')) return nudge(chip)
+    stageNote.textContent = 'On to the next hand.'
+  })
+  score.append(chip, node('span', 'score-line', 'Win +30'), node('strong', 'score-total', '+30 RP'))
+  stage.replaceChildren(again, score)
+  stage.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  stageNote.textContent = locked
+    ? 'A rare hand: Play again waits (try it) until the grade is tapped.'
+    : 'Tap the grade to see why it got it.'
+}
+
+group('share', 'After a hand', [
+  ...AFTER_HAND.map(([name, hands, dealer]) => {
+    const record = sampleHand(hands, dealer, { place: null })
+    return row(symbol(record.grade), name, {
+      sub: `${featureName(record.reason)} · ${oneIn(record.chance)} hands`,
+      detail: record.grade,
+      onClick: () => showAfterHand(record),
+    })
+  }),
+  row(symbol('!'), 'First S-or-better hand notice', {
+    sub: 'Shown once, when the first rare hand is revealed',
+    onClick: () => showToast('Your first hand graded S or better! It’s kept in your Hall of Fame, on the start screen.', {
+      action: 'Open Hall of Fame',
+      onAction: () => { stageNote.textContent = 'In the game, this opens the Hall of Fame.' },
+      ms: 14_000,
+    }),
+  }),
+])
+// The demo sits above the rows it demonstrates.
+const afterHandRows = $('tab-share').querySelector('.group:last-of-type')
+afterHandRows.before(stage, stageNote)
+
 async function openShareImage(record) {
   const canvas = await drawShareCard(record, { tableId: 'saloon' })
   open(URL.createObjectURL(await canvasBlob(canvas)), '_blank')

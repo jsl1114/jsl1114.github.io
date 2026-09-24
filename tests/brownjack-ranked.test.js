@@ -6,6 +6,7 @@ import {
   LEGEND_AT,
   LOSS_POINTS,
   WIN_POINTS,
+  awardHallBadges,
   catchUpBadges,
   newProfile,
   moveShowcase,
@@ -177,6 +178,17 @@ test("the showcase holds up to five earned badges and pinning one earns Show-Off
   assert.deepEqual(pinBadge(profile, "sevens").profile.showcase, ids.slice(0, 5), "a sixth pin is refused");
   assert.deepEqual(pinBadge(profile, "twins").profile.showcase, ["natural", "heater", "flush", "charlie"], "unpin");
   assert.deepEqual(pinBadge(at(0), "inferno").profile.showcase, [], "locked badges can't be pinned");
+});
+
+test("the Hall of Fame earns a badge for its first hand and another when all ten are filled", () => {
+  assert.deepEqual(awardHallBadges(at(0), 0).earned, []);
+  const first = awardHallBadges(at(0), 1);
+  assert.deepEqual(first.earned, ["hall-of-famer"]);
+  assert.deepEqual(awardHallBadges(first.profile, 4).earned, [], "once only");
+  assert.deepEqual(awardHallBadges(first.profile, 10).earned, ["hall-of-legends"]);
+  assert.equal(BADGES.find((b) => b.id === "hall-of-legends").rarity, "Legendary");
+  // Straight to ten (a Hall kept before the badges existed) earns both at once.
+  assert.deepEqual(awardHallBadges(at(0), 10).earned, ["hall-of-famer", "hall-of-legends"]);
 });
 
 test("a pinned badge can be moved to another slot in the showcase", () => {

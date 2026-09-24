@@ -1838,14 +1838,160 @@ kbd {
 [data-grade='SS'] { --grade: #a45cff; --grade-ink: #fff; }
 [data-grade='SSS'] { --grade: #ffb800; --grade-ink: #3a1d00; }
 
-/* After a hand: its grade and odds, under the buttons. */
-.hand-odds {
-  padding: 3px 12px;
+/* After a hand: the grade as one letter among the round's chips, opening to
+   say why. A rare hand's chip pulses until it's tapped. */
+.grade-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 3px;
+  border: none;
   border-radius: 999px;
   background: rgb(0 0 0 / 0.5);
   color: var(--cream);
   font-size: 12px;
-  box-shadow: inset 3px 0 0 var(--grade);
+  cursor: pointer;
+}
+
+.grade-pill[aria-expanded='true'] {
+  padding-right: 10px;
+}
+
+.grade-letter {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--grade);
+  color: var(--grade-ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.grade-detail,
+.grade-hint {
+  display: none;
+}
+
+.grade-pill[aria-expanded='true'] .grade-detail {
+  display: inline;
+}
+
+.grade-pill.locked {
+  padding-right: 10px;
+  animation: grade-pulse 1.4s ease-in-out infinite;
+}
+
+.grade-pill.locked .grade-hint {
+  display: inline;
+  font-weight: 700;
+}
+
+.grade-pill.locked .grade-letter {
+  animation: grade-shine 1.4s ease-in-out infinite;
+}
+
+.grade-pill.revealed .grade-letter {
+  animation: grade-pop 0.5s cubic-bezier(0.3, 1.6, 0.5, 1);
+}
+
+.grade-pill.nudge {
+  animation: grade-nudge 0.4s ease-in-out;
+}
+
+@keyframes grade-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 var(--grade); transform: scale(1); }
+  50% { box-shadow: 0 0 0 6px transparent, 0 0 18px 2px var(--grade); transform: scale(1.08); }
+}
+
+@keyframes grade-shine {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.35); }
+}
+
+@keyframes grade-pop {
+  0% { transform: scale(0.4) rotate(-20deg); }
+  100% { transform: scale(1) rotate(0); }
+}
+
+@keyframes grade-nudge {
+  0%, 100% { translate: 0; }
+  25% { translate: -5px; }
+  75% { translate: 5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grade-pill.locked,
+  .grade-pill.locked .grade-letter {
+    animation: none;
+    box-shadow: 0 0 0 2px var(--grade);
+  }
+}
+
+/* Play again waits for a rare hand's grade to be tapped. */
+.action.waiting {
+  opacity: 0.5;
+}
+
+/* A short notice at the top of the screen, clear of the table's buttons: the
+   message, then its buttons. */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: calc(12px + env(safe-area-inset-top));
+  z-index: 45;
+  width: min(420px, calc(100vw - 32px));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 10px 10px 16px;
+  border-radius: 12px;
+  background: var(--bark);
+  color: var(--cream);
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
+  translate: -50% 0;
+  animation: toast-in 0.3s ease-out;
+}
+
+.toast p {
+  flex: 1 1 100%;
+}
+
+.toast.leaving {
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.toast-action {
+  flex: none;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: var(--mustard);
+  color: var(--bark);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.toast-close {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cream);
+  font-size: 16px;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; translate: -50% -12px; }
 }
 
 .share-dialog {

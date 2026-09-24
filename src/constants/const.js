@@ -229,40 +229,42 @@ export const PROJECTS = [
     slug: "brownjack",
     reflections: [
       {
-        title: "The bug wasn't where it felt like it was",
+        title: "Fair before fun",
         description:
-          "When the game felt unfair, I expected to find a broken shuffle. The shuffle was fine; the real problems were two games running at once, a dealer that chased the player's total, and a running total that broke on face cards. I learned to test my assumptions before fixing the thing that seems most obviously wrong.",
-      },
-      {
-        title: "Tuning with simulations",
-        description:
-          "I found it interesting to design a ranking that gets harder as you climb. Instead of guessing point values, I simulated hundreds of thousands of hands of basic-strategy play to see how long each tier takes and how rare each badge really is, then tuned the numbers until the curve felt right.",
+          "Early on the game felt rigged against the player, and the cause turned out to be my own mistakes, not bad luck. I learned to question what I'm sure of before fixing what looks most obviously wrong, because a game only feels good once players trust it.",
       },
       {
         title: "Rewards worth chasing",
         description:
-          "I enjoyed turning progress into things you can see: tables and card backs drawn as SVG, a rank roadmap, collection points that fill toward the next table, and a card back for every Legendary badge, from a hockey mask to a World's Best Boss mug. I learned that a reward feels earned when the player can always see what's next and how close it is.",
+          "I enjoyed turning progress into things you can see and collect: ranks, badges, tables and card backs, from a hockey mask to a World's Best Boss mug. I learned that a reward feels earned when the player can always see what's next and how close it is.",
       },
       {
-        title: "Details you feel more than see",
+        title: "Every hand tells a story",
         description:
-          "Small touches mattered more than I expected: pacing the dealer's reveal, a card sound I tuned by ear in a sound lab I built for it, a celebration that can't be skipped by a stray key press, and a table that never preselects Hit. I learned to test the feel of a game, not just whether it works.",
-      },
-      {
-        title: "Keeping the rules honest",
-        description:
-          "I kept the rules, scoring, rewards and save files as small pure modules with their own tests, separate from the page. That made it much easier to add doubles, splits, a six-deck shoe and monthly seasons without breaking what already worked, and to reject tampered or damaged save files.",
+          "I wanted memorable hands to be moments worth sharing, so rare hands get a grade, a spotlight and a place in a Hall of Fame, and brutal ones land in a Hall of Shame. I learned that players remember a painful loss as vividly as a great win, and that small touches like pacing and sound shape how a game feels.",
       },
     ],
-    desc: "A browser Blackjack game with ranked seasons, 62 badges, collectible tables and card backs, a rank roadmap, a basic-strategy coach, doubles and splits, and a daily challenge with the same deal for everyone.",
-    technologies: ["HTML", "CSS", "JavaScript", "SVG", "Web Audio API", "node:test"],
+    desc: "A browser Blackjack game with ranked seasons, 78 badges, 43 collectible card backs and 17 tables, hands graded D to SSS for rarity and shared as images, a Hall of Fame and a Hall of Shame, a basic-strategy coach, doubles and splits, and a daily challenge with the same deal for everyone.",
+    technologies: ["HTML", "CSS", "JavaScript", "SVG", "Canvas API", "Web Audio API", "node:test"],
     urls: {
       github:
         "https://github.com/jsl1114/jsl1114.github.io/tree/v2/public/projects/brownjack",
       live: "https://jsl1114.github.io/projects/brownjack/game.html",
     },
     image: "brown.webp",
-    screenshots: ["brown1.webp", "brown2.webp", "brown3.webp", "brown4.webp", "brown5.webp", "brown6.webp", "brown7.webp", "brown8.webp"],
+    screenshots: [
+      "brown1.webp",
+      "brown2.webp",
+      "brown3.webp",
+      "brown4.webp",
+      "brown5.webp",
+      "brown6.webp",
+      "brown7.webp",
+      "brown8.webp",
+      "brown9.webp",
+      "brown10.webp",
+      "brown11.webp",
+    ],
   },
   {
     title: "Inky",

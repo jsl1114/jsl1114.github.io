@@ -23,6 +23,7 @@ import {
   SHOWCASE_SIZE,
   TIERS,
   WIN_POINTS,
+  awardHallBadges,
   catchUpBadges,
   moveShowcase,
   newProfile,
@@ -70,6 +71,10 @@ import {
   totalScore,
 } from './daily.mjs'
 import { daysLeft, rollSeason, seasonId, seasonName } from './seasons.mjs'
+import { featureName, isHallOfFame, isNotable, oneIn, rateHand } from './handodds.mjs'
+import { clearSpotlight, gradeChip, nudge, showToast } from './handui.mjs'
+import { HALLS, HALL_SIZE, addToHall, hallOf, rankHall } from './halloffame.mjs'
+import { GAME_URL, canvasBlob, drawShareCard, headline } from './sharecard.mjs'
 
 const $ = (id) => document.getElementById(id)
 const el = {
@@ -108,6 +113,21 @@ const el = {
   seasonMedals: $('season-medals'),
   collection: $('collection'),
   openAppearance: $('open-appearance'),
+  shareHand: $('share-hand'),
+  shareDialog: $('share-dialog'),
+  closeShare: $('close-share'),
+  shareImage: $('share-image'),
+  shareNative: $('share-native'),
+  shareCopy: $('share-copy'),
+  shareDownload: $('share-download'),
+  shareHandStatus: $('share-hand-status'),
+  openHall: $('open-hall'),
+  hallDialog: $('hall-dialog'),
+  closeHall: $('close-hall'),
+  hallList: $('hall-list'),
+  hallTitle: $('hall-title'),
+  hallTabs: $('hall-tabs'),
+  hallIntro: $('hall-intro'),
   settingsAppearance: $('settings-appearance'),
   appearanceDialog: $('appearance-dialog'),
   closeAppearance: $('close-appearance'),
@@ -1251,7 +1271,10 @@ function startRound({ daily = false } = {}) {
   el.dealerCount.textContent = '?'
   el.coach.hidden = true
   el.dealerCounter.classList.remove('winner')
-  el.again.hidden = el.toSetup.hidden = true
+  el.again.hidden = el.toSetup.hidden = el.shareHand.hidden = true
+  state.gradeLock = false
+  el.again.classList.remove('waiting')
+  clearSpotlight()
 
   const arriving = el.game.hidden
   el.start.hidden = true
@@ -1480,6 +1503,11 @@ function showResult(winners, result, beforeRp) {
   if (overall !== 'player') el.dealerCounter.classList.add('winner')
   renderRankChip(beforeRp)
   renderRoundScore(result, beforeRp)
+  // Before announceUnlocks marks this hand's unlocks as seen.
+  const { record, hallEarned } = handRecord(winners, result, beforeRp)
+  lastHand = record
+  showGrade(record)
+  el.shareHand.hidden = false
 
   // A finished daily has no next hand: show the shareable result instead.
   const dailyOver = result.daily && result.daily.rounds.length >= DAILY_HANDS
@@ -1489,9 +1517,11 @@ function showResult(winners, result, beforeRp) {
   el.toSetup.hidden = false
   if (dailyOver) showDailyShare(el.game)
   // Focus first: a celebration takes focus and hands it back when it closes.
-  ;(dailyOver ? el.shareDaily : el.again).focus()
+  // A rare hand's grade has to be tapped before the next hand.
+  ;(dailyOver ? el.shareDaily : state.gradeLock ? shownGrade : el.again).focus()
   if (result.daily) {
-    if (dailyOver) announceUnlocks()
+    for (const id of hallEarned) celebrate(badgeById(id))
+    if (dailyOver || hallEarned.length) announceUnlocks()
     return
   }
   // A promotion (or a new Legend star) plays first, then the hand's badges.
@@ -1501,9 +1531,281 @@ function showResult(winners, result, beforeRp) {
     const newTier = result.after.tierIndex > rankOf(beforePeak).tierIndex
     celebrateRank(result.before, result.after, { note: newTier ? `Unlocked: ${unlocksAt(result.after.tierIndex)}` : '' })
   }
-  for (const id of result.earned) celebrate(badgeById(id))
+  for (const id of [...result.earned, ...hallEarned]) celebrate(badgeById(id))
   announceUnlocks()
 }
+
+// ---- Sharing a hand and the Hall of Fame -----------------------------------------
+// After every hand: how rare it was and its grade, and an image of it to share.
+// Hands graded S or better go into this device's Hall of Fame (or, if brutal,
+// its Hall of Shame), the ten rarest ever in each.
+
+const HALL_KEY = 'brownjack.halloffame.v1'
+
+function loadHall() {
+  try {
+    const saved = JSON.parse(readStorage(HALL_KEY))
+    const valid = (e) => e && Number.isFinite(e.at) && Array.isArray(e.hands) && e.hands.length && Array.isArray(e.dealer)
+    return Array.isArray(saved) ? rankHall(saved.filter(valid)) : []
+  } catch {
+    return []
+  }
+}
+
+let hall = loadHall()
+let lastHand = null
+const saveHall = () => writeStorage(HALL_KEY, JSON.stringify(hall))
+const plainCards = (cards) => cards.map(({ rank, suit }) => ({ rank, suit }))
+
+// The finished hand as a record for the share image and the Hall of Fame (see
+// sharecard.mjs), and any Hall of Fame badges it earned. Rigged hands aren't rated.
+function handRecord(winners, result, beforeRp) {
+  const rigged = result.unranked && !result.daily
+  const hands = state.hands.map((hand, i) => ({
+    cards: plainCards(hand.cards),
+    winner: winners[i],
+    doubled: hand.doubled,
+    riskyHit: hand.riskyHit,
+    needle: hand.needle,
+    hailMary: hand.hailMary,
+  }))
+  const dealer = plainCards(state.dealer)
+  const step = (rp) => Math.floor(rp / POINTS_PER_DIVISION)
+  const record = {
+    at: Date.now(),
+    mode: result.daily ? 'daily' : rigged ? 'rigged' : 'ranked',
+    label: result.daily
+      ? `Daily #${dailyNumber(state.dailyKey)} · hand ${result.daily.rounds.length} of ${DAILY_HANDS}`
+      : rigged ? 'Rigged · practice' : `Ranked · ${rankOf(profile.rp).name}`,
+    hands,
+    dealer,
+    delta: result.unranked ? null : result.delta,
+    rankUp: !result.unranked && step(result.profile.rp) > step(beforeRp) ? { from: result.before.name, to: result.after.name } : null,
+    earned: result.earned,
+    unlocks: [],
+    place: null,
+  }
+  if (rigged) return { record: { ...record, chance: null, grade: null, reason: null }, hallEarned: [] }
+  Object.assign(record, rateHand(record))
+  const added = addToHall(hall, record)
+  if (added.place) {
+    record.place = added.place
+    hall = added.hall
+  }
+  // The first hand in the Hall of Fame, and a full one, each earn a badge.
+  const hallBadges = awardHallBadges(profile, hallOf(hall, 'fame').length, record.at)
+  if (hallBadges.earned.length) {
+    profile = hallBadges.profile
+    saveProfile()
+    renderRank()
+  }
+  record.earned = [...result.earned, ...hallBadges.earned]
+  const seen = getSettings().unlocksSeen
+  record.unlocks = seen ? unlockedIds(collectionContext()).filter((id) => !seen.includes(id)) : []
+  if (added.place) {
+    hall = hall.map((entry) => (entry.at === record.at ? { ...entry, earned: record.earned, unlocks: record.unlocks, place: record.place } : entry))
+    saveHall()
+  }
+  return { record, hallEarned: hallBadges.earned }
+}
+
+// The grade chip among the round's chips, for hands graded A or better. A rare
+// hand's has to be tapped before the next hand, and the first one ever points
+// the way to the Hall of Fame.
+let shownGrade = null
+
+let shownRecord = null
+
+function showGrade(record) {
+  shownRecord = record
+  shownGrade = isNotable(record.grade) ? gradeChip(record, { onReveal: revealRareHand }) : null
+  state.gradeLock = Boolean(record.grade && isHallOfFame(record.grade))
+  el.again.classList.toggle('waiting', state.gradeLock)
+  if (!shownGrade) return
+  el.roundScore.prepend(shownGrade)
+  el.roundScore.hidden = false
+}
+
+function revealRareHand() {
+  state.gradeLock = false
+  el.again.classList.remove('waiting')
+  if (!el.again.hidden) el.again.focus()
+  const brutal = Boolean(shownRecord?.brutal)
+  const seen = brutal ? 'shameNoticeSeen' : 'hallNoticeSeen'
+  if (getSettings()[seen]) return
+  setSetting(seen, true)
+  const hall = brutal ? 'Hall of Shame' : 'Hall of Fame'
+  showToast(`Your first ${brutal ? 'brutal hand' : 'hand'} graded S or better! It’s kept in your ${hall}, from the Hall of Fame button on the start screen.`, {
+    action: `Open ${hall}`,
+    onAction: () => openHall(brutal ? 'shame' : 'fame'),
+    ms: 14_000,
+  })
+}
+
+const shareCaption = (record) =>
+  record.grade
+    ? `My ${record.grade} hand in BrownJack (${featureName(record.reason)}, ${oneIn(record.chance)} hands). Play at ${GAME_URL}`
+    : `A hand from BrownJack. Play at ${GAME_URL}`
+
+let shareFile = null
+let shareUrl = null
+
+// Draw the hand, then offer whatever this browser can do with the image.
+async function openShare(record) {
+  shareFile = null
+  el.shareImage.removeAttribute('src')
+  el.shareNative.hidden = el.shareCopy.hidden = true
+  el.shareDownload.hidden = true
+  el.shareHandStatus.textContent = 'Drawing your hand…'
+  el.shareDialog.showModal()
+  try {
+    const tableId = selected(TABLES, getSettings().table, collectionContext()).id
+    const blob = await canvasBlob(await drawShareCard(record, { tableId }))
+    const name = `brownjack-${record.grade ?? 'practice'}-${new Date(record.at).toISOString().slice(0, 10)}.png`
+    if (shareUrl) URL.revokeObjectURL(shareUrl)
+    shareUrl = URL.createObjectURL(blob)
+    el.shareImage.src = shareUrl
+    el.shareImage.alt = `${headline(record)}${record.grade ? `, rarity ${record.grade}: ${featureName(record.reason)}, ${oneIn(record.chance)} hands` : ''}`
+    el.shareDownload.href = shareUrl
+    el.shareDownload.download = name
+    el.shareDownload.hidden = false
+    shareFile = { blob, file: new File([blob], name, { type: 'image/png' }), text: shareCaption(record) }
+    el.shareNative.hidden = !navigator.canShare?.({ files: [shareFile.file] })
+    el.shareCopy.hidden = !(navigator.clipboard?.write && window.ClipboardItem)
+    el.shareHandStatus.textContent = ''
+  } catch {
+    el.shareHandStatus.textContent = "Couldn't draw this hand. Try again."
+  }
+}
+
+el.shareHand.addEventListener('click', () => lastHand && openShare(lastHand))
+el.shareNative.addEventListener('click', async () => {
+  if (!shareFile) return
+  try {
+    await navigator.share({ files: [shareFile.file], text: shareFile.text })
+  } catch (error) {
+    if (error?.name !== 'AbortError') el.shareHandStatus.textContent = "Couldn't open sharing. Download the image instead."
+  }
+})
+el.shareCopy.addEventListener('click', async () => {
+  if (!shareFile) return
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': shareFile.blob })])
+    el.shareHandStatus.textContent = 'Image copied'
+  } catch {
+    el.shareHandStatus.textContent = "Couldn't copy the image. Download it instead."
+  }
+})
+el.closeShare.addEventListener('click', () => el.shareDialog.close())
+el.shareDialog.addEventListener('click', (event) => {
+  if (event.target === el.shareDialog) el.shareDialog.close()
+})
+
+// The Hall of Fame: the ten rarest hands ever, rarest first.
+
+const SUIT_SIGNS = { spades: '♠', hearts: '♥', clubs: '♣', diamonds: '♦' }
+function cardsLine(cards) {
+  const line = document.createElement('span')
+  line.className = 'hall-cards'
+  for (const { rank, suit } of cards) {
+    line.append(Object.assign(document.createElement('span'), {
+      className: suit === 'hearts' || suit === 'diamonds' ? 'red' : '',
+      textContent: `${rank}${SUIT_SIGNS[suit]}`,
+    }))
+  }
+  return line
+}
+
+function hallItem(entry, place) {
+  const item = document.createElement('li')
+  item.className = 'hall-entry'
+  const grade = Object.assign(document.createElement('span'), { className: 'grade-chip', textContent: entry.grade })
+  grade.dataset.grade = entry.grade
+  const body = document.createElement('div')
+  body.className = 'hall-body'
+  const top = document.createElement('div')
+  top.className = 'hall-top'
+  top.append(
+    Object.assign(document.createElement('strong'), { textContent: `#${place} · ${featureName(entry.reason)}` }),
+    Object.assign(document.createElement('small'), {
+      textContent: `${oneIn(entry.chance)} hands · ${headline(entry)} · ${new Date(entry.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}`,
+    }),
+  )
+  const table = document.createElement('div')
+  table.className = 'hall-table'
+  entry.hands.forEach((hand, i) => {
+    if (i) table.append(' | ')
+    table.append(cardsLine(hand.cards))
+  })
+  table.append(' vs ', cardsLine(entry.dealer))
+  body.append(top, table)
+  const share = Object.assign(document.createElement('button'), { type: 'button', className: 'text-btn', textContent: 'Share' })
+  share.addEventListener('click', () => openShare({ ...entry, place }))
+  item.append(grade, body, share)
+  return item
+}
+
+// Two halls in one dialog, a tab each.
+const ICON_ATTRS = 'viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"'
+const HALL_TABS = {
+  fame: {
+    title: 'Hall of Fame',
+    icon: `<svg ${ICON_ATTRS}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>`,
+    intro: 'Your ten rarest hands of all time, graded S or better. A hand is as rare as the rarest thing it did, such as Aces High or Lucky Sevens. Rigged hands don’t count.',
+    empty: 'No hands graded S or better yet. Standoff, Royal Couple or Straight 21 would get you in.',
+  },
+  shame: {
+    title: 'Hall of Shame',
+    icon: `<svg ${ICON_ATTRS}><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><path d="M8 20v2h8v-2"/><path d="m12.5 17-.5-1-.5 1h1z"/><path d="M16 20a2 2 0 0 0 1.56-3.25 8 8 0 1 0-11.12 0A2 2 0 0 0 8 20"/></svg>`,
+    intro: 'Your ten most brutal hands: rare the painful way, graded S or better, such as Aces Low or The Long Con. Rigged hands don’t count.',
+    empty: 'No brutal hands graded S or better yet. Timber!, Slow Burn or Aces Low would get you in.',
+  },
+}
+let hallTab = 'fame'
+
+function renderHall() {
+  const tab = HALL_TABS[hallTab]
+  el.hallTitle.textContent = tab.title
+  el.hallIntro.textContent = tab.intro
+  el.hallTabs.replaceChildren(
+    ...HALLS.map((name) => {
+      const button = document.createElement('button')
+      button.type = 'button'
+      button.className = 'badge-tab hall-tab'
+      button.setAttribute('role', 'tab')
+      button.setAttribute('aria-selected', String(name === hallTab))
+      const label = document.createElement('span')
+      label.className = 'hall-tab-label'
+      label.innerHTML = HALL_TABS[name].icon
+      label.append(HALL_TABS[name].title)
+      button.append(label, Object.assign(document.createElement('small'), { textContent: `${hallOf(hall, name).length}/${HALL_SIZE}` }))
+      button.addEventListener('click', () => {
+        hallTab = name
+        renderHall()
+        el.hallTabs.querySelector('[aria-selected="true"]')?.focus()
+      })
+      return button
+    }),
+  )
+  const entries = hallOf(hall, hallTab)
+  el.hallList.replaceChildren(
+    ...(entries.length
+      ? entries.map((entry, i) => hallItem(entry, i + 1))
+      : [Object.assign(document.createElement('li'), { className: 'hall-empty', textContent: tab.empty })]),
+  )
+}
+
+function openHall(name = 'fame') {
+  hallTab = name
+  renderHall()
+  el.hallDialog.showModal()
+}
+
+el.openHall.addEventListener('click', () => openHall())
+el.closeHall.addEventListener('click', () => el.hallDialog.close())
+el.hallDialog.addEventListener('click', (event) => {
+  if (event.target === el.hallDialog) el.hallDialog.close()
+})
 
 // ---- Daily challenge -------------------------------------------------------------
 // One attempt a day, saved after every hand. Leaving mid-hand counts that hand
@@ -1620,6 +1922,7 @@ el.shareDaily.addEventListener('click', async () => {
 })
 
 function nextRound() {
+  if (state.gradeLock) return nudge(shownGrade)
   if (state.mode === 'daily') {
     if (!dailyComplete(state.dailyKey)) startRound({ daily: true })
     return
@@ -1629,6 +1932,7 @@ function nextRound() {
 
 function showSetup({ keepNotice = false } = {}) {
   disarmLeave()
+  clearSpotlight()
   if (!keepNotice) el.notice.hidden = true
   state.done = true
   el.dailyDone.hidden = true
@@ -1926,7 +2230,10 @@ el.cancelImport.addEventListener('click', () => {
 el.confirmImport.addEventListener('click', () => {
   if (!pendingImport) return
   const caughtUp = catchUpBadges(pendingImport.profile)
-  profile = caughtUp.profile
+  // This device's Hall of Fame stays with the device, so its badges come along.
+  const hallCaught = awardHallBadges(caughtUp.profile, hallOf(hall, 'fame').length)
+  caughtUp.earned.push(...hallCaught.earned)
+  profile = hallCaught.profile
   // An imported save from an earlier season rolls into this one.
   const importNote = applySeason()
   if (importNote) {
@@ -2095,8 +2402,11 @@ if (seasonNote) {
 }
 
 const caughtUp = catchUpBadges(profile)
+// A Hall of Fame kept before its badges existed earns them now.
+const hallCaught = awardHallBadges(caughtUp.profile, hallOf(hall, 'fame').length)
+caughtUp.earned.push(...hallCaught.earned)
 if (caughtUp.earned.length) {
-  profile = caughtUp.profile
+  profile = hallCaught.profile
   saveProfile()
 }
 

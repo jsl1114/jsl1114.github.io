@@ -792,6 +792,15 @@ kbd {
   display: block;
 }
 
+/* Appearance sits right under the cog, and doesn't spin. */
+.appearance-btn {
+  top: 50px;
+}
+
+.appearance-btn:hover {
+  rotate: none;
+}
+
 /* Secondary to Play: a quiet outline. */
 .daily-btn {
   display: flex;
@@ -1813,6 +1822,391 @@ kbd {
 /* Appearance: tables and card backs, a tab each, grouped by how they unlock. */
 .appearance-dialog {
   width: min(480px, calc(100vw - 32px));
+}
+
+/* ---- Sharing a hand and the Hall of Fame ---- */
+
+/* A grade's colour, from common D up to gold SSS. */
+[data-grade] {
+  --grade: #7b5234;
+  --grade-ink: var(--cream);
+}
+[data-grade='C'] { --grade: #8a8f98; --grade-ink: #fff; }
+[data-grade='B'] { --grade: #2f8f83; --grade-ink: #fff; }
+[data-grade='A'] { --grade: #6aa84f; --grade-ink: #fff; }
+[data-grade='S'] { --grade: #4a90e2; --grade-ink: #fff; }
+[data-grade='SS'] { --grade: #a45cff; --grade-ink: #fff; }
+[data-grade='SSS'] { --grade: #ffb800; --grade-ink: #3a1d00; }
+
+/* After a hand: the grade as one letter among the round's chips, opening to
+   say why. A rare hand's chip pulses until it's tapped. */
+.grade-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 3px;
+  border: none;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.5);
+  color: var(--cream);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.grade-pill[aria-expanded='true'] {
+  padding-right: 10px;
+}
+
+.grade-letter {
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--grade);
+  color: var(--grade-ink);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.grade-detail,
+.grade-hint {
+  display: none;
+}
+
+.grade-pill[aria-expanded='true'] .grade-detail {
+  display: inline;
+}
+
+/* A rare hand's chip, locked: the rest of the screen goes dark (its own huge
+   shadow) and a sheen crosses it. Layers, bottom up: the shadow, the pill with
+   its sheen (::after), the text. */
+.grade-pill.locked,
+.grade-pill.revealed {
+  position: relative;
+  z-index: 32;
+}
+
+.grade-pill.locked {
+  padding: 4px 14px 4px 4px;
+  background: transparent;
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0.8);
+  font-size: 13px;
+  animation: spotlight-in 0.6s ease-out;
+}
+
+.grade-pill.revealed {
+  box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0);
+  transition: box-shadow 0.5s ease-out;
+}
+
+.grade-pill.locked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  background:
+    linear-gradient(110deg, transparent 35%, rgb(255 255 255 / 0.6) 50%, transparent 65%) -150% 0 / 250% 100% no-repeat,
+    rgb(36 18 7 / 0.96);
+  box-shadow: 0 0 0 2px var(--grade), 0 0 26px 4px var(--grade);
+  animation: sheen 2.4s ease-in-out 0.4s infinite;
+}
+
+.grade-pill.locked .grade-hint {
+  display: inline;
+  font-weight: 700;
+}
+
+.grade-pill.locked .grade-letter {
+  box-shadow: 0 0 12px 2px var(--grade);
+}
+
+/* A brutal hand's chip wears a red ring, and its sparkles are embers. */
+.grade-pill.brutal .grade-letter {
+  outline: 2px solid #ff5a4e;
+  outline-offset: 1px;
+}
+
+.grade-pill.brutal .grade-spark {
+  background: #ff7a5c;
+}
+
+/* Four sparkles twinkle around the locked chip. */
+.grade-spark {
+  display: none;
+}
+
+.grade-pill.locked .grade-spark {
+  position: absolute;
+  display: block;
+  width: 10px;
+  height: 10px;
+  background: var(--mustard);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  pointer-events: none;
+  animation: twinkle 1.6s ease-in-out infinite;
+}
+
+.spark-a { top: -12px; left: 18%; }
+.spark-b { bottom: -12px; left: 62%; animation-delay: 0.4s !important; }
+.spark-c { top: -8px; right: -10px; animation-delay: 0.8s !important; }
+.spark-d { bottom: -6px; left: -12px; animation-delay: 1.2s !important; }
+
+.grade-pill.nudge {
+  animation: grade-nudge 0.4s ease-in-out;
+}
+
+/* Taps anywhere but the chip, while it's locked, only nudge it. */
+.spotlight-catch {
+  position: fixed;
+  inset: 0;
+  z-index: 31;
+}
+
+@keyframes spotlight-in {
+  from { box-shadow: 0 0 0 100vmax rgb(0 0 0 / 0); }
+}
+
+@keyframes sheen {
+  0% { background-position: -150% 0, 0 0; }
+  55%, 100% { background-position: 250% 0, 0 0; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0; scale: 0.3; rotate: 0deg; }
+  50% { opacity: 1; scale: 1; rotate: 45deg; }
+}
+
+@keyframes grade-nudge {
+  0%, 100% { translate: 0; }
+  25% { translate: -5px; }
+  75% { translate: 5px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grade-pill.locked,
+  .grade-pill.locked::after,
+  .grade-pill.locked .grade-spark {
+    animation: none;
+  }
+}
+
+/* Play again waits for a rare hand's grade to be tapped. */
+.action.waiting {
+  opacity: 0.5;
+}
+
+/* A short notice at the top of the screen, clear of the table's buttons: the
+   message, then its buttons. */
+.toast {
+  position: fixed;
+  left: 50%;
+  top: calc(12px + env(safe-area-inset-top));
+  z-index: 45;
+  width: min(420px, calc(100vw - 32px));
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 10px 10px 16px;
+  border-radius: 12px;
+  background: var(--bark);
+  color: var(--cream);
+  font-size: 13px;
+  line-height: 1.4;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 0.45);
+  translate: -50% 0;
+  animation: toast-in 0.3s ease-out;
+}
+
+.toast p {
+  flex: 1 1 100%;
+}
+
+.toast.leaving {
+  opacity: 0;
+  transition: opacity 0.25s;
+}
+
+.toast-action {
+  flex: none;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 8px;
+  background: var(--mustard);
+  color: var(--bark);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.toast-close {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--cream);
+  font-size: 16px;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; translate: -50% -12px; }
+}
+
+.share-dialog {
+  width: min(520px, calc(100vw - 32px));
+}
+
+/* The image at the dialog's full width and its own height, scrolling in its
+   frame when it's taller than the screen allows, so it's never squashed. */
+.share-preview {
+  min-height: 200px;
+  max-height: 62svh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: 10px;
+  background: rgb(73 38 18 / 0.08);
+}
+
+.share-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.share-preview::-webkit-scrollbar {
+  width: 12px;
+}
+
+.share-preview::-webkit-scrollbar-track {
+  margin: 6px 0;
+  background: transparent;
+}
+
+.share-preview::-webkit-scrollbar-thumb {
+  border: 4px solid transparent;
+  border-radius: 999px;
+  background: rgb(73 38 18 / 0.28) padding-box;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .share-preview {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(73 38 18 / 0.35) transparent;
+  }
+}
+
+.share-preview img:not([src]) {
+  display: none;
+}
+
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+a.setting-btn {
+  text-decoration: none;
+}
+
+.share-actions [hidden] {
+  display: none;
+}
+
+.hall-dialog {
+  width: min(520px, calc(100vw - 32px));
+}
+
+.hall-tab-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hall-tab-label svg {
+  flex: none;
+}
+
+.hall-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.hall-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.6);
+}
+
+.grade-chip {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--grade);
+  color: var(--grade-ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.hall-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.hall-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  font-size: 13px;
+}
+
+.hall-top small {
+  color: var(--walnut);
+  font-size: 11px;
+}
+
+.hall-table {
+  margin-top: 4px;
+  color: var(--walnut);
+  font-size: 12px;
+}
+
+.hall-cards span + span {
+  margin-left: 4px;
+}
+
+.hall-cards .red {
+  color: var(--red);
+}
+
+.hall-entry .text-btn {
+  flex: none;
+  color: var(--bark);
+}
+
+.hall-empty {
+  padding: 18px 12px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.6);
+  color: var(--walnut);
+  font-size: 12px;
+  text-align: center;
 }
 
 .appearance-intro {

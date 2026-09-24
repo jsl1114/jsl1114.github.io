@@ -6,6 +6,10 @@ import { celebrate, celebrateRank, celebrateUnlock, emblemElement, glyphElement 
 import { CARD_BACKS, TABLES, byRank, progress, unlocksAt } from './cosmetics.mjs'
 import { newProfile } from './ranked.mjs'
 import { tableSVG } from './tableart.mjs'
+import { featureName, isNotable, oneIn, rateHand } from './handodds.mjs'
+import { addToHall } from './halloffame.mjs'
+import { canvasBlob, drawShareCard } from './sharecard.mjs'
+import { gradeChip, nudge, showToast } from './handui.mjs'
 import { CARD_SOUND, audioContext, cardSound, play } from './sound.mjs'
 
 const $ = (id) => document.getElementById(id)
@@ -83,11 +87,12 @@ group('rank', 'Queue', [
 
 // ---- Badges ---------------------------------------------------------------------
 
-// The newest Legendary badges, up top while they're being tuned; each also
-// appears under its type below.
-const NEW_BADGES = ['four-kind', 'full-house', 'hail-mary', 'double-trouble', 'back-to-back', 'new-year']
-group('badges', 'New · Legendary', NEW_BADGES.map(badgeById).map((badge) =>
-  row(glyphElement(badge), badge.name, { sub: badge.desc, detail: badge.category, onClick: () => celebrate(badge) })))
+// The newest badges, up top while they're being tuned; each also appears under
+// its type below.
+const NEW_BADGES = ['doubled-out', 'overloaded', 'double-whammy', 'slow-burn', 'timber', 'aces-low', 'long-con', 'double-disaster',
+  'hall-of-famer', 'hall-of-legends', 'four-kind', 'full-house', 'hail-mary', 'double-trouble', 'back-to-back', 'new-year']
+group('badges', 'New', NEW_BADGES.map(badgeById).map((badge) =>
+  row(glyphElement(badge), badge.name, { sub: badge.desc, detail: badge.rarity, onClick: () => celebrate(badge) })))
 group('badges', 'By rarity', ['Common', 'Rare', 'Epic', 'Legendary'].map((rarity) => {
   const badge = BADGES.find((b) => b.rarity === rarity)
   const count = BADGES.filter((b) => b.rarity === rarity).length
@@ -97,6 +102,168 @@ for (const category of CATEGORIES) {
   group('badges', category, BADGES.filter((b) => b.category === category).map((badge) =>
     row(glyphElement(badge), badge.name, { sub: badge.desc, detail: badge.rarity, onClick: () => celebrate(badge) })))
 }
+
+// ---- Sharing a hand ---------------------------------------------------------------
+
+// Sample hands for the share image and the Hall of Fame, rated as the game rates them.
+const c = (rank, suit = 'hearts') => ({ rank, suit })
+const hand = (winner, ...cards) => ({ cards, winner })
+function sampleHand(hands, dealer, extra = {}) {
+  const record = { at: Date.now(), mode: 'ranked', label: 'Ranked · Gold II', hands, dealer, delta: 25, rankUp: null,
+    earned: [], unlocks: [], place: null, ...extra }
+  return extra.mode === 'rigged' ? { ...record, chance: null, grade: null, reason: null } : { ...record, ...rateHand(record) }
+}
+const SAMPLE_HANDS = [
+  ['Aces High, with a promotion', sampleHand([hand('player', c('A'), c('K', 'clubs')), hand('player', c('A', 'spades'), c('Q'))],
+    [c('10', 'diamonds'), c('8', 'clubs')], { delta: 60, earned: ['aces-high', 'split-decision'], unlocks: ['aces'], rankUp: { from: 'Gold II', to: 'Gold III' }, place: 1 })],
+  ['Straight 21', sampleHand([hand('player', c('6'), c('7', 'clubs'), c('8', 'spades'))], [c('10', 'diamonds'), c('9', 'clubs')], { earned: ['straight'] })],
+  ['A split: one win, one loss', sampleHand([
+    { cards: [c('8'), c('3', 'clubs'), c('K', 'spades')], winner: 'player', doubled: true },
+    hand('dealer', c('8', 'spades'), c('10')),
+  ], [c('9', 'diamonds'), c('10', 'clubs')], { delta: 30 })],
+  ['A daily blackjack', sampleHand([hand('player', c('A'), c('Q'))], [c('9', 'spades'), c('8', 'clubs')],
+    { mode: 'daily', label: 'Daily #2 · hand 3 of 5', delta: null })],
+  ['Double Disaster, a brutal hand', sampleHand([
+    { ...hand('dealer', c('8'), c('3', 'clubs'), c('5')), doubled: true },
+    { ...hand('dealer', c('8', 'spades'), c('2'), c('7', 'clubs')), doubled: true },
+  ], [c('6', 'diamonds'), c('10', 'clubs'), c('4')], { delta: -56, earned: ['double-disaster', 'double-whammy'], unlocks: ['disaster'], place: 1 })],
+  ['A rigged hand', sampleHand([hand('player', c('A', 'spades'), c('J', 'clubs'))], [c('9', 'diamonds'), c('8', 'clubs')],
+    { mode: 'rigged', label: 'Rigged · practice', delta: null })],
+]
+// Rare hands of every kind, for the Hall of Fame.
+const HALL_SAMPLES = [
+  [[hand('player', c('A'), c('K', 'clubs')), hand('player', c('A', 'spades'), c('Q'))], [c('10', 'diamonds'), c('8', 'clubs')]],
+  [[hand('player', c('5'), c('5', 'clubs'), c('5', 'spades'), c('5', 'diamonds'))], [c('10'), c('7', 'clubs')]],
+  [[hand('player', c('3'), c('3', 'clubs'), c('3', 'spades'), c('A'), c('A', 'clubs'), c('10'))], [c('9', 'spades'), c('9', 'clubs')]],
+  [[hand('player', c('7'), c('7', 'clubs'), c('7', 'spades'))], [c('10', 'diamonds'), c('8', 'clubs')]],
+  [[hand('player', c('2'), c('3', 'clubs'), c('2', 'spades'), c('4'), c('3'), c('5', 'clubs'))], [c('10'), c('6', 'clubs'), c('K')]],
+  [[hand('push', c('A'), c('K'))], [c('A', 'clubs'), c('Q', 'clubs')]],
+  [[hand('player', c('K'), c('Q'))], [c('2'), c('3'), c('4'), c('2', 'clubs'), c('5'), c('K', 'clubs')]],
+  [[hand('player', c('A', 'spades'), c('J', 'clubs'))], [c('9', 'diamonds'), c('8', 'clubs')]],
+  [[hand('player', c('K'), c('Q'))], [c('10', 'clubs'), c('9')]],
+  [[hand('player', c('6'), c('7', 'clubs'), c('8', 'spades'))], [c('10', 'diamonds'), c('9', 'clubs')]],
+  [[hand('player', c('A'), c('A', 'clubs'), c('A', 'spades'), c('8'))], [c('10', 'diamonds'), c('9', 'clubs')]],
+  [[hand('player', c('K'), c('9'))], [c('10', 'clubs'), c('7')]],
+  // And brutal ones, for the Hall of Shame.
+  [[hand('dealer', c('A'), c('5')), hand('dealer', c('A', 'clubs'), c('6'))], [c('10', 'clubs'), c('9')]],
+  [[hand('dealer', c('10'), c('8'))], [c('2'), c('3'), c('4', 'clubs'), c('2', 'spades'), c('5'), c('5', 'clubs')]],
+  [[{ ...hand('dealer', c('8'), c('3', 'clubs'), c('5')), doubled: true }, { ...hand('dealer', c('8', 'spades'), c('2'), c('7', 'clubs')), doubled: true }],
+    [c('6', 'diamonds'), c('10', 'clubs'), c('4')]],
+  [[hand('dealer', c('2'), c('3', 'clubs'), c('2', 'spades'), c('4'), c('3', 'diamonds'), c('K'))], [c('10', 'diamonds'), c('7', 'clubs')]],
+  [[hand('dealer', c('K'), c('9'))], [c('2', 'clubs'), c('4'), c('3'), c('5', 'spades'), c('7')]],
+]
+// The end of a hand, as the game shows it: the grade chip among the round's
+// chips, and Play again waiting on a rare hand until its grade is tapped.
+const AFTER_HAND = [
+  ['A plain win', [hand('player', c('K'), c('9', 'clubs'))], [c('10', 'spades'), c('7')]],
+  ['A blackjack', [hand('player', c('A', 'spades'), c('K'))], [c('10', 'clubs'), c('7')]],
+  ['Photo Finish', [hand('player', c('10'), c('5', 'clubs'), c('6'))], [c('K', 'spades'), c('Q')]],
+  ['Five-Card Charlie', [hand('player', c('2'), c('3', 'clubs'), c('4'), c('2', 'spades'), c('5'))], [c('10', 'clubs'), c('8')]],
+  ['Straight 21', [hand('player', c('6'), c('7', 'clubs'), c('8', 'spades'))], [c('10', 'diamonds'), c('9', 'clubs')]],
+  ['Hail Mary', [{ ...hand('player', c('10'), c('K', 'clubs'), c('A', 'spades')), riskyHit: true, needle: true, hailMary: true }], [c('10', 'clubs'), c('8')]],
+  ['Aces High', [hand('player', c('A'), c('K', 'clubs')), hand('player', c('A', 'spades'), c('Q'))], [c('10', 'diamonds'), c('8', 'clubs')]],
+  ['Brutal: Double Whammy', [hand('dealer', c('8'), c('10', 'clubs')), hand('dealer', c('8', 'spades'), c('9'))], [c('10', 'diamonds'), c('Q', 'clubs')]],
+  ['Brutal: Timber!', [hand('dealer', c('2'), c('3', 'clubs'), c('2', 'spades'), c('4'), c('3', 'diamonds'), c('K'))], [c('10', 'diamonds'), c('7', 'clubs')]],
+  ['Brutal: Double Disaster', [
+    { ...hand('dealer', c('8'), c('3', 'clubs'), c('5')), doubled: true },
+    { ...hand('dealer', c('8', 'spades'), c('2'), c('7', 'clubs')), doubled: true },
+  ], [c('6', 'diamonds'), c('10', 'clubs'), c('4')]],
+]
+const stage = node('div', 'demo-stage')
+const stageNote = node('p', 'group-note', 'Tap a row below to see the end of that hand here.')
+
+function showAfterHand(record) {
+  const again = node('button', 'action primary', 'Play again')
+  again.type = 'button'
+  const score = node('div', 'round-score')
+  const chip = gradeChip(record, {
+    onReveal: () => {
+      again.classList.remove('waiting')
+      stageNote.textContent = 'Revealed. Play again works now; tap the grade again to fold it.'
+    },
+  })
+  const locked = chip.classList.contains('locked')
+  again.classList.toggle('waiting', locked)
+  again.addEventListener('click', () => {
+    if (chip.classList.contains('locked')) return nudge(chip)
+    stageNote.textContent = 'On to the next hand.'
+  })
+  const lost = record.hands.every((h) => h.winner === 'dealer')
+  score.append(...(isNotable(record.grade) ? [chip] : []),
+    node('span', 'score-line', lost ? 'Loss −14' : 'Win +30'), node('strong', 'score-total', lost ? '−14 RP' : '+30 RP'))
+  stage.replaceChildren(again, score)
+  stage.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  if (!isNotable(record.grade)) {
+    stageNote.textContent = `Graded ${record.grade}: below A, so no grade is shown after the hand.`
+    return
+  }
+  stageNote.textContent = locked
+    ? `A ${record.brutal ? 'brutal' : 'rare'} hand: Play again waits (try it) until the grade is tapped.`
+    : 'Tap the grade to see why it got it.'
+}
+
+group('share', 'After a hand', [
+  ...AFTER_HAND.map(([name, hands, dealer]) => {
+    const record = sampleHand(hands, dealer, { place: null })
+    return row(symbol(record.grade), name, {
+      sub: `${featureName(record.reason)} · ${oneIn(record.chance)} hands`,
+      detail: record.grade,
+      onClick: () => showAfterHand(record),
+    })
+  }),
+  ...[['Hall of Fame', 'hand', 'rare'], ['Hall of Shame', 'brutal hand', 'brutal']].map(([hall, what, kind]) =>
+    row(symbol(kind === 'brutal' ? '☠' : '!'), `First ${kind} hand notice`, {
+      sub: `Shown once, when the first ${what} graded S or better is revealed`,
+      onClick: () => showToast(`Your first ${what} graded S or better! It’s kept in your ${hall}, from the Hall of Fame button on the start screen.`, {
+        action: `Open ${hall}`,
+        onAction: () => { stageNote.textContent = `In the game, this opens the ${hall}.` },
+        ms: 14_000,
+      }),
+    })),
+])
+// The demo sits above the rows it demonstrates.
+const afterHandRows = $('tab-share').querySelector('.group:last-of-type')
+afterHandRows.before(stage, stageNote)
+
+async function openShareImage(record) {
+  const canvas = await drawShareCard(record, { tableId: 'saloon' })
+  open(URL.createObjectURL(await canvasBlob(canvas)), '_blank')
+}
+group('share', 'Share images', SAMPLE_HANDS.map(([name, record]) =>
+  row(symbol(record.grade ?? '—'), name, {
+    sub: record.grade ? `${record.grade} · ${featureName(record.reason)} · ${oneIn(record.chance)} hands` : 'Not graded',
+    onClick: () => openShareImage(record),
+  })), 'Opens the image in a new tab, drawn on the Saloon table.')
+group('share', 'Hall of Fame', [
+  row(symbol('★'), 'Fill the Hall of Fame', {
+    sub: 'Sample hands, rare and brutal; the ones graded S or better make each hall',
+    onClick: () => {
+      let hall = []
+      HALL_SAMPLES.forEach(([hands, dealer], i) => {
+        hall = addToHall(hall, sampleHand(hands, dealer, { at: Date.now() - i * 86_400_000 })).hall
+      })
+      try {
+        localStorage.setItem('brownjack.halloffame.v1', JSON.stringify(hall))
+        hallStatus.textContent = `Saved ${hall.length} hands. Open the game's Hall of Fame to see them.`
+      } catch {
+        hallStatus.textContent = "This browser isn't letting the page store data."
+      }
+    },
+  }),
+  row(symbol('×'), 'Clear the Hall of Fame', {
+    onClick: () => {
+      try {
+        localStorage.removeItem('brownjack.halloffame.v1')
+      } catch {
+        // Nothing stored.
+      }
+      hallStatus.textContent = 'Cleared.'
+    },
+  }),
+])
+const hallStatus = node('p', 'lab-status')
+hallStatus.setAttribute('role', 'status')
+$('tab-share').append(hallStatus)
 
 // ---- Unlocks --------------------------------------------------------------------
 
@@ -208,7 +375,7 @@ for (const [label, sounds] of SOUND_ROWS) {
 
 // ---- Tab bar --------------------------------------------------------------------
 
-const TITLES = { rank: 'Rank-ups', badges: 'Badges', unlocks: 'Unlocks', sound: 'Sound' }
+const TITLES = { rank: 'Rank-ups', badges: 'Badges', unlocks: 'Unlocks', share: 'Share', sound: 'Sound' }
 const TAB_KEY = 'brownjack.dev-tab'
 
 function showTab(name) {

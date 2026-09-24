@@ -6,7 +6,7 @@
 // presses a key, which only counts once a short lock has passed, so it can't be
 // dismissed by a click or key press that was meant for the game. When a pile
 // builds up (say, after importing a save), each one offers to skip the rest,
-// which swaps them for a single summary of everything skipped.
+// which swaps them for a single summary of the whole batch.
 import { DIVISIONS } from './ranked.mjs'
 import { buzz, play } from './sound.mjs'
 import { tableSVG } from './tableart.mjs'
@@ -26,6 +26,8 @@ const queue = []
 let showing = false
 // Keeps the current celebration's "Skip all" count up to date as more queue up.
 let refreshSkip = () => {}
+// Everything shown since the queue was last empty, for the summary.
+let batch = []
 
 export const isCelebrating = () => showing
 
@@ -76,7 +78,7 @@ export function emblemElement(rank) {
   return emblem
 }
 
-// `about` says what's being celebrated, for the summary if it gets skipped:
+// `about` says what's being celebrated, for the summary if the rest are skipped:
 // { badge } | { from, to } | { item, kind }.
 function enqueue(build, lock, sound, vibration, about) {
   return new Promise((resolve) => {
@@ -295,12 +297,13 @@ function build(badge) {
   return overlay
 }
 
-// One screen for everything skipped: the rank reached, then badges (rarest
-// first), tables and card backs, each as a small tile with its name.
-function buildSummary(skipped) {
-  const overlay = overlayElement('summary', `${skipped.length} more unlocks`)
+// One screen for the whole batch, seen and skipped alike: the rank reached,
+// then badges (rarest first), tables and card backs, each as a small tile.
+function buildSummary(items) {
+  const title = `${items.length} unlocks`
+  const overlay = overlayElement('summary', title)
   const card = node('div', 'celebration-card summary-card')
-  card.append(node('p', 'celebration-kicker', 'Skipped'), node('h2', 'celebration-name', `${skipped.length} more unlocks`))
+  card.append(node('p', 'celebration-kicker', 'Summary'), node('h2', 'celebration-name', title))
 
   const list = node('div', 'summary-list')
   const group = (title, tiles) => {
@@ -316,7 +319,7 @@ function buildSummary(skipped) {
     li.append(picture, node('span', 'summary-tile-name', name))
     return li
   }
-  const abouts = skipped.map((s) => s.about ?? {})
+  const abouts = items.map((s) => s.about ?? {})
 
   const ranks = abouts.filter((a) => a.to)
   if (ranks.length) group('Rank', [tile(emblemElement(ranks.at(-1).to), ranks.at(-1).to.name)])
@@ -346,13 +349,14 @@ function buildSummary(skipped) {
   return overlay
 }
 
-// Swap everything still waiting for one summary, which settles their promises
-// once it closes.
+// Swap everything still waiting for one summary of the whole batch, which
+// settles the skipped ones' promises once it closes.
 function skipRest() {
   const skipped = queue.splice(0)
-  const top = RARITIES.find((rarity) => skipped.some((s) => s.about?.badge?.rarity === rarity))
+  const items = [...batch, ...skipped]
+  const top = RARITIES.find((rarity) => items.some((s) => s.about?.badge?.rarity === rarity))
   queue.push({
-    build: () => buildSummary(skipped),
+    build: () => buildSummary(items),
     lock: LOCK.summary,
     sound: top ? top.toLowerCase() : 'epic',
     vibration: 'badge',
@@ -366,9 +370,11 @@ function showNext() {
   if (!item) {
     showing = false
     refreshSkip = () => {}
+    batch = []
     return
   }
   showing = true
+  if (!item.summary) batch.push(item)
   const overlay = item.build()
   const previousFocus = document.activeElement
   // An open modal <dialog> sits in the top layer, so celebrate inside it.

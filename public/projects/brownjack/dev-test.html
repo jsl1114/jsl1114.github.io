@@ -48,7 +48,7 @@
 
     .tabbar {
       position: fixed; left: 0; right: 0; bottom: 0; z-index: 40;
-      display: grid; grid-template-columns: repeat(4, 1fr);
+      display: grid; grid-template-columns: repeat(5, 1fr);
       padding: 6px max(8px, calc(50% - 280px)) calc(6px + env(safe-area-inset-bottom));
       border-top: 1px solid rgb(73 38 18 / 0.18); background: rgb(250 235 215 / 0.92); backdrop-filter: blur(12px);
     }
@@ -69,6 +69,7 @@
     <section class="dev-tab" id="tab-rank" role="tabpanel" aria-labelledby="tabbtn-rank"></section>
     <section class="dev-tab" id="tab-badges" role="tabpanel" aria-labelledby="tabbtn-badges" hidden></section>
     <section class="dev-tab" id="tab-unlocks" role="tabpanel" aria-labelledby="tabbtn-unlocks" hidden></section>
+    <section class="dev-tab" id="tab-share" role="tabpanel" aria-labelledby="tabbtn-share" hidden></section>
     <section class="dev-tab" id="tab-sound" role="tabpanel" aria-labelledby="tabbtn-sound" hidden></section>
     <a class="back-link" href="game.html">← Back to the game</a>
   </main>
@@ -77,6 +78,7 @@
     <button type="button" class="tab" role="tab" id="tabbtn-rank" data-tab="rank" aria-selected="true"><span>▲</span>Rank-ups</button>
     <button type="button" class="tab" role="tab" id="tabbtn-badges" data-tab="badges" aria-selected="false"><span>✦</span>Badges</button>
     <button type="button" class="tab" role="tab" id="tabbtn-unlocks" data-tab="unlocks" aria-selected="false"><span>▣</span>Unlocks</button>
+    <button type="button" class="tab" role="tab" id="tabbtn-share" data-tab="share" aria-selected="false"><span>⇪</span>Share</button>
     <button type="button" class="tab" role="tab" id="tabbtn-sound" data-tab="sound" aria-selected="false"><span>♪</span>Sound</button>
   </nav>
 </body>

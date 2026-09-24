@@ -48,6 +48,7 @@
           <button type="button" class="badges-btn" id="open-stats">Stats</button>
           <button type="button" class="badges-btn" id="open-badges">Badges <span id="badge-count"></span></button>
           <button type="button" class="badges-btn" id="open-appearance">Appearance</button>
+          <button type="button" class="badges-btn" id="open-hall">Hall of Fame</button>
         </div>
 
         <details class="setup">
@@ -99,7 +100,9 @@
         <button type="button" class="action" id="split" hidden>Split <kbd>P</kbd></button>
         <button type="button" class="action primary" id="again" hidden>Play again <kbd>Enter</kbd></button>
         <button type="button" class="action" id="to-setup" hidden>Menu <kbd>Esc</kbd></button>
+        <button type="button" class="action" id="share-hand" hidden>Share</button>
       </div>
+      <p class="hand-odds" id="hand-odds" hidden></p>
       <p class="coach" id="coach" aria-live="polite" hidden></p>
       <div class="round-score" id="round-score" hidden></div>
     </section>
@@ -177,6 +180,37 @@
     <div class="collection" id="appearance-collection"></div>
     <div class="badge-tabs appearance-tabs" id="appearance-tabs" role="tablist" aria-label="Appearance"></div>
     <div id="appearance-sections"></div>
+  </dialog>
+
+  <dialog class="badges-dialog share-dialog" id="share-dialog" aria-labelledby="share-title">
+    <div class="dialog-head">
+      <h2 id="share-title">Share this hand</h2>
+      <button type="button" class="close" id="close-share" aria-label="Close">×</button>
+    </div>
+    <div class="share-preview"><img id="share-image" alt="" /></div>
+    <div class="share-actions">
+      <button type="button" class="setting-btn" id="share-native" hidden>Share…</button>
+      <button type="button" class="setting-btn" id="share-copy" hidden>Copy image</button>
+      <a class="setting-btn" id="share-download" download="brownjack-hand.png">Download</a>
+    </div>
+    <p class="setting-status" id="share-hand-status" role="status" aria-live="polite"></p>
+  </dialog>
+
+  <dialog class="badges-dialog hall-dialog" id="hall-dialog" aria-labelledby="hall-title">
+    <div class="dialog-head">
+      <h2 id="hall-title">Hall of Fame</h2>
+      <button type="button" class="close" id="close-hall" aria-label="Close">×</button>
+    </div>
+    <p class="appearance-intro">
+      Your rarest hands graded S or better: the top ten each week, Monday to Sunday (US Eastern).
+      Rigged hands don't count.
+    </p>
+    <div class="hall-week">
+      <button type="button" class="hall-step" id="hall-older" aria-label="Older week">‹</button>
+      <strong id="hall-week-name"></strong>
+      <button type="button" class="hall-step" id="hall-newer" aria-label="Newer week">›</button>
+    </div>
+    <ol class="hall-list" id="hall-list"></ol>
   </dialog>
 
   <dialog class="badges-dialog settings-dialog" id="settings-dialog" aria-labelledby="settings-title">

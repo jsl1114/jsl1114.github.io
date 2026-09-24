@@ -6,6 +6,9 @@ import { celebrate, celebrateRank, celebrateUnlock, emblemElement, glyphElement 
 import { CARD_BACKS, TABLES, byRank, progress, unlocksAt } from './cosmetics.mjs'
 import { newProfile } from './ranked.mjs'
 import { tableSVG } from './tableart.mjs'
+import { gradeOf, handChance, oneIn } from './handodds.mjs'
+import { addToHall } from './halloffame.mjs'
+import { canvasBlob, drawShareCard } from './sharecard.mjs'
 import { CARD_SOUND, audioContext, cardSound, play } from './sound.mjs'
 
 const $ = (id) => document.getElementById(id)
@@ -97,6 +100,72 @@ for (const category of CATEGORIES) {
   group('badges', category, BADGES.filter((b) => b.category === category).map((badge) =>
     row(glyphElement(badge), badge.name, { sub: badge.desc, detail: badge.rarity, onClick: () => celebrate(badge) })))
 }
+
+// ---- Sharing a hand ---------------------------------------------------------------
+
+// Sample hands for the share image and the Hall of Fame.
+const c = (rank, suit) => ({ rank, suit })
+function sampleHand(hands, dealer, extra = {}) {
+  const chance = handChance(hands.flatMap((h) => h.cards), dealer)
+  return { at: Date.now(), mode: 'ranked', label: 'Ranked · Gold II', hands, dealer, delta: 25, rankUp: null,
+    earned: [], unlocks: [], chance, grade: gradeOf(chance), place: null, ...extra }
+}
+const SAMPLE_HANDS = [
+  ['Lucky Sevens, with a promotion', sampleHand([{ cards: [c('7', 'hearts'), c('7', 'clubs'), c('7', 'spades')], winner: 'player' }],
+    [c('10', 'diamonds'), c('6', 'clubs'), c('5', 'hearts'), c('K', 'spades')],
+    { delta: 49, earned: ['sevens', 'hat-trick'], unlocks: ['sevens'], rankUp: { from: 'Gold II', to: 'Gold III' }, place: 1 })],
+  ['A split: one win, one loss', sampleHand([
+    { cards: [c('8', 'hearts'), c('3', 'clubs'), c('K', 'spades')], winner: 'player', doubled: true },
+    { cards: [c('8', 'spades'), c('10', 'hearts')], winner: 'dealer' },
+  ], [c('9', 'diamonds'), c('10', 'clubs')], { delta: 30 })],
+  ['A daily hand', sampleHand([{ cards: [c('A', 'hearts'), c('Q', 'hearts')], winner: 'player' }], [c('9', 'spades'), c('8', 'clubs')],
+    { mode: 'daily', label: 'Daily #2 · hand 3 of 5', delta: null })],
+  ['A rigged hand', { ...sampleHand([{ cards: [c('A', 'spades'), c('J', 'clubs')], winner: 'player' }], [c('9', 'diamonds'), c('8', 'clubs')]),
+    mode: 'rigged', label: 'Rigged · practice', delta: null, chance: null, grade: null }],
+]
+async function openShareImage(record) {
+  const canvas = await drawShareCard(record, { tableId: 'saloon' })
+  open(URL.createObjectURL(await canvasBlob(canvas)), '_blank')
+}
+group('share', 'Share images', SAMPLE_HANDS.map(([name, record]) =>
+  row(symbol(record.grade ?? '—'), name, {
+    sub: record.grade ? `${record.grade} · ${oneIn(record.chance)}` : 'Not graded',
+    onClick: () => openShareImage(record),
+  })), 'Opens the image in a new tab, drawn on the Saloon table.')
+group('share', 'Hall of Fame', [
+  row(symbol('★'), "Fill this week's Hall of Fame", {
+    sub: 'Twelve rare sample hands; the game keeps the ten rarest',
+    onClick: () => {
+      let hall = []
+      const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+      for (let i = 0; i < 12; i++) {
+        const low = ranks[i % 5]
+        const hand = sampleHand([{ cards: [c(low, 'hearts'), c(low, 'clubs'), c(low, 'spades'), c('A', 'diamonds')], winner: 'player' }],
+          [c(ranks[11 - i], 'clubs'), c(ranks[(i + 6) % 12], 'hearts'), c('9', 'spades')], { at: Date.now() - i * 3_600_000 })
+        hall = addToHall(hall, hand).hall
+      }
+      try {
+        localStorage.setItem('brownjack.halloffame.v1', JSON.stringify(hall))
+        hallStatus.textContent = `Saved ${hall.length} hands. Open the game's Hall of Fame to see them.`
+      } catch {
+        hallStatus.textContent = "This browser isn't letting the page store data."
+      }
+    },
+  }),
+  row(symbol('×'), 'Clear the Hall of Fame', {
+    onClick: () => {
+      try {
+        localStorage.removeItem('brownjack.halloffame.v1')
+      } catch {
+        // Nothing stored.
+      }
+      hallStatus.textContent = 'Cleared.'
+    },
+  }),
+])
+const hallStatus = node('p', 'lab-status')
+hallStatus.setAttribute('role', 'status')
+$('tab-share').append(hallStatus)
 
 // ---- Unlocks --------------------------------------------------------------------
 
@@ -208,7 +277,7 @@ for (const [label, sounds] of SOUND_ROWS) {
 
 // ---- Tab bar --------------------------------------------------------------------
 
-const TITLES = { rank: 'Rank-ups', badges: 'Badges', unlocks: 'Unlocks', sound: 'Sound' }
+const TITLES = { rank: 'Rank-ups', badges: 'Badges', unlocks: 'Unlocks', share: 'Share', sound: 'Sound' }
 const TAB_KEY = 'brownjack.dev-tab'
 
 function showTab(name) {

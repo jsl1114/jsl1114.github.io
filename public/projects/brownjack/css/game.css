@@ -864,13 +864,20 @@ kbd {
 
 .menu-row {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 8px;
   margin-top: -6px;
 }
 
 .menu-row .badges-btn {
   margin-top: 0;
+}
+
+/* Phones: two rows of two, so "Appearance" and "Hall of Fame" fit. */
+@media (max-width: 480px) {
+  .menu-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .badges-btn {
@@ -1813,6 +1820,173 @@ kbd {
 /* Appearance: tables and card backs, a tab each, grouped by how they unlock. */
 .appearance-dialog {
   width: min(480px, calc(100vw - 32px));
+}
+
+/* ---- Sharing a hand and the Hall of Fame ---- */
+
+/* A grade's colour, from common D up to gold SSS. */
+[data-grade] {
+  --grade: #7b5234;
+  --grade-ink: var(--cream);
+}
+[data-grade='C'] { --grade: #8a8f98; --grade-ink: #fff; }
+[data-grade='B'] { --grade: #2f8f83; --grade-ink: #fff; }
+[data-grade='A'] { --grade: #6aa84f; --grade-ink: #fff; }
+[data-grade='S'] { --grade: #4a90e2; --grade-ink: #fff; }
+[data-grade='SS'] { --grade: #a45cff; --grade-ink: #fff; }
+[data-grade='SSS'] { --grade: #ffb800; --grade-ink: #3a1d00; }
+
+/* After a hand: its grade and odds, under the buttons. */
+.hand-odds {
+  padding: 3px 12px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.5);
+  color: var(--cream);
+  font-size: 12px;
+  box-shadow: inset 3px 0 0 var(--grade);
+}
+
+.share-dialog {
+  width: min(460px, calc(100vw - 32px));
+}
+
+.share-preview {
+  display: grid;
+  place-items: center;
+  min-height: 200px;
+  border-radius: 10px;
+  background: rgb(73 38 18 / 0.08);
+}
+
+.share-preview img {
+  display: block;
+  max-width: 100%;
+  max-height: 56svh;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgb(0 0 0 / 0.25);
+}
+
+.share-preview img:not([src]) {
+  display: none;
+}
+
+.share-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+a.setting-btn {
+  text-decoration: none;
+}
+
+.share-actions [hidden] {
+  display: none;
+}
+
+.hall-dialog {
+  width: min(520px, calc(100vw - 32px));
+}
+
+.hall-week {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.hall-step {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgb(73 38 18 / 0.25);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--bark);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.hall-step:disabled {
+  opacity: 0.3;
+}
+
+.hall-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  list-style: none;
+}
+
+.hall-entry {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.6);
+}
+
+.grade-chip {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--grade);
+  color: var(--grade-ink);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.hall-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.hall-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  font-size: 13px;
+}
+
+.hall-top small {
+  color: var(--walnut);
+  font-size: 11px;
+}
+
+.hall-table {
+  margin-top: 4px;
+  color: var(--walnut);
+  font-size: 12px;
+}
+
+.hall-cards span + span {
+  margin-left: 4px;
+}
+
+.hall-cards .red {
+  color: var(--red);
+}
+
+.hall-entry .text-btn {
+  flex: none;
+  color: var(--bark);
+}
+
+.hall-empty {
+  padding: 18px 12px;
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.6);
+  color: var(--walnut);
+  font-size: 12px;
+  text-align: center;
 }
 
 .appearance-intro {

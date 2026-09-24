@@ -70,6 +70,9 @@ import {
   totalScore,
 } from './daily.mjs'
 import { daysLeft, rollSeason, seasonId, seasonName } from './seasons.mjs'
+import { gradeOf, handChance, oneIn } from './handodds.mjs'
+import { addToHall, hallWeek, hallWeeks, weekName } from './halloffame.mjs'
+import { GAME_URL, canvasBlob, drawShareCard, headline } from './sharecard.mjs'
 
 const $ = (id) => document.getElementById(id)
 const el = {
@@ -108,6 +111,22 @@ const el = {
   seasonMedals: $('season-medals'),
   collection: $('collection'),
   openAppearance: $('open-appearance'),
+  shareHand: $('share-hand'),
+  handOdds: $('hand-odds'),
+  shareDialog: $('share-dialog'),
+  closeShare: $('close-share'),
+  shareImage: $('share-image'),
+  shareNative: $('share-native'),
+  shareCopy: $('share-copy'),
+  shareDownload: $('share-download'),
+  shareHandStatus: $('share-hand-status'),
+  openHall: $('open-hall'),
+  hallDialog: $('hall-dialog'),
+  closeHall: $('close-hall'),
+  hallOlder: $('hall-older'),
+  hallNewer: $('hall-newer'),
+  hallWeekName: $('hall-week-name'),
+  hallList: $('hall-list'),
   settingsAppearance: $('settings-appearance'),
   appearanceDialog: $('appearance-dialog'),
   closeAppearance: $('close-appearance'),
@@ -1251,7 +1270,7 @@ function startRound({ daily = false } = {}) {
   el.dealerCount.textContent = '?'
   el.coach.hidden = true
   el.dealerCounter.classList.remove('winner')
-  el.again.hidden = el.toSetup.hidden = true
+  el.again.hidden = el.toSetup.hidden = el.shareHand.hidden = el.handOdds.hidden = true
 
   const arriving = el.game.hidden
   el.start.hidden = true
@@ -1480,6 +1499,10 @@ function showResult(winners, result, beforeRp) {
   if (overall !== 'player') el.dealerCounter.classList.add('winner')
   renderRankChip(beforeRp)
   renderRoundScore(result, beforeRp)
+  // Before announceUnlocks marks this hand's unlocks as seen.
+  lastHand = handRecord(winners, result, beforeRp)
+  showHandOdds(lastHand)
+  el.shareHand.hidden = false
 
   // A finished daily has no next hand: show the shareable result instead.
   const dailyOver = result.daily && result.daily.rounds.length >= DAILY_HANDS
@@ -1504,6 +1527,208 @@ function showResult(winners, result, beforeRp) {
   for (const id of result.earned) celebrate(badgeById(id))
   announceUnlocks()
 }
+
+// ---- Sharing a hand and the Hall of Fame -----------------------------------------
+// After every hand: its odds and grade, and an image of it to share. Hands graded
+// S or better go into this device's Hall of Fame, the ten rarest each week.
+
+const HALL_KEY = 'brownjack.halloffame.v1'
+
+function loadHall() {
+  try {
+    const saved = JSON.parse(readStorage(HALL_KEY))
+    return Array.isArray(saved) ? saved.filter((e) => e && Number.isFinite(e.at) && e.chance > 0 && e.grade) : []
+  } catch {
+    return []
+  }
+}
+
+let hall = loadHall()
+let lastHand = null
+const saveHall = () => writeStorage(HALL_KEY, JSON.stringify(hall))
+const plainCards = (cards) => cards.map(({ rank, suit }) => ({ rank, suit }))
+
+// The finished hand as a record for the share image and the Hall of Fame (see
+// sharecard.mjs). Rigged hands get no chance or grade.
+function handRecord(winners, result, beforeRp) {
+  const rigged = result.unranked && !result.daily
+  const hands = state.hands.map((hand, i) => ({ cards: plainCards(hand.cards), winner: winners[i], doubled: hand.doubled }))
+  const dealer = plainCards(state.dealer)
+  const chance = rigged ? null : handChance(hands.flatMap((h) => h.cards), dealer)
+  const step = (rp) => Math.floor(rp / POINTS_PER_DIVISION)
+  const seen = getSettings().unlocksSeen
+  const record = {
+    at: Date.now(),
+    mode: result.daily ? 'daily' : rigged ? 'rigged' : 'ranked',
+    label: result.daily
+      ? `Daily #${dailyNumber(state.dailyKey)} · hand ${result.daily.rounds.length} of ${DAILY_HANDS}`
+      : rigged ? 'Rigged · practice' : `Ranked · ${rankOf(profile.rp).name}`,
+    hands,
+    dealer,
+    delta: result.unranked ? null : result.delta,
+    rankUp: !result.unranked && step(result.profile.rp) > step(beforeRp) ? { from: result.before.name, to: result.after.name } : null,
+    earned: result.earned,
+    unlocks: seen ? unlockedIds(collectionContext()).filter((id) => !seen.includes(id)) : [],
+    chance,
+    grade: rigged ? null : gradeOf(chance),
+    place: null,
+  }
+  const added = addToHall(hall, record)
+  if (added.place) {
+    record.place = added.place
+    hall = added.hall
+    saveHall()
+  }
+  return record
+}
+
+function showHandOdds(record) {
+  el.handOdds.hidden = !record.grade
+  if (!record.grade) return
+  el.handOdds.dataset.grade = record.grade
+  el.handOdds.textContent =
+    `Rarity ${record.grade} · ${oneIn(record.chance)}` +
+    (record.place ? ` · #${record.place} in this week's Hall of Fame` : '')
+}
+
+const shareCaption = (record) =>
+  record.grade
+    ? `My ${record.grade} hand in BrownJack: ${oneIn(record.chance)}. Play at ${GAME_URL}`
+    : `A hand from BrownJack. Play at ${GAME_URL}`
+
+let shareFile = null
+let shareUrl = null
+
+// Draw the hand, then offer whatever this browser can do with the image.
+async function openShare(record) {
+  shareFile = null
+  el.shareImage.removeAttribute('src')
+  el.shareNative.hidden = el.shareCopy.hidden = true
+  el.shareDownload.hidden = true
+  el.shareHandStatus.textContent = 'Drawing your hand…'
+  el.shareDialog.showModal()
+  try {
+    const tableId = selected(TABLES, getSettings().table, collectionContext()).id
+    const blob = await canvasBlob(await drawShareCard(record, { tableId }))
+    const name = `brownjack-${record.grade ?? 'practice'}-${new Date(record.at).toISOString().slice(0, 10)}.png`
+    if (shareUrl) URL.revokeObjectURL(shareUrl)
+    shareUrl = URL.createObjectURL(blob)
+    el.shareImage.src = shareUrl
+    el.shareImage.alt = `${headline(record)}${record.grade ? `, rarity ${record.grade}, ${oneIn(record.chance)}` : ''}`
+    el.shareDownload.href = shareUrl
+    el.shareDownload.download = name
+    el.shareDownload.hidden = false
+    shareFile = { blob, file: new File([blob], name, { type: 'image/png' }), text: shareCaption(record) }
+    el.shareNative.hidden = !navigator.canShare?.({ files: [shareFile.file] })
+    el.shareCopy.hidden = !(navigator.clipboard?.write && window.ClipboardItem)
+    el.shareHandStatus.textContent = ''
+  } catch {
+    el.shareHandStatus.textContent = "Couldn't draw this hand. Try again."
+  }
+}
+
+el.shareHand.addEventListener('click', () => lastHand && openShare(lastHand))
+el.shareNative.addEventListener('click', async () => {
+  if (!shareFile) return
+  try {
+    await navigator.share({ files: [shareFile.file], text: shareFile.text })
+  } catch (error) {
+    if (error?.name !== 'AbortError') el.shareHandStatus.textContent = "Couldn't open sharing. Download the image instead."
+  }
+})
+el.shareCopy.addEventListener('click', async () => {
+  if (!shareFile) return
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': shareFile.blob })])
+    el.shareHandStatus.textContent = 'Image copied'
+  } catch {
+    el.shareHandStatus.textContent = "Couldn't copy the image. Download it instead."
+  }
+})
+el.closeShare.addEventListener('click', () => el.shareDialog.close())
+el.shareDialog.addEventListener('click', (event) => {
+  if (event.target === el.shareDialog) el.shareDialog.close()
+})
+
+// The Hall of Fame: one week at a time, newest first.
+let hallShown = null
+
+const SUIT_SIGNS = { spades: '♠', hearts: '♥', clubs: '♣', diamonds: '♦' }
+function cardsLine(cards) {
+  const line = document.createElement('span')
+  line.className = 'hall-cards'
+  for (const { rank, suit } of cards) {
+    line.append(Object.assign(document.createElement('span'), {
+      className: suit === 'hearts' || suit === 'diamonds' ? 'red' : '',
+      textContent: `${rank}${SUIT_SIGNS[suit]}`,
+    }))
+  }
+  return line
+}
+
+function hallItem(entry, place) {
+  const item = document.createElement('li')
+  item.className = 'hall-entry'
+  const grade = Object.assign(document.createElement('span'), { className: 'grade-chip', textContent: entry.grade })
+  grade.dataset.grade = entry.grade
+  const body = document.createElement('div')
+  body.className = 'hall-body'
+  const top = document.createElement('div')
+  top.className = 'hall-top'
+  top.append(
+    Object.assign(document.createElement('strong'), { textContent: `#${place} · ${oneIn(entry.chance)}` }),
+    Object.assign(document.createElement('small'), {
+      textContent: `${new Date(entry.at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })} · ${headline(entry)}`,
+    }),
+  )
+  const table = document.createElement('div')
+  table.className = 'hall-table'
+  entry.hands.forEach((hand, i) => {
+    if (i) table.append(' | ')
+    table.append(cardsLine(hand.cards))
+  })
+  table.append(' vs ', cardsLine(entry.dealer))
+  body.append(top, table)
+  const share = Object.assign(document.createElement('button'), { type: 'button', className: 'text-btn', textContent: 'Share' })
+  share.addEventListener('click', () => openShare({ ...entry, place }))
+  item.append(grade, body, share)
+  return item
+}
+
+function renderHall() {
+  const weeks = hallWeeks(hall)
+  if (!weeks.includes(hallShown)) hallShown = weeks[0]
+  const index = weeks.indexOf(hallShown)
+  el.hallWeekName.textContent = `${index === 0 ? 'This week · ' : ''}${weekName(hallShown)}`
+  el.hallOlder.disabled = index >= weeks.length - 1
+  el.hallNewer.disabled = index <= 0
+  const entries = hallWeek(hall, hallShown)
+  el.hallList.replaceChildren(
+    ...(entries.length
+      ? entries.map((entry, i) => hallItem(entry, i + 1))
+      : [Object.assign(document.createElement('li'), {
+          className: 'hall-empty',
+          textContent: 'No hands graded S or better this week yet. About one hand in ten makes it.',
+        })]),
+  )
+}
+
+const stepHall = (by) => {
+  const weeks = hallWeeks(hall)
+  hallShown = weeks[Math.max(0, Math.min(weeks.length - 1, weeks.indexOf(hallShown) + by))]
+  renderHall()
+}
+el.hallOlder.addEventListener('click', () => stepHall(1))
+el.hallNewer.addEventListener('click', () => stepHall(-1))
+el.openHall.addEventListener('click', () => {
+  hallShown = null
+  renderHall()
+  el.hallDialog.showModal()
+})
+el.closeHall.addEventListener('click', () => el.hallDialog.close())
+el.hallDialog.addEventListener('click', (event) => {
+  if (event.target === el.hallDialog) el.hallDialog.close()
+})
 
 // ---- Daily challenge -------------------------------------------------------------
 // One attempt a day, saved after every hand. Leaving mid-hand counts that hand

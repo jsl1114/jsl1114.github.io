@@ -229,34 +229,19 @@ export const PROJECTS = [
     slug: "brownjack",
     reflections: [
       {
-        title: "The bug wasn't where it felt like it was",
+        title: "Fair before fun",
         description:
-          "When the game felt unfair, I expected to find a broken shuffle. The shuffle was fine; the real problems were two games running at once, a dealer that chased the player's total, and a running total that broke on face cards. I learned to test my assumptions before fixing the thing that seems most obviously wrong.",
-      },
-      {
-        title: "Tuning with simulations",
-        description:
-          "I found it interesting to design a ranking that gets harder as you climb. Instead of guessing point values, I simulated hundreds of thousands of hands of basic-strategy play to see how long each tier takes and how rare each badge really is, then tuned the numbers until the curve felt right.",
+          "Early on the game felt rigged against the player, and the cause turned out to be my own mistakes, not bad luck. I learned to question what I'm sure of before fixing what looks most obviously wrong, because a game only feels good once players trust it.",
       },
       {
         title: "Rewards worth chasing",
         description:
-          "I enjoyed turning progress into things you can see: tables and card backs drawn as SVG, a rank roadmap, collection points that fill toward the next table, and a card back for every Epic and Legendary badge, from a hockey mask to a World's Best Boss mug. I learned that a reward feels earned when the player can always see what's next and how close it is.",
+          "I enjoyed turning progress into things you can see and collect: ranks, badges, tables and card backs, from a hockey mask to a World's Best Boss mug. I learned that a reward feels earned when the player can always see what's next and how close it is.",
       },
       {
-        title: "Deciding what makes a hand rare",
+        title: "Every hand tells a story",
         description:
-          "My first rarity score used the chance of a hand's exact cards, but nearly every hand came out one in tens of thousands, and a blackjack scored like a dull 19. I switched to grading a hand by the rarest thing it did, measured over 20 million simulated hands, and added badges for painful hands so a brutal loss can rank as high as a great win. I learned that a good metric has to match what players actually find remarkable, not just what's easy to compute.",
-      },
-      {
-        title: "Details you feel more than see",
-        description:
-          "Small touches mattered more than I expected: pacing the dealer's reveal, a card sound I tuned by ear in a sound lab I built for it, a celebration that can't be skipped by a stray key press, and a table that never preselects Hit. I learned to test the feel of a game, not just whether it works.",
-      },
-      {
-        title: "Keeping the rules honest",
-        description:
-          "I kept the rules, scoring, rewards and save files as small pure modules with their own tests, separate from the page. That made it much easier to add doubles, splits, a six-deck shoe and monthly seasons without breaking what already worked, and to reject tampered or damaged save files.",
+          "I wanted memorable hands to be moments worth sharing, so rare hands get a grade, a spotlight and a place in a Hall of Fame, and brutal ones land in a Hall of Shame. I learned that players remember a painful loss as vividly as a great win, and that small touches like pacing and sound shape how a game feels.",
       },
     ],
     desc: "A browser Blackjack game with ranked seasons, 78 badges, 43 collectible card backs and 17 tables, hands graded D to SSS for rarity and shared as images, a Hall of Fame and a Hall of Shame, a basic-strategy coach, doubles and splits, and a daily challenge with the same deal for everyone.",
@@ -278,6 +263,7 @@ export const PROJECTS = [
       "brown8.webp",
       "brown9.webp",
       "brown10.webp",
+      "brown11.webp",
     ],
   },
   {

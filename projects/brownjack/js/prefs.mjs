@@ -3,7 +3,12 @@
 
 const SETTINGS_KEY = 'brownjack.settings.v1'
 // unlocksSeen: ids of tables and backs already announced (null until first run).
-const DEFAULTS = { sound: true, haptics: true, coach: false, table: 'oak', cardBack: 'classic', unlocksSeen: null }
+// hallNoticeSeen / shameNoticeSeen: the first S-or-better hand (and brutal
+// hand) has pointed the way to the Hall of Fame (and of Shame).
+const DEFAULTS = {
+  sound: true, haptics: true, coach: false, table: 'oak', cardBack: 'classic', unlocksSeen: null,
+  hallNoticeSeen: false, shameNoticeSeen: false,
+}
 
 let settings = loadSettings()
 

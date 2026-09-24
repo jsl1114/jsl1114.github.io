@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { canSplit, createShoe, dealerShouldHit, handValue, isBlackjack, needsShuffle, outcome } from "../public/projects/brownjack/js/blackjack.mjs";
 import { bestMove } from "../public/projects/brownjack/js/strategy.mjs";
 import {
-  FEATURE_ODDS, GRADES, HAND_BADGES, cardChance, featureName, gradeOf, handFeatures, isHallOfFame, oneIn, rateHand,
+  FEATURE_ODDS, GRADES, HAND_BADGES, cardChance, featureName, gradeOf, handFeatures, isHallOfFame, isNotable, oneIn, rateHand,
 } from "../public/projects/brownjack/js/handodds.mjs";
 import { HALL_SIZE, addToHall, rankHall } from "../public/projects/brownjack/js/halloffame.mjs";
 
@@ -41,6 +41,10 @@ test("the more exciting the hand, the better its grade", () => {
   for (const grades of tiers.Common) assert.ok(grades >= rank("C"), "Common hands grade C or D");
   // A win beats nothing: plain results are the commonest things a hand does.
   for (const id of ["loss", "win", "push"]) assert.equal(gradeOf(FEATURE_ODDS[id]), "D", id);
+});
+
+test("only grades of A and above are shown after a hand", () => {
+  assert.deepEqual(["SSS", "SS", "S", "A", "B", "C", "D", null].map(isNotable), [true, true, true, true, false, false, false, false]);
 });
 
 test("every hand badge and result has odds and a name", () => {

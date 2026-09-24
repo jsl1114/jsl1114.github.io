@@ -6,7 +6,7 @@ import { celebrate, celebrateRank, celebrateUnlock, emblemElement, glyphElement 
 import { CARD_BACKS, TABLES, byRank, progress, unlocksAt } from './cosmetics.mjs'
 import { newProfile } from './ranked.mjs'
 import { tableSVG } from './tableart.mjs'
-import { featureName, oneIn, rateHand } from './handodds.mjs'
+import { featureName, isNotable, oneIn, rateHand } from './handodds.mjs'
 import { addToHall } from './halloffame.mjs'
 import { canvasBlob, drawShareCard } from './sharecard.mjs'
 import { gradeChip, nudge, showToast } from './handui.mjs'
@@ -170,9 +170,13 @@ function showAfterHand(record) {
     if (chip.classList.contains('locked')) return nudge(chip)
     stageNote.textContent = 'On to the next hand.'
   })
-  score.append(chip, node('span', 'score-line', 'Win +30'), node('strong', 'score-total', '+30 RP'))
+  score.append(...(isNotable(record.grade) ? [chip] : []), node('span', 'score-line', 'Win +30'), node('strong', 'score-total', '+30 RP'))
   stage.replaceChildren(again, score)
   stage.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  if (!isNotable(record.grade)) {
+    stageNote.textContent = `Graded ${record.grade}: below A, so no grade is shown after the hand.`
+    return
+  }
   stageNote.textContent = locked
     ? 'A rare hand: Play again waits (try it) until the grade is tapped.'
     : 'Tap the grade to see why it got it.'

@@ -138,10 +138,13 @@ export const GRADES = [
 
 export const gradeOf = (chance) => GRADES.find((g) => 1 / chance >= g.from).grade
 
-// S and above make the Hall of Fame.
+const atLeast = (from) => (grade) => GRADES.some((g) => g.grade === grade) &&
+  GRADES.findIndex((g) => g.grade === grade) <= GRADES.findIndex((g) => g.grade === from)
+
+// S and above make the Hall of Fame; A and above get their grade shown after the hand.
 export const HALL_OF_FAME_FROM = 'S'
-export const isHallOfFame = (grade) =>
-  GRADES.findIndex((g) => g.grade === grade) <= GRADES.findIndex((g) => g.grade === HALL_OF_FAME_FROM)
+export const isHallOfFame = atLeast(HALL_OF_FAME_FROM)
+export const isNotable = atLeast('A')
 
 // { chance, grade, reason, cardChance }: `reason` is what made the hand rare.
 export function rateHand(record) {

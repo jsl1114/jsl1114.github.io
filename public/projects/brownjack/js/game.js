@@ -71,7 +71,7 @@ import {
   totalScore,
 } from './daily.mjs'
 import { daysLeft, rollSeason, seasonId, seasonName } from './seasons.mjs'
-import { featureName, isHallOfFame, oneIn, rateHand } from './handodds.mjs'
+import { featureName, isHallOfFame, isNotable, oneIn, rateHand } from './handodds.mjs'
 import { clearSpotlight, gradeChip, nudge, showToast } from './handui.mjs'
 import { addToHall, rankHall } from './halloffame.mjs'
 import { GAME_URL, canvasBlob, drawShareCard, headline } from './sharecard.mjs'
@@ -1605,12 +1605,13 @@ function handRecord(winners, result, beforeRp) {
   return { record, hallEarned: hallBadges.earned }
 }
 
-// The grade chip among the round's chips. A rare hand's has to be tapped before
-// the next hand, and the first one ever points the way to the Hall of Fame.
+// The grade chip among the round's chips, for hands graded A or better. A rare
+// hand's has to be tapped before the next hand, and the first one ever points
+// the way to the Hall of Fame.
 let shownGrade = null
 
 function showGrade(record) {
-  shownGrade = record.grade ? gradeChip(record, { onReveal: revealRareHand }) : null
+  shownGrade = isNotable(record.grade) ? gradeChip(record, { onReveal: revealRareHand }) : null
   state.gradeLock = Boolean(record.grade && isHallOfFame(record.grade))
   el.again.classList.toggle('waiting', state.gradeLock)
   if (!shownGrade) return

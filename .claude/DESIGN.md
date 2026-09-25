@@ -212,9 +212,27 @@ rule *is* the structure, same as the rest of the page.
 ## Scroll cue
 
 `src/components/ScrollCue.jsx` — the only hint that anything exists below a
-full-screen landing view. `fixed` (not absolute), fades in after the curtain and
-the staggered copy have settled, fades out past 40px of scroll, returns at the top, and its
-chevron bob is dropped under `prefers-reduced-motion`.
+full-screen landing view. `fixed` (not absolute), fades in only once every hero
+line has finished rising (`ENTRANCE_SETTLED_MS`, 2.9s on a first visit; 300ms
+on a return mount or under reduced motion; retime it with the curtain), fades out past 40px of scroll, returns at the top, and its
+arrow animation is dropped under `prefers-reduced-motion`.
+
+- It wears the collapsed navbar's ground (`bg-white/85 dark:bg-neutral-950/80`,
+  `backdrop-blur-xl`, hairline border) so the top and bottom bars read as a
+  pair, and so copy running under it on short phones is frosted out rather than
+  overlapped. `.glass` was tried and is too thin in dark mode.
+- Anatomy: arrow only, no label. A 32px ink well (the same fill as `.pill`)
+  inside a 6px frosted ring, 44px overall so it is a full tap target.
+- Placement: bottom-right on phones, on the page's 20px gutter, because the
+  landing view is already full there; centred from `sm` up. TanStack Query
+  Devtools was removed because its launcher sat in the same corner.
+- The arrow *drops through* its well **once** each time the cue appears
+  (`--animate-drop`, 1.1s, starting 0.7s in so the fade-in has finished): it falls out of the bottom and
+  re-enters from the top, clipped by the well's `overflow-hidden`. It does not
+  loop and it is not a bob.
+- Enters and leaves with a small fade-rise (8px), and takes the button
+  `scale(1.03)` hover. It sits above `env(safe-area-inset-bottom)` so it clears
+  the iOS home indicator.
 
 ## Routing
 
